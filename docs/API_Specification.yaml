@@ -1,0 +1,2473 @@
+openapi: 3.1.0
+info:
+  title: P11 Alumni Mentorship and Career Network API
+  version: 1.0.0
+  description: |
+    REST API contract for Project P11 — Verified Alumni Mentorship Matching and Engagement Platform.
+    The API is versioned under /api/v1 and is derived from the P11 PRD, SRS,
+    HLD, and the P11 project specification.
+    Cookie-authenticated state-changing requests require a valid X-CSRF-Token,
+    SameSite cookie policy, and Origin/Referer validation. Access tokens are
+    short-lived; refresh tokens are rotated and revoked server-side.
+
+servers:
+  - url: /api/v1
+    description: Application API
+
+tags:
+  - name: Identity
+    description: Current authenticated user context.
+  - name: Alumni Verification
+    description: Alumni verification workflow.
+  - name: Mentor Profile
+    description: Verified mentor profile, capacity, and availability.
+  - name: Student Profile
+    description: Student career profile.
+  - name: Matching
+    description: Mentor discovery, ranking, and match explanations.
+  - name: Mentorship Requests
+    description: Mentorship request lifecycle.
+  - name: Mentorships
+    description: Accepted mentoring relationships.
+  - name: Sessions
+    description: Mentoring session scheduling and records.
+  - name: Goals
+    description: Mentoring goals and action items.
+  - name: Feedback
+    description: Bidirectional mentorship feedback.
+  - name: Engagement
+    description: Mentorship relationship engagement.
+  - name: Messaging
+    description: Relationship-scoped in-platform messaging.
+  - name: Analytics
+    description: Programme-level analytics.
+  - name: Administration
+    description: Programme configuration.
+
+security:
+  - accessToken: []
+
+paths:
+
+  /me:
+    get:
+      tags: [Identity]
+      operationId: getCurrentUser
+      summary: Get current user context
+      responses:
+        '200':
+          description: Current authenticated user context.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/refresh:
+    post:
+      security:
+        - refreshToken: []
+          csrfToken: []
+      tags: [Identity]
+      operationId: refreshAccessToken
+      summary: Rotate the authenticated session tokens
+      description: Validates the refresh_token HTTP-only cookie, rotates and revokes the refresh token, and issues a new short-lived access_token and refresh_token cookie pair. The request requires the CSRF protections described at the API level.
+      responses:
+        '204':
+          description: Tokens rotated and set in secure HTTP-only cookies.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    post:
+      security:
+        - accessToken: []
+          csrfToken: []
+      tags: [Identity]
+      operationId: logout
+      summary: Revoke the current session
+      description: Revokes the current refresh-token family and clears the access_token and refresh_token HTTP-only cookies. The request requires the CSRF protections described at the API level.
+      responses:
+        '204':
+          description: Session revoked and cookies cleared.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify:
+    get:
+      tags: [Alumni Verification]
+      operationId: listVerificationRequests
+      summary: List alumni verification requests for the review queue
+      description: Requires the Alumni Relations Officer role. Results are institution-scoped and paginated.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, verified, rejected]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated verification review queue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequestListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Alumni Verification]
+      operationId: submitAlumniVerification
+      summary: Submit alumni verification request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationSubmission'
+      responses:
+        '201':
+          description: Verification request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify/{requestId}:
+    get:
+      tags: [Alumni Verification]
+      operationId: getVerificationRequest
+      summary: Get an alumni verification request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Verification request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify/{requestId}/decision:
+    post:
+      tags: [Alumni Verification]
+      operationId: decideAlumniVerification
+      summary: Approve or reject an alumni verification request
+      description: Requires an authorized Alumni Relations Officer.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationDecision'
+      responses:
+        '200':
+          description: Verification decision recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify/{requestId}/documents/upload-url:
+    post:
+      tags: [Alumni Verification]
+      operationId: createVerificationDocumentUploadUrl
+      summary: Create a pre-signed verification-document upload URL
+      description: The client uploads the document directly to approved object storage using the returned short-lived URL. The document remains unavailable for review until the finalize operation validates the uploaded bytes and completes malware scanning.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationDocumentUploadRequest'
+      responses:
+        '200':
+          description: Pre-signed upload URL created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationDocumentUpload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify/{requestId}/documents/{documentId}/finalize:
+    post:
+      tags: [Alumni Verification]
+      operationId: finalizeVerificationDocumentUpload
+      summary: Finalize and validate an uploaded verification document
+      description: Requires the Alumni Relations Officer or the submitting alumnus for the matching request. The server validates detected MIME type, magic bytes, size, and malware status from the uploaded object. The document transitions to validating and cannot be reviewed until validation succeeds.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '202':
+          description: Document accepted for validation/quarantine processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /alumni/verify/{requestId}/documents/{documentId}/view-url:
+    get:
+      tags: [Alumni Verification]
+      operationId: createVerificationDocumentViewUrl
+      summary: Create a short-lived authorized document view URL
+      description: Requires an authorized Alumni Relations Officer and an approved document. The returned signed URL is short-lived and must not be persisted as a permanent link.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Short-lived signed document URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationDocumentViewUrl'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentors/me:
+    get:
+      tags: [Mentor Profile]
+      operationId: getMyMentorProfile
+      summary: Get current mentor profile
+      responses:
+        '200':
+          description: Mentor profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Mentor Profile]
+      operationId: updateMyMentorProfile
+      summary: Update current mentor profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorProfileUpdate'
+      responses:
+        '200':
+          description: Updated mentor profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentors/me/capacity:
+    put:
+      tags: [Mentor Profile]
+      operationId: updateMentorCapacity
+      summary: Update mentor capacity and participation status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorCapacityUpdate'
+      responses:
+        '200':
+          description: Updated mentor capacity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorCapacity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentors/me/availability:
+    put:
+      tags: [Mentor Profile]
+      operationId: replaceMentorAvailability
+      summary: Replace mentor availability windows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AvailabilityWindowInput'
+      responses:
+        '200':
+          description: Updated availability.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilityWindow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentors/search:
+    get:
+      tags: [Matching]
+      operationId: searchMentors
+      summary: Search and rank available mentors
+      description: |
+        Returns mentors eligible for discovery and request. Student-visible mentor
+        representations must not contain private alumni email or phone fields.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: expertise
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: industry
+          in: query
+          schema:
+            type: string
+        - name: targetRole
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Ranked mentor results with explanations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /students/me/career-profile:
+    get:
+      tags: [Student Profile]
+      operationId: getMyCareerProfile
+      summary: Get current student career profile
+      responses:
+        '200':
+          description: Career profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Student Profile]
+      operationId: replaceMyCareerProfile
+      summary: Replace current student career profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentProfileInput'
+      responses:
+        '200':
+          description: Updated career profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /students/me/career-goals:
+    get:
+      tags: [Student Profile]
+      operationId: listMyCareerGoals
+      summary: List current student's career goals
+      responses:
+        '200':
+          description: Student career goals.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoalListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Student Profile]
+      operationId: createMyCareerGoal
+      summary: Create a career goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareerGoalCreate'
+      responses:
+        '201':
+          description: Career goal created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /students/me/career-goals/{goalId}:
+    patch:
+      tags: [Student Profile]
+      operationId: updateMyCareerGoal
+      summary: Update a career goal
+      parameters:
+        - $ref: '#/components/parameters/GoalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareerGoalUpdate'
+      responses:
+        '200':
+          description: Career goal updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /requests:
+    post:
+      tags: [Mentorship Requests]
+      operationId: createMentorshipRequest
+      summary: Create a mentorship request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorshipRequestCreate'
+      responses:
+        '201':
+          description: Mentorship request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorshipRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Mentorship Requests]
+      operationId: listMentorshipRequests
+      summary: List mentorship requests
+      parameters:
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [incoming, outgoing]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, accepted, declined, expired]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Paginated mentorship requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorshipRequestListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /requests/{requestId}:
+    get:
+      tags: [Mentorship Requests]
+      operationId: getMentorshipRequest
+      summary: Get a mentorship request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Mentorship request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorshipRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /requests/{requestId}/accept:
+    post:
+      tags: [Mentorship Requests]
+      operationId: acceptMentorshipRequest
+      summary: Accept a mentorship request
+      description: |
+        The operation is capacity-safe under concurrent acceptance. If mentor capacity
+        is no longer available, no active mentorship is created.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '201':
+          description: Mentorship created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /requests/{requestId}/decline:
+    post:
+      tags: [Mentorship Requests]
+      operationId: declineMentorshipRequest
+      summary: Decline a mentorship request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorshipRequestDecline'
+      responses:
+        '200':
+          description: Declined mentorship request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorshipRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships:
+    get:
+      tags: [Mentorships]
+      operationId: listMentorships
+      summary: List current user's mentorships
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, ended]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Paginated mentorships.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorshipListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}:
+    get:
+      tags: [Mentorships]
+      operationId: getMentorship
+      summary: Get a mentorship relationship
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      responses:
+        '200':
+          description: Mentorship relationship.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/end:
+    post:
+      tags: [Mentorships]
+      operationId: endMentorship
+      summary: End an active mentorship
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      responses:
+        '200':
+          description: Mentorship ended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/sessions:
+    get:
+      tags: [Sessions]
+      operationId: listSessions
+      summary: List mentorship sessions
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated sessions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Sessions]
+      operationId: createSession
+      summary: Propose a mentorship session
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCreate'
+      responses:
+        '201':
+          description: Session proposal created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/sessions/{sessionId}:
+    patch:
+      tags: [Sessions]
+      operationId: updateSession
+      summary: Update a mentorship session
+      description: Setting status to scheduled confirms a proposed session. A proposed session may be cancelled, while a scheduled session may later be completed or cancelled.
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionUpdate'
+      responses:
+        '200':
+          description: Updated session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/goals:
+    get:
+      tags: [Goals]
+      operationId: listGoals
+      summary: List mentorship goals
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated goals.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Goals]
+      operationId: createGoal
+      summary: Create a mentorship goal
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalCreate'
+      responses:
+        '201':
+          description: Goal created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/goals/{goalId}:
+    patch:
+      tags: [Goals]
+      operationId: updateGoal
+      summary: Update a mentorship goal
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/GoalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalUpdate'
+      responses:
+        '200':
+          description: Updated goal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/goals/{goalId}/actions:
+    get:
+      tags: [Goals]
+      operationId: listActionItems
+      summary: List action items for a mentorship goal
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/GoalId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated action items.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItemListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Goals]
+      operationId: createActionItem
+      summary: Create an action item
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/GoalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionItemCreate'
+      responses:
+        '201':
+          description: Action item created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/goals/{goalId}/actions/{actionId}:
+    patch:
+      tags: [Goals]
+      operationId: updateActionItem
+      summary: Update an action item
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+        - $ref: '#/components/parameters/GoalId'
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionItemUpdate'
+      responses:
+        '200':
+          description: Updated action item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/feedback:
+    post:
+      tags: [Feedback]
+      operationId: submitFeedback
+      summary: Submit mentorship feedback
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackCreate'
+      responses:
+        '201':
+          description: Feedback submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /mentorships/{mentorshipId}/engagement:
+    get:
+      tags: [Engagement]
+      operationId: getMentorshipEngagement
+      summary: Get mentorship engagement status
+      parameters:
+        - $ref: '#/components/parameters/MentorshipId'
+      responses:
+        '200':
+          description: Engagement status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /messages:
+    get:
+      tags: [Messaging]
+      operationId: listMessages
+      summary: List messages for a mentorship conversation
+      parameters:
+        - name: mentorshipId
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Paginated messages.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Messaging]
+      operationId: sendMessage
+      summary: Send a message in a mentorship conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: Message created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /analytics/programme:
+    get:
+      tags: [Analytics]
+      operationId: getProgrammeAnalytics
+      summary: Get programme analytics
+      description: Requires the Alumni Relations Officer, Placement Officer, or Administrator role. The response is institution-scoped; placement-outcome fields are returned only to roles permitted by institutional policy, and unauthorized mentor-effectiveness or placement fields are omitted rather than returned as unrestricted data.
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Programme analytics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgrammeAnalytics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /integrations/calendar/{provider}/authorize:
+    get:
+      tags: [Sessions]
+      operationId: authorizeCalendarProvider
+      summary: Start calendar-provider OAuth authorization
+      parameters:
+        - $ref: '#/components/parameters/CalendarProvider'
+      responses:
+        '200':
+          description: Short-lived OAuth authorization URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarAuthorization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /integrations/calendar/{provider}/callback:
+    get:
+      security: []
+      tags: [Sessions]
+      operationId: completeCalendarAuthorization
+      summary: Complete calendar-provider OAuth authorization
+      description: The callback validates the OAuth state bound to the initiating user/session before storing the provider connection; it does not establish application authentication.
+      parameters:
+        - $ref: '#/components/parameters/CalendarProvider'
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Calendar provider connected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarConnection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/matching-configuration:
+    get:
+      tags: [Administration]
+      operationId: getMatchingConfiguration
+      summary: Get matching configuration
+      description: Requires the Administrator role.
+      responses:
+        '200':
+          description: Current matching configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchingConfiguration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Administration]
+      operationId: updateMatchingConfiguration
+      summary: Update matching configuration
+      description: Requires the Administrator role. Configuration changes are audited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchingConfiguration'
+      responses:
+        '200':
+          description: Updated matching configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchingConfiguration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/request-policy:
+    get:
+      tags: [Administration]
+      operationId: getRequestPolicy
+      summary: Get request throttling and expiry policy
+      description: Requires the Administrator role.
+      responses:
+        '200':
+          description: Current request policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestPolicy'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Administration]
+      operationId: updateRequestPolicy
+      summary: Update request throttling and expiry policy
+      description: Requires the Administrator role. Configuration changes are audited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPolicy'
+      responses:
+        '200':
+          description: Updated request policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestPolicy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/engagement-settings:
+    get:
+      tags: [Administration]
+      operationId: getEngagementSettings
+      summary: Get engagement settings
+      description: Requires the Administrator role.
+      responses:
+        '200':
+          description: Current engagement settings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Administration]
+      operationId: updateEngagementSettings
+      summary: Update engagement settings
+      description: Requires the Administrator role. Configuration changes are audited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EngagementSettings'
+      responses:
+        '200':
+          description: Updated engagement settings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+
+  securitySchemes:
+    accessToken:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: Short-lived JWT access token stored in an HTTP-only, Secure cookie. Authentication uses email and password after email OTP verification. Cookie-authenticated state-changing operations also require X-CSRF-Token and SameSite plus Origin/Referer validation.
+    refreshToken:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+      description: Rotated refresh token stored in an HTTP-only, Secure cookie. It is accepted only by POST /auth/refresh and is revoked on rotation or logout.
+    csrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Required on cookie-authenticated state-changing requests. The server validates the token together with the request origin and SameSite policy.
+
+  parameters:
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema:
+        type: string
+    MentorshipId:
+      name: mentorshipId
+      in: path
+      required: true
+      schema:
+        type: string
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+    GoalId:
+      name: goalId
+      in: path
+      required: true
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    CalendarProvider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [google, outlook]
+
+  responses:
+    BadRequest:
+      description: Invalid input or validation failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Authenticated but not authorized.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found or not visible to the caller.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Business-state conflict, such as capacity reached or invalid state transition.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Configured request throttle or applicable rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Unexpected server failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        requestId:
+          type: string
+      additionalProperties: false
+
+    PageMeta:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    CurrentUser:
+      type: object
+      required: [id, role]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum:
+            - student
+            - alumni_mentor
+            - alumni_relations_officer
+            - placement_officer
+            - administrator
+      additionalProperties: false
+
+    VerificationSubmission:
+      type: object
+      required: [institutionalIdentifier]
+      properties:
+        institutionalIdentifier:
+          type: string
+        graduationYear:
+          type: integer
+          minimum: 1900
+        documents:
+          type: array
+          description: Optional document identifiers obtained from the verification-document upload flow.
+          items:
+            type: string
+      additionalProperties: false
+
+    VerificationDocumentUploadRequest:
+      type: object
+      required: [fileName, contentType, sizeBytes]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+
+    VerificationDocumentUpload:
+      type: object
+      required: [documentId, uploadUrl, expiresAt, status]
+      properties:
+        documentId:
+          type: string
+        uploadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending_upload]
+      additionalProperties: false
+
+    VerificationDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [verified, rejected]
+        rejectionReason:
+          type: string
+      additionalProperties: false
+
+    VerificationRequest:
+      type: object
+      required: [id, status, submittedAt]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, verified, rejected]
+        submittedAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type: string
+          format: date-time
+        rejectionReason:
+          type: string
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationDocument'
+      additionalProperties: false
+
+    VerificationRequestListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationRequest'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    VerificationDocument:
+      type: object
+      required: [id, fileName, status]
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        status:
+          type: string
+          enum: [pending_upload, validating, approved, rejected]
+        validationMessage:
+          type: string
+          description: Non-sensitive validation result presented to an authorized reviewer.
+      additionalProperties: false
+
+    VerificationDocumentViewUrl:
+      type: object
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Short-lived signed URL. It must not be persisted as a permanent application link.
+        expiresAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    CalendarAuthorization:
+      type: object
+      required: [provider, authorizationUrl, expiresAt]
+      properties:
+        provider:
+          type: string
+          enum: [google, outlook]
+        authorizationUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    CalendarConnection:
+      type: object
+      required: [provider, connected]
+      properties:
+        provider:
+          type: string
+          enum: [google, outlook]
+        connected:
+          type: boolean
+      additionalProperties: false
+
+    MentorProfileUpdate:
+      type: object
+      properties:
+        professionalHeadline:
+          type: string
+        currentRole:
+          type: string
+        industry:
+          type: string
+        expertise:
+          type: array
+          description: Expertise taxonomy names represented from the mentor's persisted expertise-tag references.
+          items:
+            type: string
+        mentoringInterests:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+
+    MentorProfile:
+      type: object
+      required: [id, displayName, verificationStatus, expertise, mentoringInterests, capacity]
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        verificationStatus:
+          type: string
+          enum: [verified]
+        professionalHeadline:
+          type: string
+        currentRole:
+          type: string
+        industry:
+          type: string
+        expertise:
+          type: array
+          description: Expertise taxonomy names represented from the mentor's persisted expertise-tag references.
+          items:
+            type: string
+        mentoringInterests:
+          type: array
+          items:
+            type: string
+        capacity:
+          $ref: '#/components/schemas/MentorCapacity'
+        availability:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilityWindow'
+      additionalProperties: false
+
+    MentorCapacityUpdate:
+      type: object
+      required: [maxConcurrentMentees, acceptingNewMentees]
+      properties:
+        maxConcurrentMentees:
+          type: integer
+          minimum: 0
+        acceptingNewMentees:
+          type: boolean
+      additionalProperties: false
+
+    MentorCapacity:
+      type: object
+      required: [maxConcurrentMentees, activeMentees, availableSlots, acceptingNewMentees]
+      properties:
+        maxConcurrentMentees:
+          type: integer
+          minimum: 0
+        activeMentees:
+          type: integer
+          minimum: 0
+        availableSlots:
+          type: integer
+          minimum: 0
+        acceptingNewMentees:
+          type: boolean
+      additionalProperties: false
+
+    AvailabilityWindowInput:
+      type: object
+      required: [startAt, endAt, timezone]
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+      additionalProperties: false
+
+    AvailabilityWindow:
+      type: object
+      required: [id, startAt, endAt, timezone]
+      properties:
+        id:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+      additionalProperties: false
+
+    StudentProfileInput:
+      type: object
+      required: [interests, targetRoles, targetIndustries]
+      properties:
+        interests:
+          type: array
+          items:
+            type: string
+        targetRoles:
+          type: array
+          items:
+            type: string
+        targetIndustries:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+
+    StudentProfile:
+      type: object
+      required: [id, interests, targetRoles, targetIndustries]
+      properties:
+        id:
+          type: string
+        interests:
+          type: array
+          items:
+            type: string
+        targetRoles:
+          type: array
+          items:
+            type: string
+        targetIndustries:
+          type: array
+          items:
+            type: string
+        careerGoals:
+          type: array
+          description: Read-only career-goal resources. Manage them through the career-goals endpoints; they are stored separately from StudentProfile.
+          items:
+            $ref: '#/components/schemas/CareerGoal'
+      additionalProperties: false
+
+    MatchResult:
+      type: object
+      required: [mentor, rank, score, relevanceReasons]
+      properties:
+        mentor:
+          $ref: '#/components/schemas/MentorProfile'
+        rank:
+          type: integer
+          minimum: 1
+        score:
+          type: number
+          minimum: 0
+        relevanceReasons:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+
+    MatchSearchResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchResult'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    MentorshipRequestCreate:
+      type: object
+      required: [mentorId]
+      properties:
+        mentorId:
+          type: string
+        message:
+          type: string
+          maxLength: 2000
+      additionalProperties: false
+
+    MentorshipRequestDecline:
+      type: object
+      properties:
+        declineReason:
+          type: string
+          maxLength: 1000
+      additionalProperties: false
+
+    MentorshipRequest:
+      type: object
+      required: [id, studentId, mentorId, status, createdAt, expiresAt]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        mentorId:
+          type: string
+        status:
+          type: string
+          enum: [pending, accepted, declined, expired]
+        message:
+          type: string
+        declineReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        respondedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    MentorshipRequestListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MentorshipRequest'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    Mentorship:
+      type: object
+      required: [id, studentId, mentorId, status, startedAt]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        mentorId:
+          type: string
+        status:
+          type: string
+          enum: [active, ended]
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    MentorshipListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mentorship'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    SessionCreate:
+      type: object
+      description: New sessions start in proposed state; confirmation is represented by updating status to scheduled.
+      required: [startAt, endAt, timezone, calendarProvider]
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+          description: IANA timezone used to interpret the proposed session time.
+        calendarProvider:
+          type: string
+          enum: [google, outlook, none]
+      additionalProperties: false
+
+    SessionUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [scheduled, completed, cancelled]
+        notes:
+          type: string
+      additionalProperties: false
+
+    Session:
+      type: object
+      required: [id, mentorshipId, startAt, endAt, timezone, status, calendarProvider]
+      properties:
+        id:
+          type: string
+        mentorshipId:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+          description: IANA timezone used to interpret the session time.
+        status:
+          type: string
+          enum: [proposed, scheduled, completed, cancelled]
+        calendarProvider:
+          type: string
+          enum: [google, outlook, none]
+        calendarEventId:
+          type: string
+        meetingUrl:
+          type: string
+          format: uri
+        notes:
+          type: string
+      additionalProperties: false
+
+    SessionListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    CareerGoalCreate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+      additionalProperties: false
+
+    CareerGoalUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+      minProperties: 1
+      additionalProperties: false
+
+    CareerGoal:
+      type: object
+      required: [id, title, status]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+      additionalProperties: false
+
+    CareerGoalListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareerGoal'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    GoalCreate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    GoalUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    Goal:
+      type: object
+      required: [id, mentorshipId, title, status]
+      properties:
+        id:
+          type: string
+        mentorshipId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    GoalListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Goal'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    ActionItemCreate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    ActionItemUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, completed]
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    ActionItem:
+      type: object
+      required: [id, title, status]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed]
+        completedAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+      additionalProperties: false
+
+    ActionItemListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionItem'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    FeedbackCreate:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comments:
+          type: string
+          maxLength: 5000
+      additionalProperties: false
+
+    Feedback:
+      type: object
+      required: [id, mentorshipId, submittedBy, rating, submittedAt]
+      properties:
+        id:
+          type: string
+        mentorshipId:
+          type: string
+        submittedBy:
+          type: string
+          enum: [student, mentor]
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comments:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    EngagementStatus:
+      type: object
+      required: [mentorshipId, status]
+      properties:
+        mentorshipId:
+          type: string
+        status:
+          type: string
+          enum: [healthy, at_risk, inactive]
+        lastMeaningfulActivityAt:
+          type: string
+          format: date-time
+        assessedAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    MessageCreate:
+      type: object
+      required: [mentorshipId, message]
+      properties:
+        mentorshipId:
+          type: string
+        message:
+          type: string
+          minLength: 1
+          maxLength: 5000
+      additionalProperties: false
+
+    Message:
+      type: object
+      required: [id, mentorshipId, senderRole, message, sentAt]
+      properties:
+        id:
+          type: string
+        mentorshipId:
+          type: string
+        senderRole:
+          type: string
+          enum: [student, mentor]
+        message:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    MessageListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      additionalProperties: false
+
+    ProgrammeAnalytics:
+      type: object
+      required: [activeMentorships, activeMentors, participationRate, requestsSent, requestsAccepted, requestsDeclined, requestsExpired, requestAcceptanceRate, sessionFrequency, sessionCompletionRate, goalCompletionRate, actionItemCompletionRate, mentorUtilisationRate, engagementDecayRate, engagementRecoveryRate, studentSatisfactionScore, mentorSatisfactionScore]
+      properties:
+        activeMentorships:
+          type: integer
+          minimum: 0
+        activeMentors:
+          type: integer
+          minimum: 0
+        participationRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        requestsSent:
+          type: integer
+          minimum: 0
+        requestsAccepted:
+          type: integer
+          minimum: 0
+        requestsDeclined:
+          type: integer
+          minimum: 0
+        requestsExpired:
+          type: integer
+          minimum: 0
+        requestAcceptanceRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        sessionFrequency:
+          type: number
+          minimum: 0
+        sessionCompletionRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        goalCompletionRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        actionItemCompletionRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        mentorUtilisationRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        engagementDecayRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        engagementRecoveryRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        studentSatisfactionScore:
+          type: number
+          minimum: 1
+          maximum: 5
+        mentorSatisfactionScore:
+          type: number
+          minimum: 1
+          maximum: 5
+        mentorEffectiveness:
+          type: array
+          description: Authorized mentor-effectiveness measures; exact measures are configured by the programme.
+          items:
+            type: object
+            required: [mentorId]
+            properties:
+              mentorId:
+                type: string
+              measures:
+                type: object
+                additionalProperties: true
+            additionalProperties: false
+        placementOutcomeSummary:
+          type: object
+          description: Authorized placement-outcome correlation data; exact fields depend on institutional policy.
+          additionalProperties: true
+      additionalProperties: false
+
+    MatchingConfiguration:
+      type: object
+      required: [weights]
+      properties:
+        weights:
+          type: object
+          additionalProperties:
+            type: number
+            minimum: 0
+      additionalProperties: false
+
+    RequestPolicy:
+      type: object
+      required: [maxRequests, periodSeconds, expirySeconds]
+      properties:
+        maxRequests:
+          type: integer
+          minimum: 1
+        periodSeconds:
+          type: integer
+          minimum: 1
+        expirySeconds:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+
+    EngagementSettings:
+      type: object
+      required: [assessmentCadence, atRiskAfterDays, inactiveAfterDays]
+      properties:
+        assessmentCadence:
+          type: string
+          enum: [weekly]
+        atRiskAfterDays:
+          type: integer
+          minimum: 1
+        inactiveAfterDays:
+          type: integer
+          minimum: 1
+      additionalProperties: false
