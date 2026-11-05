@@ -150,4 +150,57 @@ export async function uploadChatAttachmentToCloudinary(
   });
 }
 
+
+/**
+ * Uploads an alumni verification document (ID proof or additional certificate) to Cloudinary.
+ * Stores in folder 'alma_verification_documents'.
+ * Supports auto resource_type (images, PDFs, documents).
+ */
+export async function uploadVerificationDocumentToCloudinary(
+  buffer: Buffer,
+  originalFilename: string
+): Promise<{ success: boolean; data?: CloudinaryUploadResult; error?: string }> {
+  if (!isConfigured) {
+    return { success: false, error: "Cloudinary credentials not configured." };
+  }
+
+  const extMatch = originalFilename.match(/\.([a-zA-Z0-9]+)$/);
+  const ext = extMatch ? '.' + extMatch[1].toLowerCase() : "";
+  const cleanBaseName = originalFilename
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 40);
+
+  return new Promise((resolve) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "alma_verification_documents",
+        resource_type: "auto",
+        public_id: Date.now() + '_' + cleanBaseName + ext,
+      },
+      (error, result) => {
+        if (error || !result) {
+          const errMsg = error?.message || "Failed to upload verification document to Cloudinary.";
+          console.error("[Cloudinary Verification] Upload failed:", errMsg);
+          return resolve({
+            success: false,
+            error: errMsg,
+          });
+        }
+        resolve({
+          success: true,
+          data: {
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+            bytes: result.bytes,
+            format: result.format,
+            resource_type: result.resource_type,
+          },
+        });
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
 export { cloudinary };

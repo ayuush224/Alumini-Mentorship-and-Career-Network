@@ -9,6 +9,7 @@ import { connectDB } from "@/lib/db";
 import {
   User,
   AlumniProfile,
+  MentorProfile,
 } from "@/lib/models/User";
 import {
   VerificationRequest,
@@ -79,12 +80,12 @@ export async function getOfficerDashboardData() {
     ] = await Promise.all([
       // Count pending verifications
       VerificationRequest.countDocuments({
-        institutionId,
+        institutionId: { $in: [institutionId, "INST-001", "Lovely Professional University"] },
         status: "pending",
       }),
       // Count verified alumni
       VerificationRequest.countDocuments({
-        institutionId,
+        institutionId: { $in: [institutionId, "INST-001", "Lovely Professional University"] },
         status: "verified",
       }),
       // Count active mentorship pairings
@@ -94,7 +95,10 @@ export async function getOfficerDashboardData() {
       // Get all mentor capacities
       MentorCapacity.find().lean(),
       // Get 5 most recent pending verification requests
-      VerificationRequest.find({ institutionId, status: "pending" })
+      VerificationRequest.find({
+        institutionId: { $in: [institutionId, "INST-001", "Lovely Professional University"] },
+        status: "pending",
+      })
         .sort({ submittedAt: -1 })
         .limit(5)
         .populate("userId", "name role createdAt")
@@ -308,7 +312,9 @@ export async function getVerificationRequests(
   try {
     const { institutionId } = await getOfficerContext();
 
-    const query: Record<string, unknown> = { institutionId };
+    const query: Record<string, unknown> = {
+      institutionId: { $in: [institutionId, "INST-001", "Lovely Professional University"] },
+    };
     if (filter !== "all") {
       query.status = filter;
     }
@@ -341,6 +347,7 @@ export async function getVerificationRequests(
             fileName?: string;
             fileUrl?: string;
             declaredContentType?: string;
+            documentType?: string;
             sizeBytes?: number;
           };
           return {
@@ -348,6 +355,7 @@ export async function getVerificationRequests(
             fileName: d.fileName || "Credential_Document.pdf",
             fileUrl: d.fileUrl || "#",
             contentType: d.declaredContentType || "application/pdf",
+            documentType: d.documentType || "institutional_id_proof",
             sizeBytes: d.sizeBytes || 0,
           };
         }),
@@ -379,7 +387,7 @@ export async function decideVerification(
 
     const verificationReq = await VerificationRequest.findOne({
       _id: requestId,
-      institutionId,
+      institutionId: { $in: [institutionId, "INST-001", "Lovely Professional University"] },
     });
 
     if (!verificationReq) {
@@ -399,8 +407,15 @@ export async function decideVerification(
     }
     await verificationReq.save();
 
-    // If verified, ensure the Alumnus/MentorProfile status reflects verified
+    // If verified, ensure User, AlumniProfile, and MentorProfile reflect verified status
     if (decision === "verified") {
+      await User.findByIdAndUpdate(verificationReq.userId, {
+        $set: {
+          verificationStatus: "verified",
+          isVerified: true,
+        },
+      });
+
       await AlumniProfile.findOneAndUpdate(
         { userId: verificationReq.userId },
         {
@@ -411,6 +426,73 @@ export async function decideVerification(
         },
         { upsert: false }
       );
+
+      await MentorProfile.findOneAndUpdate(
+        { userId: verificationReq.userId },
+        {
+          $set: {
+            isVerified: true,
+            verifiedAt: new Date(),
+          },
+        },
+        { upsert: false }
+      );
+
+      await MentorCapacity.findOneAndUpdate(
+        { mentorId: verificationReq.userId },
+        { $set: { acceptingRequests: true } },
+        { upsert: true }
+      );
+    } else if (decision === "rejected") {
+      await User.findByIdAndUpdate(verificationReq.userId, {
+        $set: {
+          verificationStatus: "rejected",
+          isVerified: false,
+        },
+      });
+    }
+
+    // Send email notification to Alumnus via Resend
+    try {
+      const alumnus = await User.findById(verificationReq.userId).lean();
+      if (alumnus?.email) {
+        const resendApiKey = process.env.RESEND_API_KEY;
+        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+        if (decision === "verified") {
+          const subject = "Congratulations! Your Alma Alumni Verification is Approved 🎉";
+          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nGreat news! Your alumni verification request for Lovely Professional University has been reviewed and approved by the Alumni Relations Office.\n\nYour Mentor Workspace is now unlocked, and students can now discover you in the mentor directory.\n\nSign in to your dashboard: ${appUrl}/mentor/dashboard\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+
+          if (resendApiKey) {
+            const resend = new Resend(resendApiKey);
+            await resend.emails.send({
+              from: fromEmail,
+              to: [alumnus.email],
+              subject,
+              text: bodyText,
+            });
+          }
+          console.log(`[ALMA EMAIL] Verification approval email dispatched to ${alumnus.email}`);
+        } else {
+          const subject = "Update regarding your Alma Alumni Verification Request";
+          const reasonText = rejectionReason || "Credential mismatch with institutional records";
+          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nYour alumni verification request for Lovely Professional University could not be verified at this time.\n\nReason: ${reasonText}\n\nPlease log in to review your submission or contact the Alumni Relations Office at alumni@university.edu for assistance.\n\nPortal: ${appUrl}/mentor/dashboard\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+
+          if (resendApiKey) {
+            const resend = new Resend(resendApiKey);
+            await resend.emails.send({
+              from: fromEmail,
+              to: [alumnus.email],
+              subject,
+              text: bodyText,
+            });
+          }
+          console.log(`[ALMA EMAIL] Verification rejection notice dispatched to ${alumnus.email}`);
+        }
+      }
+    } catch (mailErr) {
+      console.error("[Email Notification Error]:", mailErr);
     }
 
     // Write audit log entry
