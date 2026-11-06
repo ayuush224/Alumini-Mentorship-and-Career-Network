@@ -17,12 +17,13 @@ export interface MatchResult {
   matchedSkills?: string[];
 }
 
+/** Normalizes a skill string for comparison by lowercasing and stripping non-alphanumeric characters. */
 function normalizeSkill(s?: string): string {
   if (!s) return "";
   return s.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-// Broad tech ecosystem umbrella
+// Broad tech ecosystem umbrella keywords for industry classification
 const TECH_KEYWORDS = [
   "technology",
   "tech",
@@ -44,6 +45,7 @@ const TECH_KEYWORDS = [
   "mobile",
 ];
 
+/** Determines if a mentor's profile signals a tech-related background via keyword matching. */
 function isTechRelated(industry?: string, jobTitle?: string, company?: string): boolean {
   const combined = `${industry || ""} ${jobTitle || ""} ${company || ""}`.toLowerCase();
   if (

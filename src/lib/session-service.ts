@@ -73,6 +73,7 @@ export function validateMeetingLink(urlStr: string): { isValid: boolean; normali
 // 5-MINUTE SLOT BUCKET GENERATOR (Layer 2 Race Condition Guard)
 // ============================================================================
 
+/** Time constant for 5-minute slot bucketing (in milliseconds). */
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
 /**
