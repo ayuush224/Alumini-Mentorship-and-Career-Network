@@ -1,9 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
-import { connectDB } from "@/lib/db";
-import { User, MentorProfile } from "@/lib/models/User";
-import { MentorshipRequest } from "@/lib/models/Mentorship";
+import { getCachedUser, getCachedMentorProfile, getCachedPendingRequestsCount } from "@/lib/dal";
 import { MentorHeader } from "./_components/mentor-header";
 
 export default async function MentorLayout({
@@ -21,14 +19,10 @@ export default async function MentorLayout({
     if (token) {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
-        await connectDB();
         const [user, profile, reqCount] = await Promise.all([
-          User.findById(payload.sub).lean(),
-          MentorProfile.findOne({ userId: payload.sub }).lean(),
-          MentorshipRequest.countDocuments({
-            mentorId: payload.sub,
-            status: "pending",
-          }),
+          getCachedUser(payload.sub),
+          getCachedMentorProfile(payload.sub),
+          getCachedPendingRequestsCount(payload.sub),
         ]);
         if (user) {
           mentorName = user.name || (user.email ? user.email.split("@")[0] : "Mentor");

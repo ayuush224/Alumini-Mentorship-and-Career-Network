@@ -1,8 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
-import { connectDB } from "@/lib/db";
-import { User, StudentProfile } from "@/lib/models/User";
+import { getCachedUser, getCachedStudentProfile } from "@/lib/dal";
 import { StudentHeader } from "./_components/student-header";
 
 export default async function StudentLayout({
@@ -19,10 +18,9 @@ export default async function StudentLayout({
     if (token) {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
-        await connectDB();
         const [user, profile] = await Promise.all([
-          User.findById(payload.sub).lean(),
-          StudentProfile.findOne({ userId: payload.sub }).lean(),
+          getCachedUser(payload.sub),
+          getCachedStudentProfile(payload.sub),
         ]);
         if (user) {
           userName = user.name || (user.email ? user.email.split("@")[0] : "Student");

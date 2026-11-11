@@ -2,11 +2,11 @@ import React from "react";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 import { connectDB } from "@/lib/db";
-import { User, StudentProfile } from "@/lib/models/User";
-import { Session, Mentorship } from "@/lib/models/Mentorship";
+import { Session } from "@/lib/models/Mentorship";
 import { MentorSession } from "@/lib/models/MentorSession";
 import { Goal, Action } from "@/lib/models/Tasks";
 import { serializeSession } from "@/lib/session-service";
+import { getCachedUser, getCachedStudentProfile, getCachedActiveMentorships } from "@/lib/dal";
 import {
   StudentDashboardView,
   UpcomingSessionData,
@@ -47,8 +47,8 @@ export default async function StudentDashboardPage() {
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
-        // Auto-clean tasks whose deadline has passed (the very next day after dueDate)
-        await Action.updateMany(
+        // Background task cleanup (non-blocking for SSR render)
+        Action.updateMany(
           {
             studentId,
             dueDate: { $lt: startOfToday },
@@ -57,21 +57,16 @@ export default async function StudentDashboardPage() {
           {
             $set: { status: "archived", isDeleted: true },
           }
-        );
+        ).catch(() => {});
 
-        // 1. Fetch active mentorships for this student to know who their mentors are
-        const studentMentorships = await Mentorship.find({
-          studentId,
-          status: "active",
-          isDeleted: { $ne: true },
-        }).select("mentorId").lean();
-
+        // 1. Fetch active mentorships using request-scoped cache
+        const studentMentorships = await getCachedActiveMentorships(studentId);
         const activeMentorIds = studentMentorships.map((m) => m.mentorId);
 
-        // 2. Parallel Fetching Optimization (Promise.all)
+        // 2. Parallel Fetching with Request-Scoped Cache (Promise.all)
         const [user, sp, nextSessionDoc, nextMentorSessionDoc, dbGoals, dbActions] = await Promise.all([
-          User.findById(studentId).lean(),
-          StudentProfile.findOne({ userId: studentId }).lean(),
+          getCachedUser(studentId),
+          getCachedStudentProfile(studentId),
           Session.findOne({
             $or: [
               { menteeId: studentId },
@@ -83,7 +78,6 @@ export default async function StudentDashboardPage() {
             date: { $gte: now },
             status: "scheduled",
             isDeleted: { $ne: true },
-
           })
             .sort({ date: 1 })
             .populate("mentorId", "name studentProfile mentorProfile")
@@ -105,7 +99,6 @@ export default async function StudentDashboardPage() {
             status: { $ne: "archived" },
             dueDate: { $gte: startOfToday },
             isDeleted: { $ne: true },
-
           })
             .sort({ dueDate: 1 })
             .lean(),
@@ -122,40 +115,38 @@ export default async function StudentDashboardPage() {
 
           let studentActions = dbActions;
           if (studentActions.length === 0) {
-            try {
-              const created = await Action.insertMany([
-                {
-                  studentId: user._id,
-                  title: "Explore verified alumni mentors in your focus industries",
-                  dueDate: new Date(Date.now() + 86400000 * 2),
-                  completed: false,
-                  addedBy: "mentor",
-                  pointsAwarded: false,
-                  status: "active",
-                },
-                {
-                  studentId: user._id,
-                  title: "Review career goals and update your student skills profile",
-                  dueDate: new Date(Date.now() + 86400000 * 4),
-                  completed: false,
-                  addedBy: "mentor",
-                  pointsAwarded: false,
-                  status: "active",
-                },
-                {
-                  studentId: user._id,
-                  title: "Draft questions and schedule your first 1-on-1 mentorship consultation",
-                  dueDate: new Date(Date.now() + 86400000 * 6),
-                  completed: false,
-                  addedBy: "student",
-                  pointsAwarded: false,
-                  status: "active",
-                },
-              ]);
-              studentActions = created.map((d) => d.toObject());
-            } catch {
-              // fallback gracefully
-            }
+            const starterTasks = [
+              {
+                studentId: user._id,
+                title: "Explore verified alumni mentors in your focus industries",
+                dueDate: new Date(Date.now() + 86400000 * 2),
+                completed: false,
+                addedBy: "mentor" as const,
+                pointsAwarded: false,
+                status: "active" as const,
+              },
+              {
+                studentId: user._id,
+                title: "Review career goals and update your student skills profile",
+                dueDate: new Date(Date.now() + 86400000 * 4),
+                completed: false,
+                addedBy: "mentor" as const,
+                pointsAwarded: false,
+                status: "active" as const,
+              },
+              {
+                studentId: user._id,
+                title: "Draft questions and schedule your first 1-on-1 mentorship consultation",
+                dueDate: new Date(Date.now() + 86400000 * 6),
+                completed: false,
+                addedBy: "student" as const,
+                pointsAwarded: false,
+                status: "active" as const,
+              },
+            ];
+            // Non-blocking background persistence
+            Action.insertMany(starterTasks).catch(() => {});
+            studentActions = starterTasks as unknown as typeof dbActions;
           }
 
           let chosenSource: "mentorSession" | "session" | null = null;

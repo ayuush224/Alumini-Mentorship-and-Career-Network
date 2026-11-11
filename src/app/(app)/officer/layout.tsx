@@ -63,22 +63,28 @@ export default async function OfficerLayout({
 
     pendingVerificationsCount = pendingCount;
 
-    // Calculate stalled count (>= 14 days inactive)
+    // Calculate stalled count (>= 14 days inactive) with parallel index-covered queries
     const now = Date.now();
-    for (const m of activeMentorships) {
-      const lastSession = await Session.findOne({
-        mentorId: m.mentorId,
-        menteeId: m.studentId,
-      })
-        .sort({ date: -1 })
-        .lean();
+    const sessions = await Promise.all(
+      activeMentorships.map((m) =>
+        Session.findOne({
+          mentorId: m.mentorId,
+          menteeId: m.studentId,
+        })
+          .sort({ date: -1 })
+          .select("date")
+          .lean()
+      )
+    );
 
+    sessions.forEach((lastSession, idx) => {
+      const m = activeMentorships[idx];
       const lastActivity = lastSession?.date ? new Date(lastSession.date).getTime() : new Date(m.createdAt).getTime();
       const daysInactive = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));
       if (daysInactive >= 14) {
         stalledMentorshipsCount++;
       }
-    }
+    });
   } catch (err) {
     if (err && typeof err === "object" && "digest" in err) {
       throw err;

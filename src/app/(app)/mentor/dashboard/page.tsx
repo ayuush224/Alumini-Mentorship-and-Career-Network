@@ -2,10 +2,10 @@ import React from "react";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 import { connectDB } from "@/lib/db";
-import { User, MentorProfile } from "@/lib/models/User";
-import { Session, Mentorship, MentorshipRequest, MentorCapacity } from "@/lib/models/Mentorship";
+import { Session, Mentorship, MentorCapacity } from "@/lib/models/Mentorship";
 import { MentorSession } from "@/lib/models/MentorSession";
 import { MentorTask } from "@/lib/models/Tasks";
+import { getCachedUser, getCachedMentorProfile, getCachedPendingRequestsCount } from "@/lib/dal";
 import {
   MentorDashboardView,
   MentorUpcomingSession,
@@ -43,8 +43,8 @@ export default async function MentorDashboardPage() {
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
-        // Auto-clean tasks whose deadline has passed (the very next day after dueDate)
-        await MentorTask.updateMany(
+        // Background task cleanup (non-blocking for SSR render)
+        MentorTask.updateMany(
           {
             mentorId,
             dueDate: { $lt: startOfToday },
@@ -53,9 +53,9 @@ export default async function MentorDashboardPage() {
           {
             $set: { status: "archived", isDeleted: true },
           }
-        );
+        ).catch(() => {});
 
-        // Parallel Fetching Optimization (Promise.all)
+        // Parallel Fetching Optimization with Request-Scoped Cache (Promise.all)
         const [
           user,
           mp,
@@ -66,25 +66,20 @@ export default async function MentorDashboardPage() {
           nextMentorSessionDoc,
           dbTasks,
         ] = await Promise.all([
-          User.findById(mentorId).lean(),
-          MentorProfile.findOne({ userId: mentorId }).lean(),
+          getCachedUser(mentorId),
+          getCachedMentorProfile(mentorId),
           MentorCapacity.findOne({ mentorId }).lean(),
           Mentorship.countDocuments({
             mentorId,
             status: "active",
             isDeleted: { $ne: true },
-
           }),
-          MentorshipRequest.countDocuments({
-            mentorId,
-            status: "pending",
-          }),
+          getCachedPendingRequestsCount(mentorId),
           Session.findOne({
             mentorId,
             date: { $gte: now },
             status: "scheduled",
             isDeleted: { $ne: true },
-
           })
             .sort({ date: 1 })
             .populate("menteeId", "name studentProfile email")
@@ -102,11 +97,9 @@ export default async function MentorDashboardPage() {
             mentorId,
             status: { $ne: "archived" },
             isDeleted: { $ne: true },
-
             $or: [
               { studentId: { $exists: false } },
               { studentId: null },
-
             ],
           })
             .sort({ dueDate: 1 })
