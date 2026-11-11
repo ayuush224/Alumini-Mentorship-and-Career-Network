@@ -3,7 +3,6 @@ import { getMomentumPairings } from "@/app/actions/officer";
 import { RelationshipMomentum } from "../_components/relationship-momentum";
 import { Activity } from "lucide-react";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Relationship Momentum & Inactivity Watchdog | Alma",

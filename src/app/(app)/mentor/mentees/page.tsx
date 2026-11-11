@@ -15,7 +15,6 @@ import {
 import { MenteeReportData } from "./_components/mentee-report-modal";
 import { StudentCareerProfileViewData } from "@/app/actions/profile";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Your Mentees | Alma",
@@ -66,13 +65,22 @@ export default async function MentorMenteesPage() {
           .populate("studentId", "name email studentProfile avatarUrl")
           .lean();
 
-        // Collect all active mentee IDs to query tasks and sessions in batch
+        // Collect all active mentee IDs to query tasks, sessions, and profiles in batch
         const menteeUserIds = rawMentorships
           .map((m) => {
             const studentObj = m.studentId as unknown as Record<string, unknown> | null;
             return studentObj?._id ? String(studentObj._id) : null;
           })
           .filter(Boolean) as string[];
+
+        // Batch fetch standalone StudentProfiles in 1 query (Eradicating N+1 loop)
+        const menteeProfiles =
+          menteeUserIds.length > 0
+            ? await StudentProfile.find({ userId: { $in: menteeUserIds } }).lean()
+            : [];
+        const menteeProfileMap = new Map<string, Record<string, unknown>>(
+          menteeProfiles.map((p) => [String(p.userId), p as unknown as Record<string, unknown>])
+        );
 
         // 1. Fetch strictly tasks assigned by THIS mentor to these mentees
         const rawTasks =
@@ -155,8 +163,8 @@ export default async function MentorMenteesPage() {
             let socialLinks = (embedded.socialLinks as StudentCareerProfileViewData["socialLinks"]) || [];
             let otherLinks = (embedded.otherLinks as StudentCareerProfileViewData["otherLinks"]) || [];
 
-            // Query standalone StudentProfile if available
-            const sp = (await StudentProfile.findOne({ userId: studentUserId }).lean()) as Record<string, unknown> | null;
+            // Lookup standalone StudentProfile from batched map
+            const sp = menteeProfileMap.get(studentUserId) || null;
             if (sp) {
               avatarUrl = (sp.avatarUrl as string) || avatarUrl;
               bannerUrl = (sp.bannerUrl as string) || bannerUrl;
@@ -293,6 +301,9 @@ export default async function MentorMenteesPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading mentor mentees page:", err);
   }
 

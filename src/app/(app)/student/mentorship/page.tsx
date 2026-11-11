@@ -23,7 +23,6 @@ import {
   ActiveMentorshipData,
 } from "./_components/student-mentorship-hub-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "My Mentorship | Alma",
@@ -71,6 +70,21 @@ export default async function StudentMentorshipPage() {
           .lean();
 
         if (mentorshipDocs && mentorshipDocs.length > 0) {
+          const activeMentorIds = mentorshipDocs
+            .map((doc) => {
+              const mentorUser = doc.mentorId as unknown as Record<string, unknown> | null;
+              return mentorUser?._id ? String(mentorUser._id) : null;
+            })
+            .filter(Boolean) as string[];
+
+          const standaloneProfiles =
+            activeMentorIds.length > 0
+              ? await MentorProfile.find({ userId: { $in: activeMentorIds } }).lean()
+              : [];
+          const profileMap = new Map<string, Record<string, unknown>>(
+            standaloneProfiles.map((p) => [String(p.userId), p as unknown as Record<string, unknown>])
+          );
+
           activeMentorships = await Promise.all(
             mentorshipDocs.map(async (doc) => {
               const mentorUser = doc.mentorId as unknown as Record<string, unknown> | null;
@@ -82,12 +96,8 @@ export default async function StudentMentorshipPage() {
               let mp = (mentorUser?.mentorProfile || {}) as Record<string, unknown>;
 
               if (mentorUserId) {
-                try {
-                  const standaloneMp = await MentorProfile.findOne({ userId: mentorUserId }).lean();
-                  if (standaloneMp) mp = standaloneMp as unknown as Record<string, unknown>;
-                } catch {
-                  // Fallback to embedded mentorProfile
-                }
+                const standaloneMp = profileMap.get(mentorUserId);
+                if (standaloneMp) mp = standaloneMp;
               }
 
               const startDateObj = doc.startDate ? new Date(doc.startDate) : new Date();
@@ -349,36 +359,52 @@ export default async function StudentMentorshipPage() {
             .lean();
 
           if (rawPending && rawPending.length > 0) {
-            pendingRequests = await Promise.all(
-              rawPending.map(async (doc) => {
+            const pendingMentorIds = rawPending
+              .map((doc) => {
                 const mentorUser = doc.mentorId as unknown as Record<string, unknown> | null;
-                const mentorId = mentorUser?._id ? String(mentorUser._id) : "";
-                let mp = (mentorUser?.mentorProfile || {}) as Record<string, unknown>;
-
-                if (mentorId) {
-                  const standaloneMp = await MentorProfile.findOne({ userId: mentorId }).lean();
-                  if (standaloneMp) mp = standaloneMp as unknown as Record<string, unknown>;
-                }
-
-                return {
-                  id: String(doc._id),
-                  mentorName: (mentorUser?.name as string) || "Alumni Mentor",
-                  mentorCompany: (mp?.company as string) || "Partner Organization",
-                  mentorRole: (mp?.jobTitle as string) || "Alumni Mentor",
-                  requestedAt: new Date(doc.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  }),
-                  message: doc.message || undefined,
-                };
+                return mentorUser?._id ? String(mentorUser._id) : null;
               })
+              .filter(Boolean) as string[];
+
+            const pendingProfiles =
+              pendingMentorIds.length > 0
+                ? await MentorProfile.find({ userId: { $in: pendingMentorIds } }).lean()
+                : [];
+            const pendingProfileMap = new Map<string, Record<string, unknown>>(
+              pendingProfiles.map((p) => [String(p.userId), p as unknown as Record<string, unknown>])
             );
+
+            pendingRequests = rawPending.map((doc) => {
+              const mentorUser = doc.mentorId as unknown as Record<string, unknown> | null;
+              const mentorId = mentorUser?._id ? String(mentorUser._id) : "";
+              let mp = (mentorUser?.mentorProfile || {}) as Record<string, unknown>;
+
+              if (mentorId) {
+                const standaloneMp = pendingProfileMap.get(mentorId);
+                if (standaloneMp) mp = standaloneMp;
+              }
+
+              return {
+                id: String(doc._id),
+                mentorName: (mentorUser?.name as string) || "Alumni Mentor",
+                mentorCompany: (mp?.company as string) || "Partner Organization",
+                mentorRole: (mp?.jobTitle as string) || "Alumni Mentor",
+                requestedAt: new Date(doc.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                message: doc.message || undefined,
+              };
+            });
           }
         }
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error reading mentorship page:", err);
   }
 
@@ -423,6 +449,7 @@ export default async function StudentMentorshipPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
           <Link
             href="/student/mentors"
+            prefetch={true}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs sm:text-sm font-semibold shadow-xs flex items-center justify-center gap-2 transition-all hover:shadow-md"
           >
             <Compass className="w-4 h-4" />

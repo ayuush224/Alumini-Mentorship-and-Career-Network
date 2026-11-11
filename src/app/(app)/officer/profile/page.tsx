@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getOfficerProfileData } from "@/app/actions/officer";
 import { OfficerProfileView } from "./_components/officer-profile-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Officer Profile & Institutional Settings | Alma",

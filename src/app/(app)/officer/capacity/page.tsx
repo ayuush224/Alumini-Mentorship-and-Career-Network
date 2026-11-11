@@ -3,7 +3,6 @@ import { getMentorCapacitiesData } from "@/app/actions/officer";
 import { CapacityWatchdog } from "../_components/capacity-watchdog";
 import { Users } from "lucide-react";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentor Capacity & Workload Balance | Alma",

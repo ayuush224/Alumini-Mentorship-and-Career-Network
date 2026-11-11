@@ -22,7 +22,6 @@ import { MarketingNavbar } from "@/components/marketing/navbar";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { CurvedBackground } from "@/components/marketing/curved-background";
 
-export const dynamic = "force-dynamic";
 
 export default async function HomePage(props: {
   searchParams?: Promise<{ preview?: string }>;

@@ -119,7 +119,33 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
     }
   };
 
-  if (!current) return null;
+  if (!current) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-5">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-[#E8F0FE] text-[#2563EB] flex items-center justify-center shadow-2xs border border-[#BFDBFE]">
+          <Sparkles className="w-7 h-7" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-stone-900 font-heading">
+            No Active Mentorship Pairing
+          </h2>
+          <p className="text-sm text-stone-500 max-w-md mx-auto leading-relaxed">
+            You do not currently have an active alumni mentorship workspace. Explore our verified alumni directory to discover a mentor aligned with your career goals.
+          </p>
+        </div>
+        <div className="pt-2">
+          <Link
+            href="/student/mentors"
+            prefetch={true}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-sm font-semibold shadow-xs transition-all hover:shadow-md"
+          >
+            <span>Discover Alumni Mentors</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const initials = current.mentorName
     .split(" ")

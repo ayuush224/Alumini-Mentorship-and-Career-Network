@@ -3,7 +3,6 @@ import { getVerificationRequests } from "@/app/actions/officer";
 import { VerificationQueue } from "../_components/verification-queue";
 import { ShieldCheck } from "lucide-react";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Alumni Credential Verifications | Alma",

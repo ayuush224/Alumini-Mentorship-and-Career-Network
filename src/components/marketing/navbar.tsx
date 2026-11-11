@@ -40,6 +40,7 @@ export function MarketingNavbar({ userDashboardUrl }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={true}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                   isActive
                     ? "bg-[#DBEAFE] text-[#2563EB] font-semibold"
@@ -57,6 +58,7 @@ export function MarketingNavbar({ userDashboardUrl }: NavbarProps) {
           {userDashboardUrl ? (
             <Link
               href={userDashboardUrl}
+              prefetch={true}
               className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-xs transition-all hover:scale-[1.02]"
             >
               <span>Dashboard</span>
@@ -65,6 +67,7 @@ export function MarketingNavbar({ userDashboardUrl }: NavbarProps) {
           ) : (
             <Link
               href="/login"
+              prefetch={true}
               className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold border border-[#BFDBFE] bg-white/90 hover:bg-[#EFF6FF] text-[#2563EB] shadow-2xs transition-all hover:scale-[1.02]"
             >
               <span>Login / Sign up</span>

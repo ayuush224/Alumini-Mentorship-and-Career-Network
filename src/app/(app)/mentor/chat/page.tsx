@@ -11,7 +11,6 @@ import {
   MenteeConversationItem,
 } from "./_components/mentor-chat-workspace";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentor Communications | Alma",
@@ -53,6 +52,20 @@ export default async function MentorChatPage(props: MentorChatPageProps) {
           .populate("studentId")
           .lean();
 
+        // Batch fetch all student profiles for chat roster in 1 query
+        const studentUserIds = activeMentorships
+          .map((m) => {
+            const studentUser = (m.studentId as unknown as Record<string, unknown>) || {};
+            return studentUser._id ? String(studentUser._id) : null;
+          })
+          .filter(Boolean) as string[];
+
+        const studentProfiles =
+          studentUserIds.length > 0
+            ? await StudentProfile.find({ userId: { $in: studentUserIds } }).lean()
+            : [];
+        const profileMap = new Map(studentProfiles.map((p) => [String(p.userId), p]));
+
         mentees = await Promise.all(
           activeMentorships.map(async (m) => {
             const studentUser = (m.studentId as unknown as Record<string, unknown>) || {};
@@ -62,7 +75,7 @@ export default async function MentorChatPage(props: MentorChatPageProps) {
             let major = "Undergraduate Student";
 
             if (studentUserId) {
-              const sp = await StudentProfile.findOne({ userId: studentUserId }).lean();
+              const sp = profileMap.get(studentUserId);
               if (sp) {
                 avatarUrl = sp.avatarUrl;
                 major = sp.major || major;

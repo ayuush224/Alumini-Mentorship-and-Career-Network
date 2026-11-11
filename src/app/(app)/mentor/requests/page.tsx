@@ -8,7 +8,6 @@ import { MAX_MENTEES_PER_MENTOR } from "@/lib/config";
 import { MentorRequestsList, PendingRequestItem } from "./_components/mentor-requests-list";
 import { StudentCareerProfileViewData } from "@/app/actions/profile";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentorship Requests Inbox | Alma",
@@ -74,7 +73,22 @@ export default async function MentorRequestsPage() {
           })
           .lean();
 
-        // 3. Populate student profile details
+        // 3. Batch query student profile details in 1 roundtrip (Eradicating N+1 loop)
+        const requestStudentIds = rawRequests
+          .map((req) => {
+            const studentObj = req.studentId as unknown as Record<string, unknown> | null;
+            return studentObj?._id ? String(studentObj._id) : null;
+          })
+          .filter(Boolean) as string[];
+
+        const requestProfiles =
+          requestStudentIds.length > 0
+            ? await StudentProfile.find({ userId: { $in: requestStudentIds } }).lean()
+            : [];
+        const requestProfileMap = new Map<string, Record<string, unknown>>(
+          requestProfiles.map((p) => [String(p.userId), p as unknown as Record<string, unknown>])
+        );
+
         for (const req of rawRequests) {
           const studentObj = req.studentId as unknown as Record<string, unknown> | null;
           const studentUserId = studentObj?._id ? String(studentObj._id) : "";
@@ -102,7 +116,7 @@ export default async function MentorRequestsPage() {
           let otherLinks: StudentCareerProfileViewData["otherLinks"] = [];
 
           if (studentUserId) {
-            const sp = (await StudentProfile.findOne({ userId: studentUserId }).lean()) as Record<string, unknown> | null;
+            const sp = requestProfileMap.get(studentUserId) || null;
             const embedded = (studentObj?.studentProfile || {}) as Record<string, unknown>;
             avatarUrl = (sp?.avatarUrl as string) || (embedded.avatarUrl as string | undefined);
             bannerUrl = (sp?.bannerUrl as string) || (embedded.bannerUrl as string | undefined);
@@ -158,6 +172,9 @@ export default async function MentorRequestsPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading mentor requests:", err);
   }
 

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyAccess } from "@/lib/app-tokens";
 import { connectDB } from "@/lib/db";
-import { User, StudentProfile } from "@/lib/models/User";
+import { getCachedUser, getCachedStudentProfile } from "@/lib/dal";
 import { Session, Mentorship } from "@/lib/models/Mentorship";
 import {
   StudentProfileEditor,
@@ -11,7 +11,6 @@ import {
   StudentProfileUpcomingSession,
 } from "./_components/student-profile-editor";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "My Student Profile | Alma",
@@ -30,9 +29,12 @@ export default async function StudentProfilePage() {
     if (token) {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
-        const user = await User.findById(payload.sub).lean();
+        const [user, standaloneProfile] = await Promise.all([
+          getCachedUser(payload.sub),
+          getCachedStudentProfile(payload.sub),
+        ]);
         if (user) {
-          const standalone = (await StudentProfile.findOne({ userId: user._id }).lean()) as Record<string, unknown> | null;
+          const standalone = standaloneProfile as Record<string, unknown> | null;
           const embedded = ((user.studentProfile || {}) as Record<string, unknown>);
 
           profileData = {
@@ -99,6 +101,9 @@ export default async function StudentProfilePage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading student profile:", err);
   }
 

@@ -8,7 +8,6 @@ import { VerificationRequest } from "@/lib/models/Verification";
 import { Mentorship, Session } from "@/lib/models/Mentorship";
 import { OfficerHeader } from "./_components/officer-header";
 
-export const dynamic = "force-dynamic";
 
 export default async function OfficerLayout({
   children,

@@ -309,6 +309,9 @@ export async function getOfficerDashboardData() {
       })),
     };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to load officer dashboard data:", error);
     return {
       success: false,
@@ -374,6 +377,9 @@ export async function getVerificationRequests(
 
     return { success: true, requests: items };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to fetch verification requests:", error);
     return { success: false, error: error instanceof Error ? error.message : "Error fetching verifications" };
   }
@@ -534,6 +540,9 @@ export async function getMomentumPairings() {
 
     return { success: true, pairings };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to fetch momentum pairings:", error);
     return { success: false, error: error instanceof Error ? error.message : "Error loading momentum data." };
   }
@@ -691,6 +700,9 @@ export async function getMentorCapacitiesData() {
 
     return { success: true, mentors };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to fetch mentor capacities:", error);
     return { success: false, error: error instanceof Error ? error.message : "Error loading capacity data." };
   }
@@ -791,6 +803,9 @@ export async function getAuditReportsData() {
       })),
     };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to load audit reports:", error);
     return { success: false, error: error instanceof Error ? error.message : "Error loading reports." };
   }
@@ -936,6 +951,9 @@ export async function getOfficerProfileData() {
       })),
     };
   } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
     console.error("Failed to load officer profile data:", error);
     return { success: false, error: error instanceof Error ? error.message : "Error loading profile." };
   }

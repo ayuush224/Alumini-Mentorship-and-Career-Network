@@ -231,6 +231,7 @@ export const VerificationRequestSchema = new Schema<IVerificationRequest>(
 );
 
 VerificationRequestSchema.index({ institutionId: 1, status: 1 });
+VerificationRequestSchema.index({ institutionId: 1, status: 1, submittedAt: -1 });
 VerificationRequestSchema.index({ userId: 1, createdAt: -1 });
 
 export const VerificationRequest: Model<IVerificationRequest> =

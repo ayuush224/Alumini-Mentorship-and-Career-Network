@@ -142,6 +142,7 @@ ActionSchema.pre("countDocuments", excludeDeletedActions);
 // Compound indexes for low-latency aggregations & queries (Step 1)
 ActionSchema.index({ studentId: 1, completedAt: -1 });
 ActionSchema.index({ mentorId: 1, dueDate: 1 });
+ActionSchema.index({ studentId: 1, createdAt: -1, isDeleted: 1 });
 
 // Auto-set or clear completedAt based on completed status
 ActionSchema.pre("save", function () {

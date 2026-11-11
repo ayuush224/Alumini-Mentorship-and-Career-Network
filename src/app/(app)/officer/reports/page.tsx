@@ -3,7 +3,6 @@ import { getAuditReportsData } from "@/app/actions/officer";
 import { AuditReports } from "../_components/audit-reports";
 import { FileText } from "lucide-react";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Accreditation Reports & Audit Trail | Alma",

@@ -10,7 +10,6 @@ import {
 } from "@/lib/utils/analytics";
 import { StudentAnalyticsView } from "./_components/student-analytics-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Analytics & Performance | Alma",
@@ -41,6 +40,9 @@ export default async function StudentAnalyticsPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error reading student session for analytics:", err);
   }
 
