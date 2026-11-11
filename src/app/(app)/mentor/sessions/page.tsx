@@ -14,7 +14,6 @@ import {
   MentorMenteeOption,
 } from "./_components/mentor-sessions-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentoring Sessions Coordination | Alma",
@@ -45,6 +44,21 @@ export default async function MentorSessionsPage() {
           .populate("studentId", "name studentProfile email avatarUrl")
           .lean();
 
+        // Batch query all mentee profiles in a single query (Eradicating N+1 loop)
+        const studentUserIds = rawMentorships
+          .map((m) => {
+            const studentObj = m.studentId as unknown as Record<string, unknown> | null;
+            return studentObj && studentObj._id ? String(studentObj._id) : null;
+          })
+          .filter(Boolean) as string[];
+
+        const studentProfiles = studentUserIds.length > 0
+          ? await StudentProfile.find({ userId: { $in: studentUserIds } }).lean()
+          : [];
+        const profileMap = new Map<string, Record<string, unknown>>(
+          studentProfiles.map((p) => [String(p.userId), p as unknown as Record<string, unknown>])
+        );
+
         for (const m of rawMentorships) {
           const studentObj = m.studentId as unknown as Record<string, unknown> | null;
           if (studentObj && studentObj._id) {
@@ -54,15 +68,10 @@ export default async function MentorSessionsPage() {
             let avatarUrl = (studentObj.avatarUrl as string) || (embeddedSp.avatarUrl as string | undefined);
             let major = (embeddedSp.major as string) || "Computer Science";
 
-            if (studentUserId) {
-              const sp = (await StudentProfile.findOne({ userId: studentUserId }).lean()) as Record<
-                string,
-                unknown
-              > | null;
-              if (sp) {
-                avatarUrl = (sp.avatarUrl as string) || avatarUrl;
-                major = (sp.major as string) || major;
-              }
+            const sp = profileMap.get(studentUserId);
+            if (sp) {
+              avatarUrl = (sp.avatarUrl as string) || avatarUrl;
+              major = (sp.major as string) || major;
             }
 
             activeMentees.push({
@@ -219,6 +228,9 @@ export default async function MentorSessionsPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading mentor sessions page:", err);
   }
 

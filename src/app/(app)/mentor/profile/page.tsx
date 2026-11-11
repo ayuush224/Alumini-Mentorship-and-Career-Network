@@ -8,7 +8,6 @@ import { MentorCapacity } from "@/lib/models";
 import { MAX_MENTEES_PER_MENTOR } from "@/lib/config";
 import { MentorProfileEditor, MentorProfileData } from "./_components/mentor-profile-editor";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentor Profile Manager | Alma",
@@ -57,6 +56,9 @@ export default async function MentorProfilePage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading mentor profile:", err);
   }
 

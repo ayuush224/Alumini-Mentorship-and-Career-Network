@@ -13,7 +13,6 @@ import { calculateMatchScore } from "@/lib/matching";
 import { type Mentor } from "@/app/_components/mentor-card";
 import { StudentMentorsDirectory } from "./_components/student-mentors-directory";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentor Discovery & Matching | Alma",

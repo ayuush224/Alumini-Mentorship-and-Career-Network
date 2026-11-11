@@ -354,6 +354,10 @@ export const AuditEntrySchema = new Schema<IAuditEntry>(
   }
 );
 
+// Compound indexes for rapid institutional audit reports and officer activity history
+AuditEntrySchema.index({ institutionId: 1, timestamp: -1 });
+AuditEntrySchema.index({ actorId: 1, timestamp: -1 });
+
 export const AuditEntry: Model<IAuditEntry> =
   mongoose.models.AuditEntry ||
   mongoose.model<IAuditEntry>("AuditEntry", AuditEntrySchema);

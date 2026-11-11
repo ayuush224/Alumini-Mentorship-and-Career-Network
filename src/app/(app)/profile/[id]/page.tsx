@@ -10,8 +10,6 @@ import { Goal } from "@/lib/models/Tasks";
 import { MAX_MENTEES_PER_MENTOR } from "@/lib/config";
 import { PublicMentorView, PublicMentorData } from "./_components/public-mentor-view";
 
-export const dynamic = "force-dynamic";
-
 interface PublicProfilePageProps {
   params: Promise<{ id: string }>;
 }
@@ -55,11 +53,15 @@ export default async function PublicMentorProfilePage({ params }: PublicProfileP
 
   if (mongoose.Types.ObjectId.isValid(id)) {
     try {
-      const mentorUser = await User.findById(id).select("-password -email").lean();
+      const [mentorUser, standaloneProfile, capacity] = await Promise.all([
+        User.findById(id).select("-password -email").lean(),
+        MentorProfile.findOne({ userId: id }).lean(),
+        MentorCapacity.findOne({ mentorId: id }).lean(),
+      ]);
+
       if (mentorUser) {
-        const standalone = (await MentorProfile.findOne({ userId: mentorUser._id }).lean()) as Record<string, unknown> | null;
+        const standalone = standaloneProfile as Record<string, unknown> | null;
         const embedded = ((mentorUser.mentorProfile || {}) as Record<string, unknown>);
-        const capacity = await MentorCapacity.findOne({ mentorId: mentorUser._id }).lean();
 
         mentorData = {
           id: String(mentorUser._id),

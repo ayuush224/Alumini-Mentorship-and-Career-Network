@@ -89,6 +89,7 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
                 <Link
                   key={tab.href}
                   href={tab.href}
+                  prefetch={true}
                   className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap shrink-0 relative ${
                     isActive
                       ? "bg-[#E8F0FE] text-[#2563EB] font-semibold shadow-2xs"

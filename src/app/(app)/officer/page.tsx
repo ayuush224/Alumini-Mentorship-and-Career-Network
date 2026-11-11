@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getOfficerDashboardData } from "@/app/actions/officer";
 import { OfficerDashboardView } from "./_components/officer-dashboard-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Alumni Relations Officer Portal | Alma",

@@ -14,7 +14,6 @@ import {
   DashboardTaskItem,
 } from "./_components/student-dashboard-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Student Dashboard | Alma",
@@ -240,6 +239,9 @@ export default async function StudentDashboardPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading student dashboard:", err);
   }
 

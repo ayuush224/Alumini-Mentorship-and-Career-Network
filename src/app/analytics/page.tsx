@@ -2,7 +2,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 import { connectDB } from "@/lib/db";
-import { User, StudentProfile } from "@/lib/models/User";
+import { getCachedUser, getCachedStudentProfile } from "@/lib/dal";
 import {
   getCachedStudentAnalytics,
   fetchStudent12MonthAnalytics,
@@ -11,7 +11,6 @@ import {
 import { StudentAnalyticsView } from "@/app/(app)/student/analytics/_components/student-analytics-view";
 import { StudentHeader } from "@/app/(app)/student/_components/student-header";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Analytics & Performance | Alma",
@@ -33,15 +32,20 @@ export default async function AnalyticsPage() {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
         studentId = payload.sub;
-        const user = await User.findById(studentId).lean();
+        const [user, profile] = await Promise.all([
+          getCachedUser(studentId),
+          getCachedStudentProfile(studentId),
+        ]);
         if (user) {
           studentName = user.name ? user.name.split(" ")[0] : studentName;
-          const profile = await StudentProfile.findOne({ userId: user._id }).lean();
           avatarUrl = profile?.avatarUrl || user.studentProfile?.avatarUrl;
         }
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error reading student session in /analytics:", err);
   }
 

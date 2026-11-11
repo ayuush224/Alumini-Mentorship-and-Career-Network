@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 
-export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   try {

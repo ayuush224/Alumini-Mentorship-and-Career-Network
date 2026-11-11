@@ -12,7 +12,6 @@ import {
   MentorAdminTask,
 } from "./_components/mentor-dashboard-view";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mentor Dashboard | Alma",
@@ -213,6 +212,9 @@ export default async function MentorDashboardPage() {
       }
     }
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("Error loading mentor dashboard:", err);
   }
 

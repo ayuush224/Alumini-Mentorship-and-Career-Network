@@ -8,8 +8,6 @@ import { Message } from "@/lib/models/Communication";
 import { User, MentorProfile } from "@/lib/models/User";
 import { StudentChatView } from "./_components/student-chat-view";
 
-export const dynamic = "force-dynamic";
-
 export const metadata = {
   title: "Chat with Mentor | Alma",
   description: "Real-time communication with your verified alumni mentor.",
