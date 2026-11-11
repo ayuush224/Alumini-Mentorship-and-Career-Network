@@ -203,6 +203,10 @@ export const SessionSchema = new Schema<ISession>(
   }
 );
 
+// Compound index for querying latest sessions between mentor and mentee (Officer & Student inactivity checks)
+SessionSchema.index({ mentorId: 1, menteeId: 1, date: -1 });
+SessionSchema.index({ mentorId: 1, isAllMentees: 1, date: -1 });
+
 // Exclude soft-deleted sessions automatically
 function excludeDeletedSessions(this: mongoose.Query<unknown, unknown>) {
   const filter = this.getFilter();

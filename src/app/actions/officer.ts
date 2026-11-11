@@ -195,7 +195,7 @@ export async function getOfficerDashboardData() {
       })
     );
 
-    // 6. Compute Diagrammatic Distributions for Visual Reports
+    // 6. Compute Diagrammatic Distributions for Visual Reports (Parallelized Batch)
     const allActiveMentorships = await Mentorship.find({ status: "active" })
       .select("_id mentorId studentId createdAt")
       .lean();
@@ -204,26 +204,44 @@ export async function getOfficerDashboardData() {
     let totalAtRisk = 0;
     let totalStalled = 0;
 
-    for (const m of allActiveMentorships) {
-      const lastSession = await Session.findOne({
-        mentorId: m.mentorId,
-        menteeId: m.studentId,
-      })
-        .sort({ date: -1 })
-        .select("date")
-        .lean();
+    const allSessions = await Promise.all(
+      allActiveMentorships.map((m) =>
+        Session.findOne({
+          mentorId: m.mentorId,
+          menteeId: m.studentId,
+        })
+          .sort({ date: -1 })
+          .select("date")
+          .lean()
+      )
+    );
 
+    allSessions.forEach((lastSession, idx) => {
+      const m = allActiveMentorships[idx];
       const lastActivityDate = lastSession?.date ? new Date(lastSession.date).getTime() : new Date(m.createdAt).getTime();
       const daysInactive = Math.max(0, Math.floor((now - lastActivityDate) / (1000 * 60 * 60 * 24)));
       if (daysInactive >= 14) totalStalled++;
       else if (daysInactive >= 8) totalAtRisk++;
       else totalHealthy++;
-    }
+    });
 
     let capAvailable = 0;
     let capNearCapacity = 0;
     let capAtCapacity = 0;
     let capPaused = 0;
+
+    const saturatedCaps = capacities.filter((cap) => {
+      const active = cap.activeMentees || 0;
+      const max = cap.maxMentees || 1;
+      return active >= max;
+    });
+
+    const saturatedMentorIds = saturatedCaps.map((c) => c.mentorId);
+    const saturatedUserDocs = await User.find({ _id: { $in: saturatedMentorIds } })
+      .select("name")
+      .lean();
+    const saturatedUserMap = new Map(saturatedUserDocs.map((u) => [String(u._id), u.name]));
+
     const saturatedMentors: Array<{ id: string; mentorId: string; name: string; activeMentees: number; maxMentees: number }> = [];
 
     for (const cap of capacities) {
@@ -243,11 +261,11 @@ export async function getOfficerDashboardData() {
       }
 
       if (isAtLimit) {
-        const userDoc = await User.findById(cap.mentorId).select("name").lean();
+        const mentorName = saturatedUserMap.get(String(cap.mentorId)) || "Alumni Mentor";
         saturatedMentors.push({
           id: String(cap._id),
           mentorId: String(cap.mentorId),
-          name: userDoc?.name || "Alumni Mentor",
+          name: mentorName,
           activeMentees: active,
           maxMentees: max,
         });
@@ -544,12 +562,13 @@ export async function getMomentumPairings() {
         const student = p.studentId as unknown as { name?: string; _id: mongoose.Types.ObjectId } | null;
         const mentor = p.mentorId as unknown as { name?: string; _id: mongoose.Types.ObjectId } | null;
 
-        // Check last session
+        // Check last session (covered by compound index { mentorId, menteeId, date: -1 })
         const lastSession = await Session.findOne({
           mentorId: p.mentorId,
           menteeId: p.studentId,
         })
           .sort({ date: -1 })
+          .select("date")
           .lean();
 
         // Check engagement snapshot

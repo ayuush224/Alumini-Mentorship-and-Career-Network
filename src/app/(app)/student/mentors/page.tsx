@@ -5,7 +5,6 @@ import {
   User as UserModel,
   StudentProfile as StudentProfileModel,
   AlumniProfile as AlumniProfileModel,
-  MentorProfile as MentorProfileModel,
   MentorCapacity as MentorCapacityModel,
   MentorshipRequest as MentorshipRequestModel,
 } from "@/lib/models";
@@ -110,7 +109,11 @@ export default async function StudentMentorsPage() {
 
   let studentUserId: string | null = null;
   let studentUser: StudentUserDoc | null = null;
-
+  let studentProfile: {
+    targetIndustries?: string[];
+    skillsToDevelop?: string[];
+    skills?: string[];
+  } | null = null;
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -118,19 +121,34 @@ export default async function StudentMentorsPage() {
       const payload = await verifyAccess(token);
       if (payload?.sub && typeof payload.sub === "string") {
         studentUserId = payload.sub;
-        studentUser = await UserModel.findById(studentUserId)
-          .select("name studentProfile")
-          .lean() as StudentUserDoc | null;
       }
     }
   } catch {
     // Fallback gracefully
   }
 
-  // 1. Fetch student career profile from both standalone and embedded collections
-  const studentProfile = studentUserId
-    ? await StudentProfileModel.findOne({ userId: studentUserId }).lean()
-    : null;
+  // 1. Parallel Batch Fetching: Fetch student identity, profile, pending requests, and available capacities concurrently
+  const [fetchedUser, fetchedProfile, pendingRequests, availableCapacities] = await Promise.all([
+    studentUserId
+      ? (UserModel.findById(studentUserId).select("name studentProfile").lean() as Promise<StudentUserDoc | null>)
+      : Promise.resolve(null),
+    studentUserId
+      ? (StudentProfileModel.findOne({ userId: studentUserId }).lean() as Promise<{
+          targetIndustries?: string[];
+          skillsToDevelop?: string[];
+          skills?: string[];
+        } | null>)
+      : Promise.resolve(null),
+    studentUserId
+      ? MentorshipRequestModel.find({ studentId: studentUserId, status: "pending" }).select("mentorId").lean()
+      : Promise.resolve([]),
+    MentorCapacityModel.find({
+      $expr: { $lt: ["$activeMentees", "$maxMentees"] },
+    }).lean(),
+  ]);
+
+  studentUser = fetchedUser;
+  studentProfile = fetchedProfile;
 
   const embeddedProfile = (studentUser?.studentProfile || {}) as Record<string, unknown>;
 
@@ -159,67 +177,34 @@ export default async function StudentMentorsPage() {
     ...((embeddedProfile.skills as string[]) || []),
   ];
 
-  // 2. Fetch active pending mentorship requests sent by this student
-  const pendingRequests = studentUserId
-    ? await MentorshipRequestModel.find({
-        studentId: studentUserId,
-        status: "pending",
-      }).lean()
-    : [];
-
   const pendingMentorIds = new Set(
     pendingRequests.map((r) => String(r.mentorId))
   );
-
-  // 3. Invariant: Query MentorCapacity where activeMentees < maxMentees
-  const availableCapacities = await MentorCapacityModel.find({
-    $expr: { $lt: ["$activeMentees", "$maxMentees"] },
-  }).lean();
 
   const availableMentorIds = availableCapacities.map((c) => c.mentorId);
   const capacityMap = new Map(
     availableCapacities.map((c) => [String(c.mentorId), c])
   );
 
-  // 4. Fetch AlumniProfile & MentorProfile records (never leak alumni contact email or phone)
-  const [alumniFromAlumni, alumniFromMentor] = await Promise.all([
-    AlumniProfileModel.find({
-      userId: {
-        $in: availableMentorIds,
-        ...(studentUserId ? { $ne: studentUserId } : {}),
-      },
-    })
-      .populate({ path: "userId", select: "name _id" })
-      .lean(),
-    MentorProfileModel.find({
-      userId: {
-        $in: availableMentorIds,
-        ...(studentUserId ? { $ne: studentUserId } : {}),
-      },
-    })
-      .populate({ path: "userId", select: "name _id" })
-      .lean(),
-  ]);
-
-  // Deduplicate profiles by userId
-  const seenUserIds = new Set<string>();
-  const combinedProfiles: Array<{
-    _id: unknown;
-    userId: unknown;
-    company?: string;
-    jobTitle?: string;
-    industry?: string;
-    expertiseTags?: string[];
-  }> = [];
-
-  for (const prof of [...alumniFromMentor, ...alumniFromAlumni]) {
-    const uDoc = typeof prof.userId === "object" ? (prof.userId as { _id?: unknown }) : null;
-    const uidStr = String(uDoc?._id || prof.userId);
-    if (!seenUserIds.has(uidStr)) {
-      seenUserIds.add(uidStr);
-      combinedProfiles.push(prof as (typeof combinedProfiles)[0]);
-    }
-  }
+  // 2. Fetch AlumniProfile records in a single efficient query (both AlumniProfile and MentorProfile point to alumniprofiles collection)
+  const combinedProfiles = (await AlumniProfileModel.find({
+    userId: {
+      $in: availableMentorIds,
+      ...(studentUserId ? { $ne: studentUserId } : {}),
+    },
+  })
+    .populate({ path: "userId", select: "name _id" })
+    .lean()) as unknown as Array<{
+      _id: unknown;
+      userId: unknown;
+      company?: string;
+      jobTitle?: string;
+      industry?: string;
+      expertiseTags?: string[];
+      skills?: Array<{ name: string; endorsements?: number }>;
+      availability?: string;
+      headline?: string;
+    }>;
 
   // 5. Calculate verified match scores and rationales
   let mentors: Mentor[] = combinedProfiles.map((alumni) => {
