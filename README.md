@@ -944,10 +944,6 @@ flowchart TD
 │   ├── PRD.md                             # Product Requirements Document
 │   ├── SRS.md                             # Software Requirements Specification
 │   └── System_Architecture.md             # High-Level Design (HLD) & Concurrency Architecture
-├── scripts/                               # Maintenance and database seeders
-│   ├── seed-demo-officer-data.ts          # Populates officer governance metrics and verification queue
-│   ├── seed-mentors.ts                    # Populates verified alumni mentors and capacity records
-│   └── seed-officer.ts                    # Populates institutional administrator and officer users
 ├── src/
 │   ├── app/                               # Next.js 16 App Router
 │   │   ├── (app)/                         # Authenticated application route group
@@ -1119,19 +1115,7 @@ flowchart TD
    Start-Service MongoDB
    ```
 
-5. **Seed the database:**
-   ```bash
-   # Seed verified alumni mentors and capacities
-   pnpm seed
-
-   # Seed institutional administrator & officer accounts
-   pnpm seed:officer
-
-   # Seed demo governance data and verification queue
-   pnpm seed:demo
-   ```
-
-6. **Start the Next.js development server:**
+5. **Start the Next.js development server:**
    ```bash
    pnpm dev
    ```
@@ -1218,9 +1202,6 @@ flowchart TD
 | `pnpm build` | Production Build | Compiles TypeScript and creates optimized Next.js production build in `.next` |
 | `pnpm start` | Production Start | Launches compiled Next.js production server on configured port |
 | `pnpm lint` | Code Quality | Runs ESLint across all TypeScript and React files |
-| `pnpm seed` | Database Seeding | Populates verified alumni mentors and capacity documents (`scripts/seed-mentors.ts`) |
-| `pnpm seed:officer`| Database Seeding | Populates institutional administrator and officer accounts (`scripts/seed-officer.ts`) |
-| `pnpm seed:demo` | Database Seeding | Populates officer governance metrics and verification queue (`scripts/seed-demo-officer-data.ts`) |
 
 ### Production Run Sequence
 To build and run Alma in a production environment, execute commands in this exact order:

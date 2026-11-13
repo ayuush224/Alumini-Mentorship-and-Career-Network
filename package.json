@@ -6,10 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "seed": "tsx scripts/seed-mentors.ts",
-    "seed:officer": "tsx scripts/seed-officer.ts",
-    "seed:demo": "tsx scripts/seed-demo-officer-data.ts"
+    "lint": "eslint"
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.7.14",

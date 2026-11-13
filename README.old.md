@@ -165,9 +165,6 @@ When developing or extending Alma, two foundational system invariants are strict
 │   ├── API_Specification.yaml             # Complete OpenAPI 3.1 REST API Specification
 │   └── P11_Project_Source.md              # Upstream Project Source Extract
 │
-├── scripts/                               # Maintenance & Database Seeding Scripts
-│   └── seed-mentors.ts                    # Idempotent database seeder with verified alumni
-│
 ├── src/
 │   ├── app/                               # Next.js 16 App Router
 │   │   ├── page.tsx                       # Landing / Cover page
