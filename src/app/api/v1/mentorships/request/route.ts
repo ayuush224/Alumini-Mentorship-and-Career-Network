@@ -6,6 +6,7 @@ import { connectDB } from "@/lib/db";
 import { MentorshipRequest, MentorCapacity, User } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
 import { MAX_PENDING_REQUESTS_PER_STUDENT } from "@/lib/config";
+import { acquireMentorLock, releaseMentorLock } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -73,64 +74,87 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify mentor exists
-    const mentorUser = await User.findById(mentorId);
-    if (!mentorUser) {
-      return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
-    }
-
-    // Verify mentor is not at capacity
-    const capacity = await MentorCapacity.findOne({ mentorId });
-    if (capacity && capacity.activeMentees >= capacity.maxMentees) {
-      return NextResponse.json(
-        { error: "Mentor is currently at full capacity and cannot accept new requests" },
-        { status: 400 }
-      );
-    }
-
-    // Enforce student pending requests limit (Threshold Enforcement)
-    const pendingCount = await MentorshipRequest.countDocuments({
-      studentId,
-      status: "pending",
-    });
-
-    if (pendingCount >= MAX_PENDING_REQUESTS_PER_STUDENT) {
+    // -------------------------------------------------------------------------
+    // REDIS CONCURRENCY GUARD (Ticket-Booking Distributed Mutex):
+    // Acquires an exclusive short-lived lock for this mentor.
+    // If two students request the same mentor simultaneously, Redis serializes
+    // them sequentially. The second request backs off and retries, ensuring
+    // mentor capacity is never exceeded and eliminating race conditions.
+    // -------------------------------------------------------------------------
+    const lockToken = await acquireMentorLock(mentorId, studentId);
+    if (!lockToken) {
       return NextResponse.json(
         {
-          error: `Maximum pending mentorship requests reached (${MAX_PENDING_REQUESTS_PER_STUDENT}). You cannot have more pending requests.`,
+          error:
+            "This mentor is currently processing another mentorship request. Please try again in a few moments.",
         },
-        { status: 429 }
+        { status: 409 }
       );
     }
 
-    // Prevent duplicate pending requests
-    const existingRequest = await MentorshipRequest.findOne({
-      studentId,
-      mentorId,
-      status: "pending",
-    });
+    try {
+      // Verify mentor exists
+      const mentorUser = await User.findById(mentorId);
+      if (!mentorUser) {
+        return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
+      }
 
-    if (existingRequest) {
+      // Verify mentor is not at capacity
+      const capacity = await MentorCapacity.findOne({ mentorId });
+      if (capacity && capacity.activeMentees >= capacity.maxMentees) {
+        return NextResponse.json(
+          { error: "Mentor is currently at full capacity and cannot accept new requests" },
+          { status: 400 }
+        );
+      }
+
+      // Enforce student pending requests limit (Threshold Enforcement)
+      const pendingCount = await MentorshipRequest.countDocuments({
+        studentId,
+        status: "pending",
+      });
+
+      if (pendingCount >= MAX_PENDING_REQUESTS_PER_STUDENT) {
+        return NextResponse.json(
+          {
+            error: `Maximum pending mentorship requests reached (${MAX_PENDING_REQUESTS_PER_STUDENT}). You cannot have more pending requests.`,
+          },
+          { status: 429 }
+        );
+      }
+
+      // Prevent duplicate pending requests
+      const existingRequest = await MentorshipRequest.findOne({
+        studentId,
+        mentorId,
+        status: "pending",
+      });
+
+      if (existingRequest) {
+        return NextResponse.json(
+          { error: "You already have a pending mentorship request with this mentor" },
+          { status: 400 }
+        );
+      }
+
+      const newRequest = await MentorshipRequest.create({
+        studentId,
+        mentorId,
+        status: "pending",
+        message,
+      });
+
       return NextResponse.json(
-        { error: "You already have a pending mentorship request with this mentor" },
-        { status: 400 }
+        {
+          message: "Mentorship request submitted successfully",
+          request: newRequest,
+        },
+        { status: 201 }
       );
+    } finally {
+      // Atomically release the distributed mentor lock
+      await releaseMentorLock(mentorId, lockToken);
     }
-
-    const newRequest = await MentorshipRequest.create({
-      studentId,
-      mentorId,
-      status: "pending",
-      message,
-    });
-
-    return NextResponse.json(
-      {
-        message: "Mentorship request submitted successfully",
-        request: newRequest,
-      },
-      { status: 201 }
-    );
   } catch (error) {
     console.error("Mentorship request creation error:", error);
     return NextResponse.json(

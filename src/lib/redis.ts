@@ -5,6 +5,9 @@ import {
   REDIS_OTP_TTL_SECONDS,
   AUTH_RATE_LIMIT_WINDOW_SECONDS,
   AUTH_RATE_LIMIT_MAX_ATTEMPTS,
+  REDIS_MENTOR_LOCK_TTL_SECONDS,
+  REDIS_MENTOR_LOCK_RETRY_COUNT,
+  REDIS_MENTOR_LOCK_RETRY_DELAY_MS,
 } from "@/lib/config";
 
 /**
@@ -244,5 +247,123 @@ export async function resetRedisRateLimit(key: string): Promise<void> {
     await redis.del(redisKey);
   } catch (err) {
     console.warn(`[Redis] resetRedisRateLimit error for "${redisKey}":`, err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DISTRIBUTED MENTOR LOCK (TICKET-BOOKING CONCURRENCY GUARD)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the Redis key used for locking a mentor during request/acceptance.
+ */
+function getMentorLockKey(mentorId: string): string {
+  return `lock:mentor:request:${mentorId.trim()}`;
+}
+
+/**
+ * Atomic Lua script for safe lock release.
+ * Verifies that the lock value matches the caller's token before deleting,
+ * ensuring a slow process never accidentally releases someone else's newly acquired lock.
+ */
+const RELEASE_LOCK_LUA_SCRIPT = `
+if redis.call("get", KEYS[1]) == ARGV[1] then
+  return redis.call("del", KEYS[1])
+else
+  return 0
+end
+`;
+
+export interface AcquireMentorLockOptions {
+  ttlSeconds?: number;
+  retryCount?: number;
+  retryDelayMs?: number;
+}
+
+/**
+ * Acquires an exclusive distributed mutex lock for a mentor using Redis SET NX EX.
+ *
+ * Concurrency & Ticket-Booking guarantees:
+ * 1. Redis's single-threaded event loop processes requests sequentially.
+ * 2. Only the first incoming request within the time-window obtains the lock.
+ * 3. Concurrent requests automatically back off and retry up to `retryCount` times.
+ * 4. Automatic TTL expiration prevents deadlocks in case of unexpected worker crashes.
+ * 5. Returns a unique lock token on success, or null if acquisition times out.
+ * 6. If Redis is down or unavailable, returns a synthetic bypass token to gracefully fallback.
+ */
+export async function acquireMentorLock(
+  mentorId: string,
+  requesterId: string,
+  options: AcquireMentorLockOptions = {}
+): Promise<string | null> {
+  if (!redis) {
+    // Graceful fallback when Redis is unconfigured or unavailable
+    return "redis-bypass";
+  }
+
+  const ttlSeconds = options.ttlSeconds ?? REDIS_MENTOR_LOCK_TTL_SECONDS;
+  const maxRetries = options.retryCount ?? REDIS_MENTOR_LOCK_RETRY_COUNT;
+  const retryDelayMs = options.retryDelayMs ?? REDIS_MENTOR_LOCK_RETRY_DELAY_MS;
+
+  const lockKey = getMentorLockKey(mentorId);
+  const lockToken = `${requesterId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // SET key token NX EX ttlSeconds
+      const acquired = await redis.set(lockKey, lockToken, {
+        nx: true,
+        ex: ttlSeconds,
+      });
+
+      if (acquired === "OK") {
+        return lockToken;
+      }
+
+      // If lock is held and retries remain, wait briefly (backoff) before next attempt
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      }
+    } catch (err) {
+      console.warn(`[Redis] acquireMentorLock attempt ${attempt + 1} error for "${lockKey}":`, err);
+      // In case of a network or Redis error, return bypass token to not block the user
+      return "redis-bypass";
+    }
+  }
+
+  // Lock could not be acquired within maxRetries
+  return null;
+}
+
+/**
+ * Atomically releases the distributed mentor lock.
+ * Ensures the lock is only deleted if the token matches the current holder.
+ */
+export async function releaseMentorLock(
+  mentorId: string,
+  lockToken: string | null
+): Promise<boolean> {
+  if (!redis || !lockToken || lockToken === "redis-bypass") {
+    return true;
+  }
+
+  const lockKey = getMentorLockKey(mentorId);
+
+  try {
+    const result = await redis.eval(RELEASE_LOCK_LUA_SCRIPT, [lockKey], [lockToken]);
+    return result === 1;
+  } catch (err) {
+    console.warn(`[Redis] releaseMentorLock error for "${lockKey}":`, err);
+    // Attempt best-effort deletion if Lua evaluation fails
+    try {
+      const currentVal = await redis.get<string>(lockKey);
+      if (currentVal === lockToken) {
+        await redis.del(lockKey);
+        return true;
+      }
+    } catch {
+      // Ignore fallback error
+    }
+    return false;
   }
 }
