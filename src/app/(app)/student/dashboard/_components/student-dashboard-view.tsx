@@ -542,7 +542,7 @@ export function StudentDashboardView({
 
           <div className="pt-4">
             <Link
-              href="/mentorship"
+              href="/student/mentorship"
               className="w-full py-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs font-semibold text-stone-700 flex items-center justify-center gap-1.5 transition-colors"
             >
               <span>View Mentorship Workspace</span>

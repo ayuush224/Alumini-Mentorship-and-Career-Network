@@ -56,7 +56,7 @@ export function StudentHeader({ user }: StudentHeaderProps) {
     : "ST";
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs transition-all">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px] flex items-center justify-between gap-4">
         {/* Left: Brand Logo & Navigation Tabs */}
         <div className="flex items-center gap-6 sm:gap-8 min-w-0">
@@ -86,9 +86,9 @@ export function StudentHeader({ user }: StudentHeaderProps) {
                     key={tab.href}
                     href={tab.href}
                     prefetch={true}
-                    className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:outline-none focus-visible:ring-offset-1 ${
+                    className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors duration-150 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:outline-none focus-visible:ring-offset-1 ${
                       isActive
-                        ? "bg-[#E8F0FE] text-[#2563EB] font-semibold shadow-2xs"
+                        ? "bg-[#E8F0FE] text-[#2563EB] shadow-2xs"
                         : "text-slate-600 hover:text-[#0B1F44] hover:bg-slate-100/70"
                     }`}
                   >
