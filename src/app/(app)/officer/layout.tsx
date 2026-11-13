@@ -7,7 +7,6 @@ import { User } from "@/lib/models/User";
 import { VerificationRequest } from "@/lib/models/Verification";
 import { Mentorship, Session } from "@/lib/models/Mentorship";
 import { OfficerHeader } from "./_components/officer-header";
-import { PageTransition } from "@/app/_components/page-transition";
 
 
 export default async function OfficerLayout({
@@ -103,9 +102,7 @@ export default async function OfficerLayout({
         pendingVerificationsCount={pendingVerificationsCount}
         stalledMentorshipsCount={stalledMentorshipsCount}
       />
-      <main className="flex-1 py-8 px-4 sm:px-6">
-        <PageTransition>{children}</PageTransition>
-      </main>
+      <main className="flex-1 py-8 px-4 sm:px-6">{children}</main>
     </div>
   );
 }
