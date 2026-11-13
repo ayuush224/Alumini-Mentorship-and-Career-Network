@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { Action } from "@/lib/models/Tasks";
 import { StudentProfile, User } from "@/lib/models/User";
+import { getCached, setCached, invalidateCache } from "@/lib/redis";
+import { REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS } from "@/lib/config";
 
 export interface MonthlyAnalyticsItem {
   month: string; // "YYYY-MM"
@@ -58,6 +60,14 @@ function getLast12Months(): Array<{ key: string; label: string }> {
 export async function fetchStudent12MonthAnalytics(
   studentId: string
 ): Promise<StudentAnalyticsOverview> {
+  const cacheKey = `analytics:student:${studentId}`;
+
+  // 1. Check Upstash Redis cache first
+  const cachedResult = await getCached<StudentAnalyticsOverview>(cacheKey);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   await connectDB();
 
   const twelveMonthsAgo = new Date();
@@ -101,49 +111,52 @@ export async function fetchStudent12MonthAnalytics(
       },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$createdAt" },
+          },
           totalActions: { $sum: 1 },
-          completedActions: { $sum: { $cond: ["$completed", 1, 0] } },
-          mentorTotal: { $sum: { $cond: [{ $eq: ["$addedBy", "mentor"] }, 1, 0] } },
+          completedActions: {
+            $sum: { $cond: [{ $eq: ["$completed", true] }, 1, 0] },
+          },
+          mentorTotal: {
+            $sum: { $cond: [{ $eq: ["$addedBy", "mentor"] }, 1, 0] },
+          },
           mentorCompleted: {
             $sum: {
-              $cond: [{ $and: [{ $eq: ["$addedBy", "mentor"] }, "$completed"] }, 1, 0],
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$addedBy", "mentor"] },
+                    { $eq: ["$completed", true] },
+                  ],
+                },
+                1,
+                0,
+              ],
             },
           },
-          studentTotal: { $sum: { $cond: [{ $eq: ["$addedBy", "student"] }, 1, 0] } },
+          studentTotal: {
+            $sum: { $cond: [{ $eq: ["$addedBy", "student"] }, 1, 0] },
+          },
           studentCompleted: {
             $sum: {
-              $cond: [{ $and: [{ $eq: ["$addedBy", "student"] }, "$completed"] }, 1, 0],
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$addedBy", "student"] },
+                    { $eq: ["$completed", true] },
+                  ],
+                },
+                1,
+                0,
+              ],
             },
           },
         },
       },
       {
         $project: {
-          totalActions: 1,
-          completedActions: 1,
-          mentorTotal: 1,
-          mentorCompleted: 1,
-          studentTotal: 1,
-          studentCompleted: 1,
-          mentorRate: {
-            $cond: [
-              { $gt: ["$mentorTotal", 0] },
-              { $divide: ["$mentorCompleted", "$mentorTotal"] },
-              null,
-            ],
-          },
-          studentRate: {
-            $cond: [
-              { $gt: ["$studentTotal", 0] },
-              { $divide: ["$studentCompleted", "$studentTotal"] },
-              null,
-            ],
-          },
-        },
-      },
-      {
-        $project: {
+          _id: 1,
           totalActions: 1,
           completedActions: 1,
           mentorTotal: 1,
@@ -153,34 +166,53 @@ export async function fetchStudent12MonthAnalytics(
           weightedScore: {
             $round: [
               {
-                $multiply: [
+                $add: [
+                  // 80% weight for mentor tasks
                   {
                     $cond: [
+                      { $gt: ["$mentorTotal", 0] },
                       {
-                        $and: [
-                          { $ne: ["$mentorRate", null] },
-                          { $ne: ["$studentRate", null] },
+                        $multiply: [
+                          { $divide: ["$mentorCompleted", "$mentorTotal"] },
+                          80,
                         ],
                       },
-                      {
-                        $add: [
-                          { $multiply: ["$mentorRate", 0.8] },
-                          { $multiply: ["$studentRate", 0.2] },
-                        ],
-                      },
+                      // If no mentor tasks, scale student tasks to full 100%
                       {
                         $cond: [
-                          { $ne: ["$mentorRate", null] },
-                          "$mentorRate",
-                          { $ifNull: ["$studentRate", 0] },
+                          { $gt: ["$studentTotal", 0] },
+                          {
+                            $multiply: [
+                              { $divide: ["$studentCompleted", "$studentTotal"] },
+                              100,
+                            ],
+                          },
+                          0,
                         ],
                       },
                     ],
                   },
-                  100,
+                  // 20% weight for student tasks (only when mentor tasks exist)
+                  {
+                    $cond: [
+                      {
+                        $and: [
+                          { $gt: ["$mentorTotal", 0] },
+                          { $gt: ["$studentTotal", 0] },
+                        ],
+                      },
+                      {
+                        $multiply: [
+                          { $divide: ["$studentCompleted", "$studentTotal"] },
+                          20,
+                        ],
+                      },
+                      0,
+                    ],
+                  },
                 ],
               },
-              1,
+              0,
             ],
           },
         },
@@ -191,33 +223,36 @@ export async function fetchStudent12MonthAnalytics(
     ]);
   }
 
-  // Map aggregated data by month key
-  const aggMap = new Map(aggregatedMonths.map((m) => [m._id, m]));
-  const months12 = getLast12Months();
+  // Create dictionary lookup for fast assembly
+  const monthMap = new Map<string, (typeof aggregatedMonths)[number]>();
+  for (const m of aggregatedMonths) {
+    monthMap.set(m._id, m);
+  }
 
+  const last12 = getLast12Months();
   let sumMentorTotal = 0;
   let sumMentorCompleted = 0;
   let sumStudentTotal = 0;
   let sumStudentCompleted = 0;
 
-  const timeline: MonthlyAnalyticsItem[] = months12.map(({ key, label }) => {
-    const data = aggMap.get(key);
-    if (data) {
-      sumMentorTotal += data.mentorTotal;
-      sumMentorCompleted += data.mentorCompleted;
-      sumStudentTotal += data.studentTotal;
-      sumStudentCompleted += data.studentCompleted;
+  const timeline: MonthlyAnalyticsItem[] = last12.map(({ key, label }) => {
+    const item = monthMap.get(key);
+    if (item) {
+      sumMentorTotal += item.mentorTotal;
+      sumMentorCompleted += item.mentorCompleted;
+      sumStudentTotal += item.studentTotal;
+      sumStudentCompleted += item.studentCompleted;
 
       return {
         month: key,
         label,
-        totalActions: data.totalActions,
-        completedActions: data.completedActions,
-        mentorTotal: data.mentorTotal,
-        mentorCompleted: data.mentorCompleted,
-        studentTotal: data.studentTotal,
-        studentCompleted: data.studentCompleted,
-        weightedScore: data.weightedScore || 0,
+        totalActions: item.totalActions,
+        completedActions: item.completedActions,
+        mentorTotal: item.mentorTotal,
+        mentorCompleted: item.mentorCompleted,
+        studentTotal: item.studentTotal,
+        studentCompleted: item.studentCompleted,
+        weightedScore: Math.min(100, Math.max(0, item.weightedScore || 0)),
       };
     }
 
@@ -256,7 +291,7 @@ export async function fetchStudent12MonthAnalytics(
     recent3.reduce((acc, m) => acc + m.weightedScore, 0) / Math.max(1, recent3.length)
   );
 
-  return {
+  const result: StudentAnalyticsOverview = {
     timeline,
     mentorTaskCompleteness,
     studentTaskCompleteness,
@@ -268,6 +303,18 @@ export async function fetchStudent12MonthAnalytics(
     totalPoints: totalPoints ?? 0,
     momentumScore,
   };
+
+  // 2. Store computed result in Upstash Redis
+  await setCached(cacheKey, result, REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS);
+
+  return result;
+}
+
+/**
+ * Invalidates the cached student analytics in Upstash Redis.
+ */
+export async function invalidateStudentAnalyticsCache(studentId: string): Promise<void> {
+  await invalidateCache(`analytics:student:${studentId}`);
 }
 
 /**

@@ -13,7 +13,7 @@ export const metadata = {
 export default async function OfficerPage() {
   const dashRes = await getOfficerDashboardData();
 
-  if (!dashRes.success || !dashRes.officer || !dashRes.metrics) {
+  if (!dashRes.success) {
     redirect("/login");
   }
 

@@ -25,6 +25,9 @@ import {
 } from "@/lib/models/Analytics";
 import { Institution } from "@/lib/models/Institution";
 import { verifyAccess } from "@/lib/app-tokens";
+import { getCached, setCached, invalidateCache } from "@/lib/redis";
+import { REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS } from "@/lib/config";
+import { MENTORS_DIRECTORY_CACHE_KEY } from "@/lib/dal";
 
 // Multi-tenant officer session validator
 async function getOfficerContext() {
@@ -60,9 +63,90 @@ async function getOfficerContext() {
 // ----------------------------------------------------------------------------
 // 1. DASHBOARD OVERVIEW DATA
 // ----------------------------------------------------------------------------
-export async function getOfficerDashboardData() {
+export type OfficerDashboardSuccess = {
+  success: true;
+  officer: {
+    id: string;
+    name: string;
+    role: "administrator" | "alumni_relations_officer";
+    institutionId: string;
+    institutionName: string;
+  };
+  metrics: {
+    pendingVerifications: number;
+    verifiedAlumni: number;
+    activeMentorships: number;
+    stalledMentorships: number;
+    mentorSaturationRate: number;
+    totalMentors: number;
+  };
+  momentumDistribution: Array<{ name: string; count: number; fill: string }>;
+  capacityDistribution: Array<{ status: string; count: number; fill: string }>;
+  saturatedMentors: Array<{
+    id: string;
+    mentorId: string;
+    name: string;
+    activeMentees: number;
+    maxMentees: number;
+  }>;
+  recentVerifications: Array<{
+    id: string;
+    alumnusName: string;
+    alumnusId: string;
+    degree: string;
+    graduationYear: number;
+    institutionalIdentifier: string;
+    status: string;
+    submittedAt: string;
+    documentCount: number;
+  }>;
+  recentPairings: Array<{
+    id: string;
+    studentName: string;
+    mentorName: string;
+    daysInactive: number;
+    health: "healthy" | "at_risk" | "stalled";
+    canNudge: boolean;
+    cooldownRemainingDays: number;
+    startDate: string;
+  }>;
+  auditLogs: Array<{
+    id: string;
+    action: string;
+    resource: string;
+    timestamp: string;
+    actorRole: string;
+    details: Record<string, unknown>;
+  }>;
+};
+
+export type OfficerDashboardError = {
+  success: false;
+  error: string;
+};
+
+export type OfficerDashboardResult = OfficerDashboardSuccess | OfficerDashboardError;
+
+export async function getOfficerDashboardData(): Promise<OfficerDashboardResult> {
   try {
     const { officerId, officerName, role, institutionId } = await getOfficerContext();
+
+    // 0. Upstash Redis Cache Check
+    const cacheKey = `officer:dashboard:${institutionId}`;
+    const cachedData = await getCached<OfficerDashboardSuccess>(cacheKey);
+    if (cachedData && cachedData.metrics) {
+      return {
+        ...cachedData,
+        success: true,
+        officer: {
+          id: officerId,
+          name: officerName,
+          role: role as "administrator" | "alumni_relations_officer",
+          institutionId,
+          institutionName: cachedData.officer?.institutionName || "Apex Institute of Technology",
+        },
+      };
+    }
 
     // 1. Fetch institution metadata
     const institution = await Institution.findOne({ code: institutionId }).lean();
@@ -136,7 +220,7 @@ export async function getOfficerDashboardData() {
         alumnusId: String(v.userId?._id || v.alumnusId),
         degree: v.degree || "Degree Unspecified",
         graduationYear: v.graduationYear || new Date().getFullYear(),
-        institutionalIdentifier: v.institutionalIdentifier,
+        institutionalIdentifier: v.institutionalIdentifier || "N/A",
         status: v.status,
         submittedAt: v.submittedAt ? v.submittedAt.toISOString() : new Date().toISOString(),
         documentCount: Array.isArray(v.documents) ? v.documents.length : 0,
@@ -272,12 +356,12 @@ export async function getOfficerDashboardData() {
       }
     }
 
-    return {
+    const result: OfficerDashboardSuccess = {
       success: true,
       officer: {
         id: officerId,
         name: officerName,
-        role,
+        role: role as "administrator" | "alumni_relations_officer",
         institutionId,
         institutionName,
       },
@@ -312,6 +396,11 @@ export async function getOfficerDashboardData() {
         details: log.details || {},
       })),
     };
+
+    // Cache computed snapshot in Upstash Redis
+    await setCached(cacheKey, result, REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS);
+
+    return result;
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;
@@ -536,6 +625,9 @@ export async function decideVerification(
       timestamp: new Date(),
     });
 
+    // Invalidate officer dashboard and mentor directory caches
+    await invalidateCache(`officer:dashboard:${institutionId}`, MENTORS_DIRECTORY_CACHE_KEY);
+
     revalidatePath("/officer");
     revalidatePath("/officer/verifications");
 
@@ -727,6 +819,9 @@ export async function nudgeMentorship(mentorshipId: string) {
       timestamp: now,
     });
 
+    // Invalidate officer dashboard cache
+    await invalidateCache(`officer:dashboard:${institutionId}`);
+
     revalidatePath("/officer");
     revalidatePath("/officer/momentum");
 
@@ -831,6 +926,9 @@ export async function toggleMentorAcceptance(mentorId: string, accepting: boolea
       },
       timestamp: new Date(),
     });
+
+    // Invalidate officer dashboard and mentor directory caches
+    await invalidateCache(`officer:dashboard:${institutionId}`, MENTORS_DIRECTORY_CACHE_KEY);
 
     revalidatePath("/officer");
     revalidatePath("/officer/capacity");

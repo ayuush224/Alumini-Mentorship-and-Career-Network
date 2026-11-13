@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { connectDB, startSafeTransaction } from "@/lib/db";
 import { MentorshipRequest, MentorCapacity, Mentorship } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
+import { invalidateMentorDirectoryCache } from "@/lib/dal";
 
 export const runtime = "nodejs";
 
@@ -162,6 +163,9 @@ export async function POST(request: Request) {
       session.endSession();
       session = null;
     }
+
+    // Invalidate distributed mentor directory cache
+    await invalidateMentorDirectoryCache();
 
     return NextResponse.json(
       {

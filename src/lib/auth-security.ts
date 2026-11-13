@@ -2,6 +2,11 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { connectDB } from "@/lib/db";
 import { AuthRateLimit } from "@/lib/models";
 import { verifyAccess, getUserById } from "@/lib/app-tokens";
+import { checkRedisRateLimit, resetRedisRateLimit } from "@/lib/redis";
+import {
+  AUTH_RATE_LIMIT_MAX_ATTEMPTS,
+  AUTH_RATE_LIMIT_WINDOW_SECONDS,
+} from "@/lib/config";
 
 /** HTTP methods that require CSRF and origin validation. */
 const mutating = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -58,9 +63,21 @@ export async function requireRole(request: Request, roles: string[]) {
 }
 
 /**
- * 2-minute / 5-attempt rate limiter for email/keys backed by Mongoose AuthRateLimit collection.
+ * High-speed rate limiter using Upstash Redis in-memory counters with automatic
+ * fail-safe fallback to MongoDB AuthRateLimit collection.
  */
-export async function checkRateLimit(key: string, limit = 5, windowSeconds = 120): Promise<boolean> {
+export async function checkRateLimit(
+  key: string,
+  limit = AUTH_RATE_LIMIT_MAX_ATTEMPTS,
+  windowSeconds = AUTH_RATE_LIMIT_WINDOW_SECONDS
+): Promise<boolean> {
+  // 1. Attempt Upstash Redis atomic INCR + EXPIRE (< 1ms)
+  const redisResult = await checkRedisRateLimit(key, limit, windowSeconds);
+  if (redisResult !== null) {
+    return redisResult;
+  }
+
+  // 2. Fail-safe fallback to MongoDB AuthRateLimit collection
   await connectDB();
   const normalizedKey = key.toLowerCase().trim();
   const now = new Date();
@@ -86,17 +103,28 @@ export async function checkRateLimit(key: string, limit = 5, windowSeconds = 120
 
 /**
  * Reset rate limit bucket on successful authentication.
+ * Clears both Redis and MongoDB buckets.
  */
 export async function resetRateLimit(key: string): Promise<void> {
-  await connectDB();
   const normalizedKey = key.toLowerCase().trim();
-  await AuthRateLimit.deleteOne({ key: normalizedKey });
+  await resetRedisRateLimit(normalizedKey);
+
+  try {
+    await connectDB();
+    await AuthRateLimit.deleteOne({ key: normalizedKey });
+  } catch (err) {
+    console.warn("[RateLimit] MongoDB resetRateLimit fallback error:", err);
+  }
 }
 
 /**
  * IP/Path rate limiter compatibility helper.
  */
-export async function rateLimit(request: Request, limit = 10, windowSeconds = 60) {
+export async function rateLimit(
+  request: Request,
+  limit = 10,
+  windowSeconds = 60
+) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const key = `${new URL(request.url).pathname}:${ip}`;
   return checkRateLimit(key, limit, windowSeconds);

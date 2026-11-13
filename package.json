@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.7.14",
+    "@upstash/redis": "^1.41.0",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.7.14",
     "cloudinary": "^2.11.0",

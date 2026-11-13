@@ -11,6 +11,7 @@ import { MentorSession } from "@/lib/models/MentorSession";
 import { checkSessionOverlap, calculateSessionInterval } from "@/lib/utils/scheduling";
 import { verifyAccess } from "@/lib/app-tokens";
 import { MAX_PENDING_REQUESTS_PER_STUDENT } from "@/lib/config";
+import { invalidateMentorDirectoryCache } from "@/lib/dal";
 
 export interface RequestMentorshipResult {
   success: boolean;
@@ -600,6 +601,9 @@ export async function acceptMentorshipRequest(requestId: string): Promise<{
       session.endSession();
       session = null;
     }
+
+    // Invalidate distributed mentor directory cache
+    await invalidateMentorDirectoryCache();
 
     // Trigger path revalidations
     revalidatePath("/mentor");
