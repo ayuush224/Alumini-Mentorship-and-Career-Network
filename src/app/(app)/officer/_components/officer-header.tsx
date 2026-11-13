@@ -89,42 +89,44 @@ export function OfficerHeader({
           </Link>
 
           {/* Horizontal Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-1">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive =
-                pathname === tab.href ||
-                (tab.href === "/officer" && pathname === "/officer") ||
-                pathname.startsWith(`${tab.href}/`);
+          <div className="relative min-w-0">
+            <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-1 [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent_100%)] sm:[mask-image:none]">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive =
+                  pathname === tab.href ||
+                  (tab.href === "/officer" && pathname === "/officer") ||
+                  pathname.startsWith(`${tab.href}/`);
 
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  prefetch={true}
-                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 relative active:scale-[0.98] ${
-                    isActive
-                      ? "bg-[#E8F0FE] text-[#2563EB] font-semibold shadow-2xs"
-                      : "text-slate-600 hover:text-[#0B1F44] hover:bg-slate-100/70"
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-[#2563EB]" : "text-slate-500"}`} />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && (
-                    <span
-                      className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                        tab.badgeTone === "rose"
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    prefetch={true}
+                    className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 relative active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:outline-none focus-visible:ring-offset-1 ${
+                      isActive
+                        ? "bg-[#E8F0FE] text-[#2563EB] font-semibold shadow-2xs"
+                        : "text-slate-600 hover:text-[#0B1F44] hover:bg-slate-100/70"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? "text-[#2563EB]" : "text-slate-500"}`} />
+                    <span>{tab.label}</span>
+                    {tab.badge !== undefined && (
+                      <span
+                        className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                          tab.badgeTone === "rose"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {tab.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
         </div>
 
         {/* Right: Officer Portal Badge & Profile User Menu */}

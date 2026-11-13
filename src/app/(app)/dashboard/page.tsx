@@ -20,7 +20,7 @@ export default async function DashboardPage() {
         redirect("/officer");
       }
       if (payload?.role === "administrator" || payload?.role === "placement_officer") {
-        redirect("/analytics");
+        redirect("/officer");
       }
       if (payload?.sub) {
         redirect("/student/dashboard");

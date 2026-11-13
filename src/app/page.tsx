@@ -49,7 +49,7 @@ export default async function HomePage(props: {
           payload.role === "admin" ||
           payload.role === "placement_officer"
         ) {
-          userDashboardUrl = "/analytics";
+          userDashboardUrl = "/officer";
         } else {
           userDashboardUrl = "/student/dashboard";
         }

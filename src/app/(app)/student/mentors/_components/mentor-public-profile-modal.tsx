@@ -504,7 +504,7 @@ export function MentorPublicProfileModal({
                             type="button"
                             onClick={handleSendRequest}
                             disabled={isPending}
-                            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60 shadow-xs cursor-pointer shrink-0"
+                            className="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-xl transition-all active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none flex items-center justify-center gap-2 disabled:opacity-60 shadow-xs cursor-pointer shrink-0"
                           >
                             {isPending ? (
                               <>

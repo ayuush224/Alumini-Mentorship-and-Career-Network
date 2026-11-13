@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 import { getCachedUser, getCachedStudentProfile } from "@/lib/dal";
 import { StudentHeader } from "./_components/student-header";
-import { PageTransition } from "@/app/_components/page-transition";
 
 export default async function StudentLayout({
   children,
@@ -36,9 +35,7 @@ export default async function StudentLayout({
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFF] text-stone-900">
       <StudentHeader user={{ name: userName, avatarUrl }} />
-      <main className="flex-1">
-        <PageTransition>{children}</PageTransition>
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }
