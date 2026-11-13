@@ -88,6 +88,10 @@ export const configSchema = z
     REDIS_MENTORS_CACHE_TTL_SECONDS: defaultPositiveIntValidator(600),
     REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS: defaultPositiveIntValidator(180),
     REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS: defaultPositiveIntValidator(900),
+    // Mentor Request Distributed Lock (Redis Concurrency Guard)
+    REDIS_MENTOR_LOCK_TTL_SECONDS: defaultPositiveIntValidator(2),
+    REDIS_MENTOR_LOCK_RETRY_COUNT: defaultPositiveIntValidator(3),
+    REDIS_MENTOR_LOCK_RETRY_DELAY_MS: defaultPositiveIntValidator(150),
   })
   .strict();
 
@@ -114,6 +118,9 @@ export function validateConfig(): AppConfig {
     REDIS_MENTORS_CACHE_TTL_SECONDS: process.env.REDIS_MENTORS_CACHE_TTL_SECONDS,
     REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS: process.env.REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS,
     REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS: process.env.REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS,
+    REDIS_MENTOR_LOCK_TTL_SECONDS: process.env.REDIS_MENTOR_LOCK_TTL_SECONDS,
+    REDIS_MENTOR_LOCK_RETRY_COUNT: process.env.REDIS_MENTOR_LOCK_RETRY_COUNT,
+    REDIS_MENTOR_LOCK_RETRY_DELAY_MS: process.env.REDIS_MENTOR_LOCK_RETRY_DELAY_MS,
   };
 
   const result = configSchema.safeParse(rawInput);
@@ -151,6 +158,9 @@ export const {
   REDIS_MENTORS_CACHE_TTL_SECONDS,
   REDIS_OFFICER_DASHBOARD_CACHE_TTL_SECONDS,
   REDIS_STUDENT_ANALYTICS_CACHE_TTL_SECONDS,
+  REDIS_MENTOR_LOCK_TTL_SECONDS,
+  REDIS_MENTOR_LOCK_RETRY_COUNT,
+  REDIS_MENTOR_LOCK_RETRY_DELAY_MS,
 } = config;
 
 export default config;

@@ -73,6 +73,36 @@ export function StudentChatView({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Restore saved draft from localStorage on mount or mentorshipId change
+  useEffect(() => {
+    if (typeof window !== "undefined" && mentorshipId) {
+      try {
+        const saved = localStorage.getItem(`alma_chat_draft_${mentorshipId}`);
+        if (saved) {
+          setInputValue(saved);
+        }
+      } catch {
+        // Ignore localStorage read errors
+      }
+    }
+  }, [mentorshipId]);
+
+  const handleInputChange = (val: string) => {
+    setInputValue(val);
+    if (typeof window !== "undefined" && mentorshipId) {
+      try {
+        const key = `alma_chat_draft_${mentorshipId}`;
+        if (val.trim()) {
+          localStorage.setItem(key, val);
+        } else {
+          localStorage.removeItem(key);
+        }
+      } catch {
+        // Ignore localStorage quota
+      }
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -254,6 +284,11 @@ export function StudentChatView({
 
     setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
+    if (typeof window !== "undefined" && mentorshipId) {
+      try {
+        localStorage.removeItem(`alma_chat_draft_${mentorshipId}`);
+      } catch {}
+    }
     setPendingAttachment(null);
     setIsSending(true);
 
@@ -585,7 +620,7 @@ export function StudentChatView({
           <input
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             placeholder={
               pendingAttachment
                 ? "Add an optional message..."

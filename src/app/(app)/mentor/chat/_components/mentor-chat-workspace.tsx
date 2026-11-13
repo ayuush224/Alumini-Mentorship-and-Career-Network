@@ -109,6 +109,34 @@ export function MentorChatWorkspace({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Restore saved draft from localStorage when switching mentees
+  useEffect(() => {
+    if (typeof window !== "undefined" && selectedMentee?.mentorshipId) {
+      try {
+        const saved = localStorage.getItem(`alma_chat_draft_${selectedMentee.mentorshipId}`);
+        setInputValue(saved || "");
+      } catch {
+        // Ignore localStorage read errors
+      }
+    }
+  }, [selectedMentee?.mentorshipId]);
+
+  const handleInputChange = (val: string) => {
+    setInputValue(val);
+    if (typeof window !== "undefined" && selectedMentee?.mentorshipId) {
+      try {
+        const key = `alma_chat_draft_${selectedMentee.mentorshipId}`;
+        if (val.trim()) {
+          localStorage.setItem(key, val);
+        } else {
+          localStorage.removeItem(key);
+        }
+      } catch {
+        // Ignore quota
+      }
+    }
+  };
+
   // Auto-scroll to bottom of message thread
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -325,6 +353,11 @@ export function MentorChatWorkspace({
 
     setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
+    if (typeof window !== "undefined" && selectedMentee?.mentorshipId) {
+      try {
+        localStorage.removeItem(`alma_chat_draft_${selectedMentee.mentorshipId}`);
+      } catch {}
+    }
     setPendingAttachment(null);
     setIsSending(true);
 
@@ -746,7 +779,7 @@ export function MentorChatWorkspace({
                   <input
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => handleInputChange(e.target.value)}
                     placeholder={
                       pendingAttachment
                         ? "Add an optional message..."
