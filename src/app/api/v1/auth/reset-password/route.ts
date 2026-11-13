@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { User, AuthEmailOtp } from "@/lib/models";
 import { checkRateLimit, resetRateLimit } from "@/lib/auth-security";
+import { verifyRedisOtp } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -28,8 +29,8 @@ export async function POST(request: Request) {
     const { email, otp, newPassword } = parsed.data;
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Rate limit reset attempts (5 attempts per 2 minutes)
-    const allowed = await checkRateLimit(`reset-pass:${normalizedEmail}`, 5, 120);
+    // Rate limit reset attempts
+    const allowed = await checkRateLimit(`reset-pass:${normalizedEmail}`);
     if (!allowed) {
       return NextResponse.json(
         { error: "Too many reset attempts. Please try again after 2 minutes." },
@@ -48,38 +49,60 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify OTP record
-    const otpRecord = await AuthEmailOtp.findOne({ email: normalizedEmail });
-    if (!otpRecord) {
-      return NextResponse.json(
-        { error: "No active verification code found. Please request a new code." },
-        { status: 400 }
-      );
-    }
+    // 1. Verify against Upstash Redis
+    const redisCheck = await verifyRedisOtp(normalizedEmail, otp, "reset-password");
 
-    if (new Date() > otpRecord.expiresAt) {
-      await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
-      return NextResponse.json(
-        { error: "Verification code has expired. Please request a new code." },
-        { status: 400 }
-      );
-    }
+    if (!redisCheck.valid) {
+      if (redisCheck.reason === "too_many_attempts") {
+        return NextResponse.json(
+          { error: "Too many failed attempts. Please request a new code." },
+          { status: 400 }
+        );
+      }
 
-    if (otpRecord.attempts >= 5) {
-      await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
-      return NextResponse.json(
-        { error: "Too many failed attempts. Please request a new code." },
-        { status: 400 }
-      );
-    }
+      if (redisCheck.reason === "invalid") {
+        return NextResponse.json(
+          { error: "Invalid verification code. Please check and try again." },
+          { status: 400 }
+        );
+      }
 
-    if (otpRecord.otp !== otp) {
-      otpRecord.attempts += 1;
-      await otpRecord.save();
-      return NextResponse.json(
-        { error: "Invalid verification code. Please check and try again." },
-        { status: 400 }
-      );
+      // 2. Fall back to MongoDB if not in Redis
+      const otpRecord = await AuthEmailOtp.findOne({ email: normalizedEmail });
+      if (!otpRecord) {
+        return NextResponse.json(
+          { error: "No active verification code found. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (new Date() > otpRecord.expiresAt) {
+        await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
+        return NextResponse.json(
+          { error: "Verification code has expired. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (otpRecord.attempts >= 5) {
+        await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
+        return NextResponse.json(
+          { error: "Too many failed attempts. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (otpRecord.otp !== otp) {
+        otpRecord.attempts += 1;
+        await otpRecord.save();
+        return NextResponse.json(
+          { error: "Invalid verification code. Please check and try again." },
+          { status: 400 }
+        );
+      }
+
+      // Consumed from MongoDB
+      await AuthEmailOtp.deleteMany({ email: normalizedEmail });
     }
 
     // Hash new password securely
@@ -87,8 +110,7 @@ export async function POST(request: Request) {
     user.password = hashedPassword;
     await user.save();
 
-    // Consume OTP and reset rate limits
-    await AuthEmailOtp.deleteMany({ email: normalizedEmail });
+    // Reset rate limits
     await resetRateLimit(`reset-pass:${normalizedEmail}`);
 
     return NextResponse.json({

@@ -7,6 +7,7 @@ import { connectDB, startSafeTransaction } from "@/lib/db";
 import { Action } from "@/lib/models/Tasks";
 import { User, StudentProfile } from "@/lib/models/User";
 import { verifyAccess } from "@/lib/app-tokens";
+import { invalidateStudentAnalyticsCache } from "@/lib/utils/analytics";
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   try {
@@ -222,6 +223,11 @@ export async function toggleActionCompletion(
         StudentProfile.findOne({ userId: action.studentId }).lean(),
       ]);
       currentTotalPoints = sp?.totalPoints ?? u?.studentProfile?.totalPoints;
+    }
+
+    // Invalidate distributed analytics cache
+    if (action.studentId) {
+      await invalidateStudentAnalyticsCache(String(action.studentId));
     }
 
     // Revalidate affected views

@@ -4,6 +4,8 @@ import { Resend } from "resend";
 import { connectDB } from "@/lib/db";
 import { AuthEmailOtp, User } from "@/lib/models";
 import { checkRateLimit } from "@/lib/auth-security";
+import { storeRedisOtp } from "@/lib/redis";
+import { REDIS_OTP_TTL_SECONDS } from "@/lib/config";
 
 export const runtime = "nodejs";
 
@@ -27,8 +29,8 @@ export async function POST(request: Request) {
     const { email, purpose } = parsed.data;
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Rate limit OTP requests (max 5 per 2 minutes)
-    const allowed = await checkRateLimit(`otp:${normalizedEmail}`, 5, 120);
+    // Rate limit OTP requests
+    const allowed = await checkRateLimit(`otp:${normalizedEmail}`);
     if (!allowed) {
       return NextResponse.json(
         { error: "Too many OTP requests. Please wait a moment before trying again." },
@@ -51,27 +53,38 @@ export async function POST(request: Request) {
 
     // Generate secure 6-digit OTP code
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
 
-    // Replace any previous OTPs for this email
-    await AuthEmailOtp.deleteMany({ email: normalizedEmail });
-    await AuthEmailOtp.create({
-      email: normalizedEmail,
+    // 1. Store in Upstash Redis with configured TTL
+    const storedInRedis = await storeRedisOtp(
+      normalizedEmail,
       otp,
-      expiresAt,
-      attempts: 0,
-    });
+      purpose,
+      REDIS_OTP_TTL_SECONDS
+    );
+
+    // 2. Fall back to MongoDB AuthEmailOtp only if Redis is unavailable
+    if (!storedInRedis) {
+      const expiresAt = new Date(Date.now() + REDIS_OTP_TTL_SECONDS * 1000);
+      await AuthEmailOtp.deleteMany({ email: normalizedEmail });
+      await AuthEmailOtp.create({
+        email: normalizedEmail,
+        otp,
+        expiresAt,
+        attempts: 0,
+      });
+    }
 
     // Determine email messaging based on purpose
+    const expiryMinutes = Math.round(REDIS_OTP_TTL_SECONDS / 60);
     let subject = "Your Alma verification code";
-    let bodyText = `Your Alma verification code is ${otp}. It expires in 10 minutes.\n\nIf you did not request this code, you can safely ignore this email.`;
+    let bodyText = `Your Alma verification code is ${otp}. It expires in ${expiryMinutes} minutes.\n\nIf you did not request this code, you can safely ignore this email.`;
 
     if (purpose === "login") {
       subject = "Your Alma sign-in code";
-      bodyText = `Your single-use sign-in code for Alma is ${otp}. It expires in 10 minutes.\n\nUse this code to sign in to your Alma account. If you did not request this, please secure your email account.`;
+      bodyText = `Your single-use sign-in code for Alma is ${otp}. It expires in ${expiryMinutes} minutes.\n\nUse this code to sign in to your Alma account. If you did not request this, please secure your email account.`;
     } else if (purpose === "reset-password") {
       subject = "Your Alma password reset code";
-      bodyText = `Your password reset code for Alma is ${otp}. It expires in 10 minutes.\n\nUse this code to reset your password. If you did not request this, you can safely ignore this message.`;
+      bodyText = `Your password reset code for Alma is ${otp}. It expires in ${expiryMinutes} minutes.\n\nUse this code to reset your password. If you did not request this, you can safely ignore this message.`;
     }
 
     // Send email using Resend

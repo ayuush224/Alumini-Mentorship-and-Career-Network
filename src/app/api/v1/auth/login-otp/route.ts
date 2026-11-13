@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import { User, AuthEmailOtp } from "@/lib/models";
 import { signAccessToken, generateRefreshToken } from "@/lib/app-tokens";
 import { checkRateLimit, resetRateLimit } from "@/lib/auth-security";
+import { verifyRedisOtp } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -27,8 +28,8 @@ export async function POST(request: Request) {
     const { email, otp } = parsed.data;
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Rate limit login attempts (5 attempts per 2 minutes)
-    const allowed = await checkRateLimit(`login-otp:${normalizedEmail}`, 5, 120);
+    // Rate limit login attempts
+    const allowed = await checkRateLimit(`login-otp:${normalizedEmail}`);
     if (!allowed) {
       return NextResponse.json(
         { error: "Too many sign-in attempts. Please try again after 2 minutes." },
@@ -47,45 +48,63 @@ export async function POST(request: Request) {
       );
     }
 
-    // Retrieve active OTP record
-    const otpRecord = await AuthEmailOtp.findOne({ email: normalizedEmail });
-    if (!otpRecord) {
-      return NextResponse.json(
-        { error: "No active verification code found. Please request a new code." },
-        { status: 400 }
-      );
+    // 1. Verify against Upstash Redis
+    const redisCheck = await verifyRedisOtp(normalizedEmail, otp, "login");
+
+    if (!redisCheck.valid) {
+      if (redisCheck.reason === "too_many_attempts") {
+        return NextResponse.json(
+          { error: "Too many failed attempts. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (redisCheck.reason === "invalid") {
+        return NextResponse.json(
+          { error: "Invalid verification code. Please check and try again." },
+          { status: 400 }
+        );
+      }
+
+      // 2. Fall back to MongoDB if not in Redis
+      const otpRecord = await AuthEmailOtp.findOne({ email: normalizedEmail });
+      if (!otpRecord) {
+        return NextResponse.json(
+          { error: "No active verification code found. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (new Date() > otpRecord.expiresAt) {
+        await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
+        return NextResponse.json(
+          { error: "Verification code has expired. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (otpRecord.attempts >= 5) {
+        await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
+        return NextResponse.json(
+          { error: "Too many failed attempts. Please request a new code." },
+          { status: 400 }
+        );
+      }
+
+      if (otpRecord.otp !== otp) {
+        otpRecord.attempts += 1;
+        await otpRecord.save();
+        return NextResponse.json(
+          { error: "Invalid verification code. Please check and try again." },
+          { status: 400 }
+        );
+      }
+
+      // Consumed from MongoDB
+      await AuthEmailOtp.deleteMany({ email: normalizedEmail });
     }
 
-    // Check expiration
-    if (new Date() > otpRecord.expiresAt) {
-      await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
-      return NextResponse.json(
-        { error: "Verification code has expired. Please request a new code." },
-        { status: 400 }
-      );
-    }
-
-    // Check brute force attempts
-    if (otpRecord.attempts >= 5) {
-      await AuthEmailOtp.deleteOne({ _id: otpRecord._id });
-      return NextResponse.json(
-        { error: "Too many failed attempts. Please request a new code." },
-        { status: 400 }
-      );
-    }
-
-    // Verify code match
-    if (otpRecord.otp !== otp) {
-      otpRecord.attempts += 1;
-      await otpRecord.save();
-      return NextResponse.json(
-        { error: "Invalid verification code. Please check and try again." },
-        { status: 400 }
-      );
-    }
-
-    // OTP is valid - consume it immediately
-    await AuthEmailOtp.deleteMany({ email: normalizedEmail });
+    // OTP is valid - clear rate limit
     await resetRateLimit(`login-otp:${normalizedEmail}`);
 
     const userId = String(user._id);
@@ -113,23 +132,23 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: isProduction,
       sameSite: "lax",
-      maxAge: SESSION_MAX_AGE,
       path: "/",
+      maxAge: SESSION_MAX_AGE,
     });
 
     response.cookies.set("refresh_token", refreshToken, {
       httpOnly: true,
       secure: isProduction,
       sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60,
       path: "/",
+      maxAge: SESSION_MAX_AGE,
     });
 
     return response;
   } catch (error) {
     console.error("Login OTP error:", error);
     return NextResponse.json(
-      { error: "Internal server error during code sign-in" },
+      { error: "Internal server error during OTP verification" },
       { status: 500 }
     );
   }

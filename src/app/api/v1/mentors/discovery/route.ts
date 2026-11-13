@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { StudentProfile, AlumniProfile, MentorCapacity } from "@/lib/models";
+import { StudentProfile } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
 import { calculateMatchScore } from "@/lib/matching";
+import { getBaseMentorDirectory } from "@/lib/dal";
 
 export const runtime = "nodejs";
 
@@ -43,8 +44,12 @@ export async function GET(request: Request) {
 
     const studentUserId = authUser.sub as string;
 
-    // 1. Fetch student career profile
-    const studentProfile = await StudentProfile.findOne({ userId: studentUserId });
+    // 1. Fetch student career profile and cached mentor directory in parallel
+    const [studentProfile, baseMentors] = await Promise.all([
+      StudentProfile.findOne({ userId: studentUserId }),
+      getBaseMentorDirectory(),
+    ]);
+
     if (!studentProfile) {
       return NextResponse.json(
         { error: "Student profile not found. Please complete your profile first." },
@@ -52,26 +57,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Fetch all mentor capacities where activeMentees < maxMentees
-    const availableCapacities = await MentorCapacity.find({
-      $expr: { $lt: ["$activeMentees", "$maxMentees"] },
-    }).lean();
+    // 2. Filter out student themselves if registered as an alumni mentor
+    const eligibleMentors = baseMentors.filter((m) => m.mentorId !== studentUserId);
 
-    const availableMentorIds = availableCapacities.map((c) => c.mentorId);
-    const capacityMap = new Map(
-      availableCapacities.map((c) => [String(c.mentorId), c])
-    );
-
-    // 3. Fetch corresponding AlumniProfiles (exclude student's own profile if applicable)
-    // CRITICAL INVARIANT: Select only 'name _id' from User to strip emails, phone numbers, and credentials
-    const alumniProfiles = await AlumniProfile.find({
-      userId: { $in: availableMentorIds, $ne: studentUserId },
-    })
-      .populate({ path: "userId", select: "name _id" })
-      .lean();
-
-    // 4. Calculate match scores and rationales
-    const scoredMentors = alumniProfiles.map((alumni) => {
+    // 3. Calculate match scores and rationales
+    const scoredMentors = eligibleMentors.map((alumni) => {
       const match = calculateMatchScore(
         {
           targetIndustries: studentProfile.targetIndustries,
@@ -83,29 +73,25 @@ export async function GET(request: Request) {
         }
       );
 
-      const userDoc = typeof alumni.userId === "object" ? (alumni.userId as { _id?: unknown; name?: string }) : null;
-      const mentorUserId = String(userDoc?._id || alumni.userId);
-      const capacity = capacityMap.get(mentorUserId);
-
       return {
-        id: String(alumni._id),
-        mentorId: mentorUserId,
-        name: userDoc?.name || "Alumni Mentor",
+        id: alumni.id,
+        mentorId: alumni.mentorId,
+        name: alumni.name || "Alumni Mentor",
         company: alumni.company,
         jobTitle: alumni.jobTitle,
         industry: alumni.industry,
         expertiseTags: alumni.expertiseTags || [],
         capacity: {
-          maxMentees: capacity?.maxMentees ?? 0,
-          activeMentees: capacity?.activeMentees ?? 0,
-          remainingSpots: Math.max(0, (capacity?.maxMentees ?? 0) - (capacity?.activeMentees ?? 0)),
+          maxMentees: alumni.maxMentees,
+          activeMentees: alumni.activeMentees,
+          remainingSpots: Math.max(0, alumni.maxMentees - alumni.activeMentees),
         },
         matchScore: match.score,
         matchRationale: match.rationale,
       };
     });
 
-    // 5. Sort from highest match score to lowest
+    // 4. Sort from highest match score to lowest
     scoredMentors.sort((a, b) => b.matchScore - a.matchScore);
 
     return NextResponse.json({ mentors: scoredMentors });

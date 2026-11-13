@@ -4,15 +4,13 @@ import { connectDB } from "@/lib/db";
 import {
   User as UserModel,
   StudentProfile as StudentProfileModel,
-  AlumniProfile as AlumniProfileModel,
-  MentorCapacity as MentorCapacityModel,
   MentorshipRequest as MentorshipRequestModel,
 } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
 import { calculateMatchScore } from "@/lib/matching";
 import { type Mentor } from "@/app/_components/mentor-card";
 import { StudentMentorsDirectory } from "./_components/student-mentors-directory";
-
+import { getBaseMentorDirectory } from "@/lib/dal";
 
 export const metadata = {
   title: "Mentor Discovery & Matching | Alma",
@@ -122,12 +120,12 @@ export default async function StudentMentorsPage() {
         studentUserId = payload.sub;
       }
     }
-  } catch {
-    // Fallback gracefully
+  } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) throw err;
   }
 
-  // 1. Parallel Batch Fetching: Fetch student identity, profile, pending requests, and available capacities concurrently
-  const [fetchedUser, fetchedProfile, pendingRequests, availableCapacities] = await Promise.all([
+  // 1. Parallel Batch Fetching: Fetch student identity, profile, pending requests, and cached mentor directory concurrently
+  const [fetchedUser, fetchedProfile, pendingRequests, baseMentors] = await Promise.all([
     studentUserId
       ? (UserModel.findById(studentUserId).select("name studentProfile").lean() as Promise<StudentUserDoc | null>)
       : Promise.resolve(null),
@@ -141,9 +139,7 @@ export default async function StudentMentorsPage() {
     studentUserId
       ? MentorshipRequestModel.find({ studentId: studentUserId, status: "pending" }).select("mentorId").lean()
       : Promise.resolve([]),
-    MentorCapacityModel.find({
-      $expr: { $lt: ["$activeMentees", "$maxMentees"] },
-    }).lean(),
+    getBaseMentorDirectory(),
   ]);
 
   studentUser = fetchedUser;
@@ -180,40 +176,13 @@ export default async function StudentMentorsPage() {
     pendingRequests.map((r) => String(r.mentorId))
   );
 
-  const availableMentorIds = availableCapacities.map((c) => c.mentorId);
-  const capacityMap = new Map(
-    availableCapacities.map((c) => [String(c.mentorId), c])
-  );
+  // Filter out student themselves if registered as an alumni mentor
+  const eligibleMentors = studentUserId
+    ? baseMentors.filter((m) => m.mentorId !== studentUserId)
+    : baseMentors;
 
-  // 2. Fetch AlumniProfile records in a single efficient query (both AlumniProfile and MentorProfile point to alumniprofiles collection)
-  const combinedProfiles = (await AlumniProfileModel.find({
-    userId: {
-      $in: availableMentorIds,
-      ...(studentUserId ? { $ne: studentUserId } : {}),
-    },
-  })
-    .populate({ path: "userId", select: "name _id" })
-    .lean()) as unknown as Array<{
-      _id: unknown;
-      userId: unknown;
-      company?: string;
-      jobTitle?: string;
-      industry?: string;
-      expertiseTags?: string[];
-      skills?: Array<{ name: string; endorsements?: number }>;
-      availability?: string;
-      headline?: string;
-    }>;
-
-  // 5. Calculate verified match scores and rationales
-  let mentors: Mentor[] = combinedProfiles.map((alumni) => {
-    const userDoc =
-      typeof alumni.userId === "object"
-        ? (alumni.userId as { _id?: unknown; name?: string })
-        : null;
-    const mentorUserId = String(userDoc?._id || alumni.userId);
-    const capacity = capacityMap.get(mentorUserId);
-
+  // 2. Calculate verified match scores and rationales
+  let mentors: Mentor[] = eligibleMentors.map((alumni) => {
     const match = calculateMatchScore(
       {
         targetIndustries: studentTargets,
@@ -228,13 +197,13 @@ export default async function StudentMentorsPage() {
       }
     );
 
-    const maxMentees = capacity?.maxMentees ?? 1;
-    const activeMentees = capacity?.activeMentees ?? 0;
+    const maxMentees = alumni.maxMentees ?? 1;
+    const activeMentees = alumni.activeMentees ?? 0;
 
     return {
-      id: String(alumni._id),
-      mentorId: mentorUserId,
-      name: userDoc?.name || "Alumni Mentor",
+      id: alumni.id,
+      mentorId: alumni.mentorId,
+      name: alumni.name || "Alumni Mentor",
       company: alumni.company || "Independent",
       jobTitle: alumni.jobTitle || "Mentor",
       industry: alumni.industry || "Technology",
@@ -246,7 +215,7 @@ export default async function StudentMentorsPage() {
       },
       matchScore: match.score,
       matchRationale: match.rationale,
-      hasPendingRequest: pendingMentorIds.has(mentorUserId),
+      hasPendingRequest: pendingMentorIds.has(alumni.mentorId),
     };
   });
 
@@ -280,41 +249,35 @@ export default async function StudentMentorsPage() {
   mentors.sort((a, b) => b.matchScore - a.matchScore);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-stone-200/80">
-        <div>
-          <span className="uppercase tracking-widest text-[11px] font-semibold text-[#2563EB] flex items-center gap-1.5 mb-1.5 font-mono">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>ALUMNI DISCOVERY &amp; MATCHING</span>
-          </span>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-[#1e293b] tracking-tight">
-            {`Welcome, ${studentUser?.name ? studentUser.name.split(" ")[0] : "Student"}`}
-          </h1>
-          <p className="text-stone-500 text-xs sm:text-sm mt-1">
-            Search, filter, and discover verified alumni mentors tailored to your career milestones.
-          </p>
-        </div>
-
-        {/* Top-right badges */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Active Pending Requests Pill */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white border border-stone-200 shadow-2xs text-stone-700">
-            <Clock className="w-3.5 h-3.5 text-stone-500" />
-            <span>
-              <strong>{pendingRequests.length}</strong> / 3 pending intros
-            </span>
+    <div className="space-y-6">
+      {/* Top Banner: Verification & Matching Transparency */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 p-7 text-white shadow-md border border-stone-800">
+        <div className="relative z-10 max-w-2xl space-y-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Verified Alumni Directory</span>
           </div>
+          <h1 className="text-2xl font-semibold tracking-tight text-white font-serif">
+            Discover Your Career Mentor
+          </h1>
+          <p className="text-sm text-stone-300 leading-relaxed">
+            Recommendations are computed transparently based on your target industries, desired skills, and alumni expertise. Every mentor has declared active bandwidth to ensure quality engagement.
+          </p>
 
-          {/* Focus Industry Pill */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 border border-blue-200/80 shadow-2xs text-[#2563EB]">
-            <Target className="w-3.5 h-3.5 text-[#2563EB]" />
-            <span>Focus: {studentTargets[0] || "Technology"}</span>
+          <div className="pt-2 flex flex-wrap gap-4 text-xs text-stone-400">
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-stone-400" />
+              14-day auto-expiry on requests
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Target className="h-3.5 w-3.5 text-stone-400" />
+              Transparent match score (0–100%)
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Interactive Directory with Live Search & Filter Controls */}
+      {/* Interactive Directory with Search, Filter & Modals */}
       <StudentMentorsDirectory
         initialMentors={mentors}
         studentFocusIndustry={studentTargets[0]}
