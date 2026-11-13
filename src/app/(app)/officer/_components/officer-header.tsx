@@ -102,7 +102,7 @@ export function OfficerHeader({
                   key={tab.href}
                   href={tab.href}
                   prefetch={true}
-                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap shrink-0 relative ${
+                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 relative active:scale-[0.98] ${
                     isActive
                       ? "bg-[#E8F0FE] text-[#2563EB] font-semibold shadow-2xs"
                       : "text-slate-600 hover:text-[#0B1F44] hover:bg-slate-100/70"

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { verifyAccess } from "@/lib/app-tokens";
 import { getCachedUser, getCachedMentorProfile, getCachedPendingRequestsCount } from "@/lib/dal";
 import { MentorHeader } from "./_components/mentor-header";
+import { PageTransition } from "@/app/_components/page-transition";
 
 export default async function MentorLayout({
   children,
@@ -41,7 +42,9 @@ export default async function MentorLayout({
         user={{ name: mentorName, avatarUrl }}
         pendingRequestsCount={pendingRequestsCount}
       />
-      <main className="flex-1 py-8 px-4 sm:px-6">{children}</main>
+      <main className="flex-1 py-8 px-4 sm:px-6">
+        <PageTransition>{children}</PageTransition>
+      </main>
     </div>
   );
 }
