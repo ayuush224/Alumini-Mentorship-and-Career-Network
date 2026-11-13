@@ -93,7 +93,18 @@ export function MentorPublicProfileModal({
     }
 
     setIsSent(mentor.hasPendingRequest || false);
-    setMessage("");
+    
+    // Restore auto-saved draft if present in localStorage
+    let savedDraft = "";
+    if (typeof window !== "undefined") {
+      try {
+        const draftKey = `alma_draft_intro_${mentor.mentorId || mentor.id}`;
+        savedDraft = localStorage.getItem(draftKey) || "";
+      } catch {
+        // Ignore localStorage read errors
+      }
+    }
+    setMessage(savedDraft);
     setSendError(null);
     setLoading(true);
     setFetchError(null);
@@ -137,6 +148,22 @@ export function MentorPublicProfileModal({
     profile?.capacity?.remainingSpots ?? mentor.capacity?.remainingSpots ?? 1;
   const isAtCapacity = remainingSpots <= 0;
 
+  const handleMessageChange = (val: string) => {
+    setMessage(val);
+    if (typeof window !== "undefined" && mentor) {
+      try {
+        const draftKey = `alma_draft_intro_${mentor.mentorId || mentor.id}`;
+        if (val.trim()) {
+          localStorage.setItem(draftKey, val);
+        } else {
+          localStorage.removeItem(draftKey);
+        }
+      } catch {
+        // Ignore localStorage quota errors
+      }
+    }
+  };
+
   const handleSendRequest = () => {
     setSendError(null);
     const trimmed = message.trim();
@@ -149,6 +176,14 @@ export function MentorPublicProfileModal({
       const result = await requestMentorship(mentor.mentorId, trimmed);
       if (result.success) {
         setIsSent(true);
+        // Clean up saved draft upon successful request dispatch
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem(`alma_draft_intro_${mentor.mentorId || mentor.id}`);
+          } catch {
+            // Ignore
+          }
+        }
         if (onRequestSent) {
           onRequestSent(mentor.mentorId);
         }
@@ -427,12 +462,20 @@ export function MentorPublicProfileModal({
                     ) : (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">
-                            Your Intro Note
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+                              Your Intro Note
+                            </label>
+                            {message.trim().length > 0 && (
+                              <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                Draft saved locally
+                              </span>
+                            )}
+                          </div>
                           <textarea
                             value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            onChange={(e) => handleMessageChange(e.target.value)}
                             placeholder={`Hi ${
                               displayName.split(" ")[0]
                             }, I would love guidance on breaking into ${

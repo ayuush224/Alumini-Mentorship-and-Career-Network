@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Newsreader, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-newsreader",
   display: "swap",
 });
 
@@ -30,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="en"
       style={{ colorScheme: "light" }}
-      className={`h-full bg-[#F8FAFF] antialiased scroll-smooth ${plusJakarta.variable} ${newsreader.variable} ${inter.variable}`}
+      className={`h-full bg-[#F8FAFF] antialiased scroll-smooth ${plusJakarta.variable} ${inter.variable}`}
     >
       <body className="min-h-full flex flex-col font-sans text-slate-600 bg-[#F8FAFF]">
         {children}

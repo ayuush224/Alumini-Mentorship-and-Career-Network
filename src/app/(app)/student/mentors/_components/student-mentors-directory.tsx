@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   X,
   RotateCcw,
   Sparkles,
   ChevronDown,
+  Clock,
 } from "lucide-react";
 import { MentorCard, type Mentor } from "@/app/_components/mentor-card";
 import { MentorPublicProfileModal } from "./mentor-public-profile-modal";
@@ -33,6 +34,69 @@ export function StudentMentorsDirectory({
   // Public Profile Modal State
   const [selectedMentorForModal, setSelectedMentorForModal] = useState<Mentor | null>(null);
   const [sentMentorIds, setSentMentorIds] = useState<Set<string>>(new Set());
+
+  // Recently Viewed Mentors State (persisted in localStorage)
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
+
+  // Load recently viewed mentor IDs on client mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("alma_recently_viewed_mentors");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setRecentlyViewedIds(parsed);
+          }
+        }
+      } catch {
+        // Ignore localStorage read errors
+      }
+    }
+  }, []);
+
+  // Map recently viewed IDs to authoritative Mentor objects
+  const recentlyViewedMentors = useMemo(() => {
+    if (recentlyViewedIds.length === 0) return [];
+    const mentorMap = new Map<string, Mentor>();
+    for (const m of initialMentors) {
+      if (m.mentorId) mentorMap.set(m.mentorId, m);
+      if (m.id) mentorMap.set(m.id, m);
+    }
+    return recentlyViewedIds
+      .map((id) => mentorMap.get(id))
+      .filter((m): m is Mentor => Boolean(m));
+  }, [recentlyViewedIds, initialMentors]);
+
+  // Track mentor view and open modal
+  const handleOpenMentorModal = (mentor: Mentor) => {
+    setSelectedMentorForModal(mentor);
+    if (typeof window !== "undefined") {
+      try {
+        const key = "alma_recently_viewed_mentors";
+        const currentJson = localStorage.getItem(key);
+        const currentIds: string[] = currentJson ? JSON.parse(currentJson) : [];
+        const mentorId = mentor.mentorId || mentor.id;
+        const updated = [mentorId, ...currentIds.filter((id) => id !== mentorId)].slice(0, 6);
+        localStorage.setItem(key, JSON.stringify(updated));
+        setRecentlyViewedIds(updated);
+      } catch {
+        // Ignore localStorage quota errors
+      }
+    }
+  };
+
+  const handleClearRecentlyViewed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("alma_recently_viewed_mentors");
+        setRecentlyViewedIds([]);
+      } catch {
+        // Ignore
+      }
+    }
+  };
 
   // Extract unique industries from mentors list
   const availableIndustries = useMemo(() => {
@@ -163,6 +227,67 @@ export function StudentMentorsDirectory({
 
   return (
     <div className="space-y-6">
+      {/* Recently Viewed Mentors Carousel */}
+      {recentlyViewedMentors.length > 0 && (
+        <div className="bg-white/85 backdrop-blur-xs rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-2xs space-y-3 transition-all animate-in fade-in duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-700">
+                Recently Viewed Mentors
+              </h3>
+              <span className="text-[11px] font-medium text-stone-400">
+                ({recentlyViewedMentors.length})
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearRecentlyViewed}
+              className="text-[11px] font-medium text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+            >
+              Clear history
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none pb-1">
+            {recentlyViewedMentors.map((m) => {
+              const mentorInitials = m.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+
+              return (
+                <button
+                  key={m.id || m.mentorId}
+                  type="button"
+                  onClick={() => handleOpenMentorModal(m)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-stone-50 hover:bg-blue-50/70 border border-stone-200/80 hover:border-blue-200 text-left transition-all shrink-0 cursor-pointer group shadow-2xs"
+                >
+                  <div className="w-7 h-7 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-[10px] shrink-0">
+                    {mentorInitials}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-stone-800 group-hover:text-blue-700 transition-colors truncate max-w-[130px]">
+                      {m.name}
+                    </div>
+                    <div className="text-[10px] text-stone-500 truncate max-w-[130px]">
+                      {m.jobTitle ? `${m.jobTitle} • ${m.company}` : m.company}
+                    </div>
+                  </div>
+                  {m.matchScore !== undefined && (
+                    <span className="ml-1 text-[10px] font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.5 rounded-md shrink-0">
+                      {m.matchScore}%
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Search & Filter Command Center Card */}
       <div className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-6 shadow-xs space-y-4">
         {/* Row 1: Search Input & Quick Controls */}
@@ -406,7 +531,7 @@ export function StudentMentorsDirectory({
             <MentorCard
               key={mentor.id}
               mentor={mentor}
-              onViewProfile={setSelectedMentorForModal}
+              onViewProfile={handleOpenMentorModal}
             />
           ))}
         </div>

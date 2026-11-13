@@ -60,8 +60,8 @@
   /* Typography Families (Zero-Waterfall Next.js font variables with system fallbacks) */
   --font-sans: var(--font-plus-jakarta), var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-academic: var(--font-newsreader), Georgia, Cambria, "Times New Roman", serif;
-  --font-serif-accent: var(--font-newsreader), Georgia, serif;
+  --font-academic: Georgia, Cambria, "Times New Roman", serif;
+  --font-serif-accent: Georgia, serif;
 
   /* Shadows */
   --shadow-soft: 0 4px 20px -2px rgba(11, 31, 68, 0.05);
