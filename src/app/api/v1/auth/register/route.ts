@@ -10,6 +10,11 @@ import {
   MentorCapacity,
 } from "@/lib/models";
 import { Action } from "@/lib/models/Tasks";
+import {
+  VerificationRequest,
+  VerificationDocument,
+} from "@/lib/models/Verification";
+import { uploadVerificationDocumentToCloudinary } from "@/lib/cloudinary";
 import { signAccessToken, generateRefreshToken } from "@/lib/app-tokens";
 
 export const runtime = "nodejs";
@@ -43,8 +48,27 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => null);
-    const parsed = registerSchema.safeParse(body);
+    const contentType = request.headers.get("content-type") || "";
+    let rawData: Record<string, unknown> = {};
+    let idProofFile: File | null = null;
+    let extraDocumentFile: File | null = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      for (const [key, value] of formData.entries()) {
+        if (key === "idProof" && value instanceof File) {
+          idProofFile = value;
+        } else if (key === "extraDocument" && value instanceof File) {
+          extraDocumentFile = value;
+        } else if (typeof value === "string") {
+          rawData[key] = value;
+        }
+      }
+    } else {
+      rawData = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    }
+
+    const parsed = registerSchema.safeParse(rawData);
 
     if (!parsed.success) {
       const firstError = parsed.error.issues[0]?.message || "Invalid registration data";
@@ -65,6 +89,7 @@ export async function POST(request: Request) {
       skillsToDevelop,
       major,
       graduationYear,
+      institutionalId,
       currentRole,
       company,
       jobTitle,
@@ -81,7 +106,10 @@ export async function POST(request: Request) {
       name?.trim() ||
       normalizedEmail.split("@")[0] ||
       (role === "alumni" ? "Alumni Mentor" : "Student");
-    const resolvedInstitution = institutionId?.trim() || "Lovely Professional University";
+    const resolvedInstitution =
+      institutionId?.trim() === "Lovely Professional University"
+        ? "INST-001"
+        : institutionId?.trim() || "INST-001";
 
     await connectDB();
 
@@ -180,6 +208,7 @@ export async function POST(request: Request) {
         featuredWork: [],
         totalMentees: 0,
         sessionsCompleted: 0,
+        isVerified: false,
       };
     }
 
@@ -191,6 +220,8 @@ export async function POST(request: Request) {
       institutionId: resolvedInstitution,
       studentProfile: studentProfilePayload,
       mentorProfile: mentorProfilePayload,
+      verificationStatus: role === "alumni" ? "pending" : "verified",
+      isVerified: role === "alumni" ? false : true,
     });
 
     const userId = String(user._id);
@@ -236,23 +267,109 @@ export async function POST(request: Request) {
     } else if (role === "alumni" && mentorProfilePayload) {
       await MentorProfile.findOneAndUpdate(
         { userId: user._id },
-        { $set: { userId: user._id, ...mentorProfilePayload } },
+        { $set: { userId: user._id, ...mentorProfilePayload, isVerified: false } },
         { upsert: true }
       );
 
       await AlumniProfile.findOneAndUpdate(
         { userId: user._id },
-        { $set: { userId: user._id, ...mentorProfilePayload } },
+        { $set: { userId: user._id, ...mentorProfilePayload, isVerified: false } },
         { upsert: true }
       );
 
-      // Enforce Invariant 1: Ensure mentor capacity document exists so mentor is discoverable
+      // Enforce Invariant 1: Ensure mentor capacity document exists (acceptingRequests is false until verified!)
       const maxLimit = Number(process.env.MAX_MENTEES_PER_MENTOR || 5);
       await MentorCapacity.findOneAndUpdate(
         { mentorId: user._id },
-        { $set: { mentorId: user._id, maxMentees: maxLimit, activeMentees: 0 } },
+        {
+          $set: {
+            mentorId: user._id,
+            maxMentees: maxLimit,
+            activeMentees: 0,
+            acceptingRequests: false,
+          },
+        },
         { upsert: true }
       );
+
+      // Process uploaded documents and create VerificationRequest
+      const docIds: string[] = [];
+
+      // Helper function to upload file safely
+      const processUpload = async (
+        file: File,
+        docType: "institutional_id_proof" | "additional_document"
+      ) => {
+        try {
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          const uploadRes = await uploadVerificationDocumentToCloudinary(buffer, file.name);
+
+          let fileUrl: string;
+          let objectKey: string;
+
+          if (uploadRes.success && uploadRes.data?.secure_url) {
+            fileUrl = uploadRes.data.secure_url;
+            objectKey = uploadRes.data.public_id;
+          } else {
+            // Safe fallback data-URI if Cloudinary is not configured or offline
+            const mimeType = file.type || "application/pdf";
+            fileUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
+            objectKey = `doc_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+          }
+
+          const doc = await VerificationDocument.create({
+            institutionId: resolvedInstitution,
+            userId: user._id,
+            documentType: docType,
+            objectKey,
+            fileName: file.name,
+            fileUrl,
+            declaredContentType: file.type || "application/pdf",
+            sizeBytes: file.size,
+            status: "pending_upload",
+            uploadedAt: new Date(),
+          });
+
+          return String(doc._id);
+        } catch (uploadErr) {
+          console.error(`[Upload Error] for ${docType}:`, uploadErr);
+          return null;
+        }
+      };
+
+      if (idProofFile && idProofFile.size > 0) {
+        const idDocId = await processUpload(idProofFile, "institutional_id_proof");
+        if (idDocId) docIds.push(idDocId);
+      }
+
+      if (extraDocumentFile && extraDocumentFile.size > 0) {
+        const extraDocId = await processUpload(extraDocumentFile, "additional_document");
+        if (extraDocId) docIds.push(extraDocId);
+      }
+
+      const parsedGradYear = graduationYear ? Number(graduationYear) : new Date().getFullYear();
+      const resolvedIdentifier = institutionalId?.trim() || `LPU-ALUM-${parsedGradYear}-${Date.now().toString().slice(-4)}`;
+
+      const verifReq = await VerificationRequest.create({
+        institutionId: resolvedInstitution,
+        alumnusId: user._id,
+        userId: user._id,
+        institutionalIdentifier: resolvedIdentifier,
+        graduationYear: parsedGradYear,
+        degree: currentRole?.trim() || jobTitle?.trim() || "Alumni Mentor",
+        status: "pending",
+        submittedAt: new Date(),
+        documents: docIds,
+      });
+
+      // Link verificationRequestId to documents
+      if (docIds.length > 0) {
+        await VerificationDocument.updateMany(
+          { _id: { $in: docIds } },
+          { $set: { verificationRequestId: verifReq._id } }
+        );
+      }
     }
 
     const accessToken = await signAccessToken({
@@ -269,6 +386,8 @@ export async function POST(request: Request) {
           email: user.email,
           name: user.name,
           role: user.role,
+          verificationStatus: user.verificationStatus,
+          isVerified: user.isVerified,
           createdAt: user.createdAt,
         },
       },

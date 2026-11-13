@@ -56,6 +56,7 @@ export interface IVerificationDocument extends Document {
   institutionId?: string;
   verificationRequestId?: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
+  documentType?: "institutional_id_proof" | "additional_document" | string;
   objectKey: string;
   fileName: string;
   fileUrl: string;
@@ -88,6 +89,11 @@ export const VerificationDocumentSchema = new Schema<IVerificationDocument>(
       ref: "User",
       required: true,
       index: true,
+    },
+    documentType: {
+      type: String,
+      trim: true,
+      default: "institutional_id_proof",
     },
     objectKey: {
       type: String,

@@ -8,17 +8,21 @@ import {
   AUTH_RATE_LIMIT_WINDOW_SECONDS,
 } from "@/lib/config";
 
+/** HTTP methods that require CSRF and origin validation. */
 const mutating = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
+/** Generates a cryptographically secure random CSRF token (base64url-encoded). */
 export function csrfToken() {
   return randomBytes(32).toString("base64url");
 }
 
+/** Validates that a mutating request passes both origin and CSRF checks. */
 export function checkRequest(request: Request) {
   if (!mutating.has(request.method)) return true;
   return checkOrigin(request) && checkCsrf(request);
 }
 
+/** Validates the request origin against the AUTH_TRUSTED_ORIGINS allow-list. */
 export function checkOrigin(request: Request) {
   const allowed = new Set((process.env.AUTH_TRUSTED_ORIGINS || "http://localhost:3000").split(",").filter(Boolean));
   const source = request.headers.get("origin") || request.headers.get("referer");
@@ -31,6 +35,7 @@ export function checkOrigin(request: Request) {
   return true;
 }
 
+/** Performs timing-safe CSRF double-submit cookie verification. */
 function checkCsrf(request: Request) {
   const cookie = request.headers.get("cookie")?.match(/(?:^|;\s*)csrf_token=([^;]+)/)?.[1];
   const header = request.headers.get("x-csrf-token");
@@ -38,6 +43,7 @@ function checkCsrf(request: Request) {
   return timingSafeEqual(Buffer.from(cookie), Buffer.from(header));
 }
 
+/** Extracts and verifies the current user from the access_token cookie. */
 export async function currentUser(request: Request) {
   const token = request.headers.get("cookie")?.match(/(?:^|;\s*)access_token=([^;]+)/)?.[1];
   const payload = token && (await verifyAccess(token));
@@ -46,6 +52,7 @@ export async function currentUser(request: Request) {
   return user ? { user } : null;
 }
 
+/** Enforces CSRF validation, authentication, and role-based access control in a single call. */
 export async function requireRole(request: Request, roles: string[]) {
   if (!checkRequest(request)) return { error: "CSRF or origin validation failed", status: 403 as const };
   const session = await currentUser(request);

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
 
+/**
+ * Shape of the global mongoose connection cache.
+ * Prevents multiple connections during hot-reload in development.
+ */
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -15,12 +19,20 @@ if (!global.mongooseCache) {
   global.mongooseCache = cached;
 }
 
+/**
+ * Establishes (or reuses) a cached Mongoose connection to MongoDB.
+ * Uses global caching to survive Next.js hot-module reloads without leaking connections.
+ *
+ * @returns The connected Mongoose instance.
+ * @throws {Error} If MONGODB_URI is missing from environment variables.
+ */
 export async function connectDB(): Promise<typeof mongoose> {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
     throw new Error("MONGODB_URI is not defined in environment variables");
   }
 
+  // Return existing connection immediately if available
   if (cached.conn) {
     return cached.conn;
   }
@@ -39,6 +51,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   try {
     cached.conn = await cached.promise;
   } catch (error) {
+    // Reset the cached promise so the next call retries the connection
     cached.promise = null;
     throw error;
   }
@@ -67,6 +80,8 @@ export async function isReplicaSet(): Promise<boolean> {
 /**
  * Safely starts a Mongoose transaction if supported by the connected MongoDB cluster (Replica Set / mongos).
  * Returns null if running against a standalone MongoDB instance without replica set support.
+ *
+ * @returns A started ClientSession with an active transaction, or null for standalone instances.
  */
 export async function startSafeTransaction(): Promise<mongoose.ClientSession | null> {
   await connectDB();

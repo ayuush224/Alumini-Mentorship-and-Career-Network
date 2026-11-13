@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { FileText, ExternalLink, X, ShieldCheck } from "lucide-react";
+import { FileText, ExternalLink, X, ShieldCheck, Image as ImageIcon } from "lucide-react";
 
 export interface VerificationDocumentItem {
   id: string;
   fileName: string;
   fileUrl: string;
   contentType: string;
+  documentType?: string;
   sizeBytes: number;
 }
 
@@ -40,6 +41,13 @@ export function DocumentModal({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
+  const isImageDoc = (doc: VerificationDocumentItem) => {
+    if (doc.contentType && doc.contentType.startsWith("image/")) return true;
+    if (doc.fileName && /\.(png|jpe?g|webp|gif|svg)$/i.test(doc.fileName)) return true;
+    if (doc.fileUrl && doc.fileUrl.startsWith("data:image/")) return true;
+    return false;
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
@@ -60,7 +68,7 @@ export function DocumentModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -70,7 +78,7 @@ export function DocumentModal({
         <div className="px-6 py-3.5 bg-stone-100/60 border-b border-stone-200/60 flex flex-wrap items-center gap-6 text-xs text-stone-600">
           <div>
             <span className="text-stone-400 uppercase tracking-wider text-[10px] block">
-              Declared Degree
+              Declared Role / Degree
             </span>
             <span className="font-semibold text-stone-900">{degree}</span>
           </div>
@@ -93,7 +101,7 @@ export function DocumentModal({
         {/* Documents Content */}
         <div className="p-6 overflow-y-auto space-y-4">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-            Uploaded Credentials ({documents.length})
+            Uploaded Credentials &amp; Proofs ({documents.length})
           </h4>
 
           {documents.length === 0 ? (
@@ -108,36 +116,62 @@ export function DocumentModal({
             </div>
           ) : (
             <div className="space-y-3">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="p-4 rounded-xl border border-stone-200/80 bg-white hover:border-stone-300 transition-colors flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-9 h-9 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-stone-900 truncate">
-                        {doc.fileName}
-                      </p>
-                      <p className="text-[11px] text-stone-500 mt-0.5">
-                        {doc.contentType} • {formatFileSize(doc.sizeBytes)}
-                      </p>
-                    </div>
-                  </div>
+              {documents.map((doc, idx) => {
+                const isImage = isImageDoc(doc);
+                const isPrimaryIdProof =
+                  doc.documentType === "institutional_id_proof" || idx === 0;
 
-                  <a
-                    href={doc.fileUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200/80 text-stone-800 text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0"
+                return (
+                  <div
+                    key={doc.id || idx}
+                    className="p-4 rounded-xl border border-stone-200/80 bg-white hover:border-stone-300 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
-                    <span>View File</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
-                  </a>
-                </div>
-              ))}
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className="w-10 h-10 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
+                        {isImage ? (
+                          <ImageIcon className="w-5 h-5" />
+                        ) : (
+                          <FileText className="w-5 h-5" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              isPrimaryIdProof
+                                ? "bg-blue-100 text-[#1D4ED8] border border-blue-200"
+                                : "bg-purple-100 text-purple-800 border border-purple-200"
+                            }`}
+                          >
+                            {isPrimaryIdProof
+                              ? "Institutional ID Proof"
+                              : "Additional Supporting Document"}
+                          </span>
+                          <span className="text-[10px] text-stone-400">
+                            {formatFileSize(doc.sizeBytes)}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-stone-900 truncate">
+                          {doc.fileName}
+                        </p>
+                        <p className="text-[11px] text-stone-500 mt-0.5">
+                          {doc.contentType || "document"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                    >
+                      <span>View Document</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-stone-300" />
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -146,7 +180,7 @@ export function DocumentModal({
         <div className="px-6 py-4 border-t border-stone-100 bg-stone-50/50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium transition-colors"
+            className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium transition-colors cursor-pointer"
           >
             Close Viewer
           </button>
