@@ -14,8 +14,6 @@ import {
   MessageSquare,
   FileCheck,
 } from "lucide-react";
-import { MarketingNavbar } from "@/components/marketing/navbar";
-import { MarketingFooter } from "@/components/marketing/footer";
 import { CurvedBackground } from "@/components/marketing/curved-background";
 
 export const metadata = {
@@ -98,9 +96,7 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
-      <MarketingNavbar />
-
+    <div className="relative overflow-hidden">
       <main className="flex-1 relative overflow-hidden">
         <CurvedBackground />
 
@@ -244,8 +240,6 @@ export default function FeaturesPage() {
           </div>
         </section>
       </main>
-
-      <MarketingFooter />
     </div>
   );
 }

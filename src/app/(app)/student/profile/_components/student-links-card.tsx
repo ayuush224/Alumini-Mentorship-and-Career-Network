@@ -15,7 +15,7 @@ import {
   addStudentOtherLink,
   removeStudentOtherLink,
   updateStudentCodingProfiles,
-} from "@/app/actions/profile";
+} from "@/actions/profile";
 
 export interface StudentLinksCardProps {
   initialCodingProfiles?: Array<{

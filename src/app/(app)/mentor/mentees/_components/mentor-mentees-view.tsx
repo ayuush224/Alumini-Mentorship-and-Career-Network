@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   BarChart3,
 } from "lucide-react";
-import { StudentCareerProfileViewData } from "@/app/actions/profile";
+import { StudentCareerProfileViewData } from "@/actions/profile";
 import { StudentCareerProfileModal } from "../../requests/_components/student-career-profile-modal";
 import { AddMenteeTaskModal } from "./add-mentee-task-modal";
 import {

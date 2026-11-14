@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, X } from "lucide-react";
-import { updateOfficerPassword } from "@/app/actions/officer";
+import { updateOfficerPassword } from "@/actions/officer";
 
 interface OfficerPasswordModalProps {
   isOpen: boolean;

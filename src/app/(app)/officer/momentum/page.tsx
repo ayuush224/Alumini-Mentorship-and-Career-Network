@@ -1,5 +1,5 @@
 import React from "react";
-import { getMomentumPairings } from "@/app/actions/officer";
+import { getMomentumPairings } from "@/actions/officer";
 import { RelationshipMomentum } from "../_components/relationship-momentum";
 import { Activity } from "lucide-react";
 

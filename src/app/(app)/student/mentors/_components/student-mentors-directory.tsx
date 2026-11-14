@@ -9,7 +9,7 @@ import {
   ChevronDown,
   Clock,
 } from "lucide-react";
-import { MentorCard, type Mentor } from "@/app/_components/mentor-card";
+import { MentorCard, type Mentor } from "./mentor-card";
 import { MentorPublicProfileModal } from "./mentor-public-profile-modal";
 
 interface StudentMentorsDirectoryProps {

@@ -9,7 +9,7 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
-import { nudgeMentorship } from "@/app/actions/officer";
+import { nudgeMentorship } from "@/actions/officer";
 
 export interface MomentumPairingItem {
   id: string;

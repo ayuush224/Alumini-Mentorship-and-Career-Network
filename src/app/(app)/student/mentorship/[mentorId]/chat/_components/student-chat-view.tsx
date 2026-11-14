@@ -23,7 +23,7 @@ import {
   fetchMessagesAction,
   uploadChatAttachmentAction,
   ChatMessageItem,
-} from "@/app/actions/chat";
+} from "@/actions/chat";
 import { getPusherClient } from "@/lib/pusher-client";
 import {
   getAttachmentDownloadUrl,

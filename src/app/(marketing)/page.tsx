@@ -18,8 +18,6 @@ import {
   Zap,
   HelpCircle,
 } from "lucide-react";
-import { MarketingNavbar } from "@/components/marketing/navbar";
-import { MarketingFooter } from "@/components/marketing/footer";
 import { CurvedBackground } from "@/components/marketing/curved-background";
 
 
@@ -121,10 +119,7 @@ export default async function HomePage(props: {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF] relative selection:bg-[#DBEAFE] selection:text-[#1E3A8A]">
-      {/* Global Marketing Navbar */}
-      <MarketingNavbar userDashboardUrl={userDashboardUrl} />
-
+    <div className="relative selection:bg-[#DBEAFE] selection:text-[#1E3A8A]">
       {/* Main Hero & Content Flow */}
       <main className="flex-1 relative overflow-hidden">
         {/* Soft Wave & Curved Blob Background (Image 2 Replica) */}
@@ -440,9 +435,6 @@ export default async function HomePage(props: {
           </div>
         </section>
       </main>
-
-      {/* Global Marketing Footer */}
-      <MarketingFooter />
     </div>
   );
 }

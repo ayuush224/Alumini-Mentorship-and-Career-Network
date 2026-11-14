@@ -30,7 +30,7 @@ import {
   deleteMentorExperience,
   addMentorFeaturedWork,
   deleteMentorFeaturedWork,
-} from "@/app/actions/profile";
+} from "@/actions/profile";
 
 export interface MentorProfileData {
   name: string;

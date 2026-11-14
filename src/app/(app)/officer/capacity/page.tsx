@@ -1,5 +1,5 @@
 import React from "react";
-import { getMentorCapacitiesData } from "@/app/actions/officer";
+import { getMentorCapacitiesData } from "@/actions/officer";
 import { CapacityWatchdog } from "../_components/capacity-watchdog";
 import { Users } from "lucide-react";
 

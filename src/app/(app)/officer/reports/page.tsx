@@ -1,5 +1,5 @@
 import React from "react";
-import { getAuditReportsData } from "@/app/actions/officer";
+import { getAuditReportsData } from "@/actions/officer";
 import { AuditReports } from "../_components/audit-reports";
 import { FileText } from "lucide-react";
 

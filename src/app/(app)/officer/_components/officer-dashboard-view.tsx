@@ -28,7 +28,7 @@ import {
   Briefcase,
   TrendingUp,
 } from "lucide-react";
-import { nudgeMentorship, decideVerification } from "@/app/actions/officer";
+import { nudgeMentorship, decideVerification } from "@/actions/officer";
 
 export interface VerificationPreviewItem {
   id: string;

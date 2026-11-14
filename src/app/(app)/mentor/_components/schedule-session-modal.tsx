@@ -13,8 +13,8 @@ import {
   Upload,
   CheckCircle2,
 } from "lucide-react";
-import { scheduleMentorshipSession } from "@/app/actions/mentorship";
-import { uploadSessionAttachmentAction } from "@/app/actions/chat";
+import { scheduleMentorshipSession } from "@/actions/mentorship";
+import { uploadSessionAttachmentAction } from "@/actions/chat";
 import { formatAttachmentBytes } from "@/lib/chat-attachments";
 
 export interface ActiveMenteeOption {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { X, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
-import { createTaskAction } from "@/app/actions/tasks";
+import { createTaskAction } from "@/actions/tasks";
 
 interface AddMenteeTaskModalProps {
   isOpen: boolean;

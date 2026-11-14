@@ -24,9 +24,9 @@ import {
 import {
   getMentorPublicProfile,
   type MentorPublicProfileViewData,
-} from "@/app/actions/profile";
-import { requestMentorship } from "@/app/actions/mentorship";
-import type { Mentor } from "@/app/_components/mentor-card";
+} from "@/actions/profile";
+import { requestMentorship } from "@/actions/mentorship";
+import type { Mentor } from "./mentor-card";
 
 function formatExperienceDate(dateVal?: string | Date | null): string {
   if (!dateVal) return "";

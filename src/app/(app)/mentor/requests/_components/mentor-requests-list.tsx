@@ -17,8 +17,8 @@ import {
 import {
   acceptMentorshipRequest,
   declineMentorshipRequest,
-} from "@/app/actions/mentorship";
-import { StudentCareerProfileViewData } from "@/app/actions/profile";
+} from "@/actions/mentorship";
+import { StudentCareerProfileViewData } from "@/actions/profile";
 import { StudentCareerProfileModal } from "./student-career-profile-modal";
 
 export interface PendingRequestItem {

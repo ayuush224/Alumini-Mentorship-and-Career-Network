@@ -8,7 +8,7 @@ import {
 } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
 import { calculateMatchScore } from "@/lib/matching";
-import { type Mentor } from "@/app/_components/mentor-card";
+import { type Mentor } from "./_components/mentor-card";
 import { StudentMentorsDirectory } from "./_components/student-mentors-directory";
 import { getBaseMentorDirectory } from "@/lib/dal";
 

@@ -26,7 +26,7 @@ import {
   createTaskAction,
   updateTaskAction,
   deleteTaskAction,
-} from "@/app/actions/tasks";
+} from "@/actions/tasks";
 import { isTaskExpired, formatDateForInput } from "@/lib/utils/tasks";
 export { isTaskExpired };
 import { ScheduleSessionModal, ActiveMenteeOption } from "../../_components/schedule-session-modal";

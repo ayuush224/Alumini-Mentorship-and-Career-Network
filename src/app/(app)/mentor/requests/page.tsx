@@ -6,7 +6,7 @@ import { MentorshipRequest, MentorCapacity, Mentorship } from "@/lib/models";
 import { StudentProfile } from "@/lib/models/User";
 import { MAX_MENTEES_PER_MENTOR } from "@/lib/config";
 import { MentorRequestsList, PendingRequestItem } from "./_components/mentor-requests-list";
-import { StudentCareerProfileViewData } from "@/app/actions/profile";
+import { StudentCareerProfileViewData } from "@/actions/profile";
 
 
 export const metadata = {

@@ -9,8 +9,6 @@ import {
   Building2,
   GraduationCap,
 } from "lucide-react";
-import { MarketingNavbar } from "@/components/marketing/navbar";
-import { MarketingFooter } from "@/components/marketing/footer";
 import { CurvedBackground } from "@/components/marketing/curved-background";
 
 export const metadata = {
@@ -47,9 +45,7 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
-      <MarketingNavbar />
-
+    <div className="relative overflow-hidden">
       <main className="flex-1 relative overflow-hidden">
         <CurvedBackground />
 
@@ -206,8 +202,6 @@ export default function CommunityPage() {
           </div>
         </section>
       </main>
-
-      <MarketingFooter />
     </div>
   );
 }

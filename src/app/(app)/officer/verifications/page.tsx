@@ -1,5 +1,5 @@
 import React from "react";
-import { getVerificationRequests } from "@/app/actions/officer";
+import { getVerificationRequests } from "@/actions/officer";
 import { VerificationQueue } from "../_components/verification-queue";
 import { ShieldCheck } from "lucide-react";
 

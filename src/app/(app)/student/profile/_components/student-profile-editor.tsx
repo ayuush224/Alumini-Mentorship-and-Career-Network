@@ -34,7 +34,7 @@ import {
   deleteStudentProject,
   addStudentExperience,
   deleteStudentExperience,
-} from "@/app/actions/profile";
+} from "@/actions/profile";
 
 export interface StudentProfileData {
   name: string;

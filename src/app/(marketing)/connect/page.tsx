@@ -1,43 +1,39 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Calendar,
-  CheckSquare,
   Lock,
+  Clock,
+  Send,
 } from "lucide-react";
-import { MarketingNavbar } from "@/components/marketing/navbar";
-import { MarketingFooter } from "@/components/marketing/footer";
 import { CurvedBackground } from "@/components/marketing/curved-background";
 
 export const metadata = {
-  title: "Stage 03: Mentor · Alma Mentorship",
-  description: "Shared relationship workspace with meeting agendas, bilateral goals, action checklists, and private notes.",
+  title: "Stage 02: Connect · Alma Mentorship",
+  description: "Throttled student request queues with single-click acceptances and shielded contact details.",
 };
 
-export default function MentorStagePage() {
+export default function ConnectStagePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
-      <MarketingNavbar />
-
+    <div className="relative overflow-hidden">
       <main className="flex-1 relative overflow-hidden">
         <CurvedBackground />
 
         {/* Hero */}
         <section className="pt-8 sm:pt-12 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative z-10 flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DBEAFE] text-[#0B1F44] text-xs font-semibold mb-4">
-            <span className="font-mono font-bold text-[#2563EB]">03</span>
+            <span className="font-mono font-bold text-[#2563EB]">02</span>
             <span>The Mentoring Journey</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-bold font-heading text-[#0B1F44] tracking-tight max-w-3xl w-full mx-auto text-center mb-4">
-            Mentor inside a{" "}
+            Connect through{" "}
             <span className="font-serif-accent font-normal italic text-[#2563EB]">
-              shared workspace.
+              structured introductions.
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl w-full mx-auto text-center mb-6 leading-relaxed font-normal">
-            Every mentorship is anchored in a bilateral relationship hub with shared meeting agendas, actionable checkboxes, and private notes.
+            Eliminate ghosting and volunteer fatigue. Requests are capped, expiring after 14 days, with single-click approval workflows.
           </p>
 
           <div className="flex items-center justify-center gap-4">
@@ -55,21 +51,21 @@ export default function MentorStagePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-3xl border border-slate-200/90 p-7 shadow-xs space-y-3">
               <span className="w-10 h-10 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold">
-                <Calendar className="w-5 h-5" />
+                <Clock className="w-5 h-5" />
               </span>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Integrated Video Rooms</h3>
+              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Anti-Ghosting Expiry</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                One-click Alma video rooms eliminate messy calendar link exchanges. Agendas are set ahead of time so every minute counts.
+                Requests automatically expire after 14 days if unaddressed, freeing up student slots and keeping pending queues clean.
               </p>
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200/90 p-7 shadow-xs space-y-3">
               <span className="w-10 h-10 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold">
-                <CheckSquare className="w-5 h-5" />
+                <Send className="w-5 h-5" />
               </span>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Actionable Milestones</h3>
+              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Request Throttling</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Both student and mentor collaboratively manage action checklists between calls, ensuring advice turns into executed results.
+                Students are limited to 3 active pending requests simultaneously, encouraging deliberate, personalized outreach rather than spam.
               </p>
             </div>
 
@@ -77,16 +73,14 @@ export default function MentorStagePage() {
               <span className="w-10 h-10 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold">
                 <Lock className="w-5 h-5" />
               </span>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Private Notes</h3>
+              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">Shielded Communication</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Mentors keep private observations and feedback notes strictly confidential, visible only to themselves for session continuity.
+                Alumni never receive cold emails or phone calls. All requests arrive in their Alma dashboard with single-click accept/decline.
               </p>
             </div>
           </div>
         </section>
       </main>
-
-      <MarketingFooter />
     </div>
   );
 }
