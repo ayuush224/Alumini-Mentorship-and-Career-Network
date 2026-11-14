@@ -121,7 +121,7 @@ export default async function HomePage(props: {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF] relative selection:bg-[#DBEAFE] selection:text-[#1E3A8A]">
+    <div className="min-h-screen flex flex-col bg-background relative selection:bg-primary-100 selection:text-primary-900">
       {/* Global Marketing Navbar */}
       <MarketingNavbar userDashboardUrl={userDashboardUrl} />
 
@@ -135,15 +135,15 @@ export default async function HomePage(props: {
         ==================================================================== */}
         <section className="pt-8 sm:pt-14 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative z-10 flex flex-col items-center">
           {/* Centered Pill Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#DBEAFE]/80 border border-[#BFDBFE]/60 text-[#1E40AF] text-xs font-semibold shadow-2xs mb-5 transition-transform hover:scale-105">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB] animate-pulse" />
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-primary-100/80 border border-primary-200/60 text-primary-800 text-xs font-semibold shadow-2xs mb-5 transition-transform hover:scale-105">
+            <span className="w-2 h-2 rounded-full bg-primary-600 animate-pulse" />
             <span>Verified Alumni Mentorship Platform</span>
           </div>
 
           {/* Two-line Signature Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black font-heading tracking-tight text-[#0B1F44] max-w-4xl w-full mx-auto text-center leading-[1.08] mb-4">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black font-heading tracking-tight text-deep max-w-4xl w-full mx-auto text-center leading-[1.08] mb-4">
             Turn alumni goodwill{" "}
-            <span className="block font-serif font-bold italic text-[#2563EB] tracking-tight mt-1 text-center">
+            <span className="block font-serif font-bold italic text-primary-600 tracking-tight mt-1 text-center">
               into momentum.
             </span>
           </h1>
@@ -157,7 +157,7 @@ export default async function HomePage(props: {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 w-full">
             <Link
               href="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-semibold bg-[#DBEAFE] hover:bg-[#BFDBFE] text-[#2563EB] shadow-2xs transition-all hover:scale-105"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-semibold bg-primary-100 hover:bg-primary-200 text-primary-600 shadow-2xs transition-all hover:scale-105"
             >
               <span>Get started</span>
               <ArrowRight className="w-4 h-4" />
@@ -199,16 +199,16 @@ export default async function HomePage(props: {
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] block mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-600 block mb-1">
                 REPORT-READY SCREENS
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-[#0B1F44]">
+              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-deep">
                 The mentoring journey, end to end
               </h2>
             </div>
 
             <div className="self-start sm:self-auto">
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#DBEAFE] text-[#2563EB] border border-[#BFDBFE]">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-primary-100 text-primary-600 border border-primary-200">
                 04 PAGES
               </span>
             </div>
@@ -222,20 +222,20 @@ export default async function HomePage(props: {
                 <Link
                   key={card.num}
                   href={card.href}
-                  className="group bg-white rounded-3xl border border-[#2563EB]/15 p-6 sm:p-7 shadow-xs hover:shadow-md hover:border-[#2563EB]/40 transition-all flex flex-col justify-between hover:-translate-y-1"
+                  className="group bg-white rounded-3xl border border-primary-600/15 p-6 sm:p-7 shadow-xs hover:shadow-md hover:border-primary-600/40 transition-all flex flex-col justify-between hover:-translate-y-1"
                 >
                   <div>
                     {/* Top Row: Number & Soft-Blue Icon Square */}
                     <div className="flex items-center justify-between mb-8">
-                      <span className="text-xs font-mono font-bold text-slate-400 group-hover:text-[#2563EB] transition-colors">
+                      <span className="text-xs font-mono font-bold text-slate-400 group-hover:text-primary-600 transition-colors">
                         {card.num}
                       </span>
-                      <div className="w-11 h-11 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE]/60 text-[#2563EB] flex items-center justify-center transition-transform group-hover:scale-110">
+                      <div className="w-11 h-11 rounded-2xl bg-primary-50 border border-primary-200/60 text-primary-600 flex items-center justify-center transition-transform group-hover:scale-110">
                         <IconComponent className="w-5 h-5" />
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-bold font-heading text-[#0B1F44] mb-2 group-hover:text-[#2563EB] transition-colors">
+                    <h3 className="text-xl font-bold font-heading text-deep mb-2 group-hover:text-primary-600 transition-colors">
                       {card.title}
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
@@ -243,7 +243,7 @@ export default async function HomePage(props: {
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#2563EB]">
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-primary-600">
                     <span>Explore stage</span>
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                   </div>
@@ -256,11 +256,11 @@ export default async function HomePage(props: {
         {/* ===================================================================
             3. INSTITUTIONAL SOCIAL PROOF & STATS STRIP
         ==================================================================== */}
-        <section className="py-16 bg-[#F0F5FF]/70 border-y border-[#2563EB]/10 relative z-10">
+        <section className="py-16 bg-primary-50/70 border-y border-primary-600/10 relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-bold font-heading text-[#0B1F44]">
+                <p className="text-3xl sm:text-4xl font-bold font-heading text-deep">
                   100%
                 </p>
                 <p className="text-xs sm:text-sm font-medium text-slate-600">
@@ -270,7 +270,7 @@ export default async function HomePage(props: {
               </div>
 
               <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-bold font-heading text-[#2563EB]">
+                <p className="text-3xl sm:text-4xl font-bold font-heading text-primary-600">
                   &lt;48h
                 </p>
                 <p className="text-xs sm:text-sm font-medium text-slate-600">
@@ -280,7 +280,7 @@ export default async function HomePage(props: {
               </div>
 
               <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-bold font-heading text-[#0B1F44]">
+                <p className="text-3xl sm:text-4xl font-bold font-heading text-deep">
                   4.8 / 5.0
                 </p>
                 <p className="text-xs sm:text-sm font-medium text-slate-600">
@@ -290,7 +290,7 @@ export default async function HomePage(props: {
               </div>
 
               <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-bold font-heading text-[#2563EB]">
+                <p className="text-3xl sm:text-4xl font-bold font-heading text-primary-600">
                   0
                 </p>
                 <p className="text-xs sm:text-sm font-medium text-slate-600">
@@ -307,10 +307,10 @@ export default async function HomePage(props: {
         ==================================================================== */}
         <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-primary-600 block">
               ENGINEERED FOR GOVERNANCE
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#0B1F44]">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading text-deep">
               Three structural pillars informal networks ignore
             </h2>
             <p className="text-sm sm:text-base text-slate-600">
@@ -320,48 +320,48 @@ export default async function HomePage(props: {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-200 text-primary-600 flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">
+              <h3 className="text-lg font-bold font-heading text-deep">
                 Strict Mentor Capacity Control
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Mentors set declared active limits. Atomic MongoDB updates physically prohibit concurrent over-subscription, preventing alumni volunteer fatigue.
               </p>
-              <div className="pt-2 text-xs font-semibold text-[#2563EB] flex items-center gap-1">
+              <div className="pt-2 text-xs font-semibold text-primary-600 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Invariant 1 Guarantee</span>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-200 text-primary-600 flex items-center justify-center">
                 <Lock className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">
+              <h3 className="text-lg font-bold font-heading text-deep">
                 Shielded Alumni Privacy
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Personal emails and phone numbers never cross server response boundaries. All scheduling, notes, and messages take place securely within Alma.
               </p>
-              <div className="pt-2 text-xs font-semibold text-[#2563EB] flex items-center gap-1">
+              <div className="pt-2 text-xs font-semibold text-primary-600 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Invariant 2 Guarantee</span>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-primary-50 border border-primary-200 text-primary-600 flex items-center justify-center">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold font-heading text-[#0B1F44]">
+              <h3 className="text-lg font-bold font-heading text-deep">
                 Momentum Health Watchdog
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Passive analytics monitor pairing momentum. If a mentorship sits idle for 14+ days, the system schedules check-ins without human policing.
               </p>
-              <div className="pt-2 text-xs font-semibold text-[#2563EB] flex items-center gap-1">
+              <div className="pt-2 text-xs font-semibold text-primary-600 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Accreditation Ready</span>
               </div>
@@ -372,13 +372,13 @@ export default async function HomePage(props: {
         {/* ===================================================================
             5. FREQUENTLY ASKED QUESTIONS
         ==================================================================== */}
-        <section className="py-20 bg-[#F0F5FF]/50 border-t border-[#2563EB]/10 relative z-10">
+        <section className="py-20 bg-primary-50/50 border-t border-primary-600/10 relative z-10">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="text-center space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-600 block">
                 FAQ
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-[#0B1F44]">
+              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-deep">
                 Frequently Asked Questions
               </h2>
             </div>
@@ -389,8 +389,8 @@ export default async function HomePage(props: {
                   key={idx}
                   className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-2"
                 >
-                  <h3 className="text-sm sm:text-base font-bold font-heading text-[#0B1F44] flex items-center gap-2">
-                    <HelpCircle className="w-4 h-4 text-[#2563EB] shrink-0" />
+                  <h3 className="text-sm sm:text-base font-bold font-heading text-deep flex items-center gap-2">
+                    <HelpCircle className="w-4 h-4 text-primary-600 shrink-0" />
                     <span>{faq.q}</span>
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pl-6">
@@ -405,12 +405,12 @@ export default async function HomePage(props: {
         {/* ===================================================================
             6. FINAL CTA BAND (DEEP BLUE THEMED AS SPECIFIED)
         ==================================================================== */}
-        <section className="bg-[#0B1F44] text-white py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-radial at-center from-[#2563EB]/25 to-transparent opacity-50 pointer-events-none" />
+        <section className="bg-deep text-white py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-radial at-center from-primary-600/25 to-transparent opacity-50 pointer-events-none" />
 
           <div className="max-w-3xl mx-auto space-y-6 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-[#93C5FD] border border-white/15">
-              <Sparkles className="w-3.5 h-3.5 text-[#60A5FA]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-primary-300 border border-white/15">
+              <Sparkles className="w-3.5 h-3.5 text-primary-300" />
               <span>Ready for your institution</span>
             </div>
 
@@ -425,7 +425,7 @@ export default async function HomePage(props: {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link
                 href="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-lg shadow-[#2563EB]/30 transition-all hover:scale-105"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 transition-all hover:scale-105"
               >
                 <span>Get started today</span>
                 <ArrowRight className="w-4 h-4" />

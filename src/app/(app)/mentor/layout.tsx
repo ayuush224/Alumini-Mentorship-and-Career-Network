@@ -98,7 +98,7 @@ export default async function MentorLayout({
   // If alumni is NOT verified, restrict access and show Verification Pending Screen
   if (!isVerified) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F8FAFF] text-stone-900">
+      <div className="min-h-screen flex flex-col bg-background text-stone-900">
         <MentorVerificationPending
           user={{
             id: mentorId,
@@ -115,7 +115,7 @@ export default async function MentorLayout({
 
   // Once verified, full mentor workspace is rendered!
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF] text-stone-900">
+    <div className="min-h-screen flex flex-col bg-background text-stone-900">
       <MentorHeader
         user={{ name: mentorName, avatarUrl }}
         pendingRequestsCount={pendingRequestsCount}

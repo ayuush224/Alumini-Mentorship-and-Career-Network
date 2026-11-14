@@ -498,7 +498,7 @@ export function StudentProfileEditor({
                 {data.projects.map((proj, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-stone-200 bg-[#F8FAFF]/60 flex flex-col justify-between hover:border-blue-200 transition-colors"
+                    className="p-4 rounded-xl border border-stone-200 bg-background/60 flex flex-col justify-between hover:border-blue-200 transition-colors"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2 mb-1.5">

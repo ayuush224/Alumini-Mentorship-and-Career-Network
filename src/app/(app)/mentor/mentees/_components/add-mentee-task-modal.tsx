@@ -152,7 +152,7 @@ export function AddMenteeTaskModal({
               placeholder="e.g. Implement Redis caching layer"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/20 transition-all disabled:opacity-50"
+              className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary-600 focus:ring-1 focus:ring-primary-600/20 transition-all disabled:opacity-50"
             />
           </div>
 
@@ -166,7 +166,7 @@ export function AddMenteeTaskModal({
               disabled={isSubmitting}
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/20 transition-all disabled:opacity-50"
+              className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary-600 focus:ring-1 focus:ring-primary-600/20 transition-all disabled:opacity-50"
             />
           </div>
 
@@ -182,7 +182,7 @@ export function AddMenteeTaskModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-medium transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

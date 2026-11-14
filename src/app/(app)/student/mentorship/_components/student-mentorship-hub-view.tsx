@@ -122,7 +122,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
   if (!current) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-5">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-[#E8F0FE] text-[#2563EB] flex items-center justify-center shadow-2xs border border-[#BFDBFE]">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-2xs border border-primary-200">
           <Sparkles className="w-7 h-7" />
         </div>
         <div className="space-y-2">
@@ -137,7 +137,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           <Link
             href="/student/mentors"
             prefetch={true}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-sm font-semibold shadow-xs transition-all hover:shadow-md"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-xs transition-all hover:shadow-md"
           >
             <span>Discover Alumni Mentors</span>
             <ArrowRight className="w-4 h-4" />
@@ -173,14 +173,14 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                 />
               </div>
             ) : (
-              <div className="w-14 h-14 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] font-bold text-lg flex items-center justify-center shadow-2xs">
+              <div className="w-14 h-14 rounded-2xl bg-primary-600/10 border border-primary-600/20 text-primary-600 font-bold text-lg flex items-center justify-center shadow-2xs">
                 {initials}
               </div>
             )}
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="uppercase tracking-widest text-[10px] font-semibold text-[#2563EB] font-mono">
+                <span className="uppercase tracking-widest text-[10px] font-semibold text-primary-600 font-mono">
                   ACTIVE MENTORSHIP
                 </span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
@@ -195,7 +195,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                   <select
                     value={selectedIdx}
                     onChange={(e) => setSelectedIdx(Number(e.target.value))}
-                    className="appearance-none bg-stone-50 border border-stone-200 rounded-xl py-1.5 pl-3 pr-8 text-base font-bold font-serif text-stone-900 focus:outline-hidden focus:border-[#2563EB] cursor-pointer"
+                    className="appearance-none bg-stone-50 border border-stone-200 rounded-xl py-1.5 pl-3 pr-8 text-base font-bold font-serif text-stone-900 focus:outline-hidden focus:border-primary-600 cursor-pointer"
                   >
                     {mentorships.map((m, idx) => (
                       <option key={m.mentorshipId} value={idx}>
@@ -221,7 +221,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           <div className="flex items-center gap-3">
             <Link
               href={`/student/mentorship/${current.mentorId}/chat`}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs sm:text-sm font-semibold shadow-xs transition-all hover:shadow-md"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs sm:text-sm font-semibold shadow-xs transition-all hover:shadow-md"
             >
               <MessageSquare className="w-4 h-4" />
               <span>Launch Live Chat</span>
@@ -262,7 +262,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-semibold transition-all border-b-2 flex items-center gap-2 shrink-0 ${
             activeTab === "overview"
-              ? "border-[#2563EB] text-[#2563EB] bg-white shadow-2xs"
+              ? "border-primary-600 text-primary-600 bg-white shadow-2xs"
               : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
@@ -275,7 +275,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           onClick={() => setActiveTab("sessions")}
           className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-semibold transition-all border-b-2 flex items-center gap-2 shrink-0 ${
             activeTab === "sessions"
-              ? "border-[#2563EB] text-[#2563EB] bg-white shadow-2xs"
+              ? "border-primary-600 text-primary-600 bg-white shadow-2xs"
               : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
@@ -288,7 +288,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           onClick={() => setActiveTab("notes")}
           className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-semibold transition-all border-b-2 flex items-center gap-2 shrink-0 ${
             activeTab === "notes"
-              ? "border-[#2563EB] text-[#2563EB] bg-white shadow-2xs"
+              ? "border-primary-600 text-primary-600 bg-white shadow-2xs"
               : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
@@ -301,7 +301,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           onClick={() => setActiveTab("timeline")}
           className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-semibold transition-all border-b-2 flex items-center gap-2 shrink-0 ${
             activeTab === "timeline"
-              ? "border-[#2563EB] text-[#2563EB] bg-white shadow-2xs"
+              ? "border-primary-600 text-primary-600 bg-white shadow-2xs"
               : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
@@ -318,7 +318,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             {/* 1-on-1 Mentorship Chat Launcher Banner */}
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#2563EB]/10 via-[#2563EB]/5 to-transparent border border-[#2563EB]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-primary-600/10 via-primary-600/5 to-transparent border border-primary-600/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-stone-900">
                   Direct 1-on-1 Mentorship Chat
@@ -329,7 +329,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
               </div>
               <Link
                 href={`/student/mentorship/${current.mentorId}/chat`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold shrink-0 shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shrink-0 shadow-xs transition-colors"
               >
                 <span>Open Chat</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -346,7 +346,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                 <button
                   type="button"
                   onClick={() => setActiveTab("notes")}
-                  className="text-xs font-semibold text-[#2563EB] hover:underline"
+                  className="text-xs font-semibold text-primary-600 hover:underline"
                 >
                   View all ({current.sharedNotes.length})
                 </button>
@@ -393,7 +393,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                 <button
                   type="button"
                   onClick={() => setActiveTab("timeline")}
-                  className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-primary-600 hover:underline cursor-pointer"
                 >
                   History
                 </button>
@@ -535,7 +535,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                               target="_blank"
                               rel="noopener noreferrer"
                               download={note.fileName || "document"}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
                               title="Download to computer"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -560,7 +560,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                           <button
                             type="button"
                             onClick={() => handleDownloadTextNote(note)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
                             title="Download note text"
                           >
                             <Download className="w-3.5 h-3.5" />
@@ -700,7 +700,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                         {/* Date & Time pill */}
                         <div className="flex items-center gap-2.5 text-xs text-stone-600 font-mono bg-white px-3 py-1.5 rounded-xl border border-stone-200 self-start">
                           <div className="flex items-center gap-1.5 text-stone-800 font-semibold">
-                            <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
+                            <Calendar className="w-3.5 h-3.5 text-primary-600" />
                             <span>{sess.date}</span>
                           </div>
                           <span className="text-stone-300">•</span>
@@ -771,7 +771,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                                     download={sess.attachedNote.fileName || "session_materials"}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                    className="px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                                     title="Download file to computer"
                                   >
                                     <Download className="w-3.5 h-3.5" />
@@ -810,7 +810,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                       {isScheduled && (
                         <div className="pt-2 border-t border-stone-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                           <div className="flex items-center gap-2 text-stone-600">
-                            <Video className="w-4 h-4 text-[#2563EB]" />
+                            <Video className="w-4 h-4 text-primary-600" />
                             {sess.location ? (
                               <span className="font-mono text-stone-700 truncate max-w-sm">
                                 {sess.location}
@@ -939,7 +939,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
           <div className="bg-white rounded-3xl border border-stone-200 max-w-xl w-full p-6 sm:p-7 shadow-xl space-y-5 animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-stone-100">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-[#2563EB]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-primary-600">
                   {viewingNote.sessionId ? "Session Materials & Notes" : "Shared Workspace Note"}
                 </span>
                 <h3 className="text-lg font-bold font-serif text-stone-900 leading-tight">
@@ -1018,7 +1018,7 @@ export function StudentMentorshipHubView({ mentorships }: StudentMentorshipHubVi
                       target="_blank"
                       rel="noopener noreferrer"
                       download={viewingNote.fileName || "document"}
-                      className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
                       title="Download to computer"
                     >
                       <Download className="w-3.5 h-3.5" />

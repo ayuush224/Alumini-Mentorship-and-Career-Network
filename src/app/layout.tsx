@@ -24,9 +24,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="en"
       style={{ colorScheme: "light" }}
-      className={`h-full bg-[#F8FAFF] antialiased scroll-smooth ${plusJakarta.variable} ${inter.variable}`}
+      className={`h-full bg-background antialiased scroll-smooth ${plusJakarta.variable} ${inter.variable}`}
     >
-      <body className="min-h-full flex flex-col font-sans text-slate-600 bg-[#F8FAFF]">
+      <body className="min-h-full flex flex-col font-sans text-slate-600 bg-background">
         {children}
       </body>
     </html>

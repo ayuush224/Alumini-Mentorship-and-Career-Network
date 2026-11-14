@@ -16,7 +16,7 @@ export default async function CapacityPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="space-y-1">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/30 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-600/10 text-primary-600 border border-primary-600/30 text-xs font-semibold">
           <Users className="w-3.5 h-3.5" />
           <span>Module M2 • Capacity & Workload Balance</span>
         </div>

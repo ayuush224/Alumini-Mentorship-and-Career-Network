@@ -98,7 +98,7 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
+    <div className="min-h-screen flex flex-col bg-background">
       <MarketingNavbar />
 
       <main className="flex-1 relative overflow-hidden">
@@ -106,14 +106,14 @@ export default function FeaturesPage() {
 
         {/* Hero */}
         <section className="pt-8 sm:pt-12 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DBEAFE] text-[#0B1F44] text-xs font-semibold mb-4">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 text-deep text-xs font-semibold mb-4">
+            <span className="w-2 h-2 rounded-full bg-primary-600" />
             <span>Architecture &amp; Features</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-[#0B1F44] tracking-tight max-w-3xl w-full mx-auto text-center mb-4">
+          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-deep tracking-tight max-w-3xl w-full mx-auto text-center mb-4">
             Engineered from the ground up for{" "}
-            <span className="font-serif-accent font-normal italic text-[#2563EB]">
+            <span className="font-serif-accent font-normal italic text-primary-600">
               trust and scale.
             </span>
           </h1>
@@ -134,7 +134,7 @@ export default function FeaturesPage() {
                   className="bg-white rounded-3xl border border-slate-200/90 p-7 shadow-xs hover:shadow-md transition-all space-y-4 hover:-translate-y-1"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="w-10 h-10 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold">
+                    <span className="w-10 h-10 rounded-2xl bg-primary-50 border border-primary-200 text-primary-600 flex items-center justify-center font-bold">
                       <Icon className="w-5 h-5" />
                     </span>
                     <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
@@ -143,7 +143,7 @@ export default function FeaturesPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold font-heading text-[#0B1F44] mb-1.5">
+                    <h3 className="text-lg font-bold font-heading text-deep mb-1.5">
                       {m.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -162,25 +162,25 @@ export default function FeaturesPage() {
         </section>
 
         {/* Deep Dive UI Mockup Section */}
-        <section className="py-20 bg-white border-y border-[#2563EB]/15 relative z-10">
+        <section className="py-20 bg-white border-y border-primary-600/15 relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-600 block">
                 IMMUTABLE SYSTEM INVARIANTS
               </span>
-              <h2 className="text-3xl sm:text-4xl font-bold font-heading text-[#0B1F44]">
+              <h2 className="text-3xl sm:text-4xl font-bold font-heading text-deep">
                 Guaranteed by design, not by good intentions
               </h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Invariant 1 Mockup */}
-              <div className="p-8 rounded-3xl bg-[#F8FAFF] border border-[#2563EB]/20 shadow-xs space-y-5">
+              <div className="p-8 rounded-3xl bg-background border border-primary-600/20 shadow-xs space-y-5">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-[#DBEAFE] text-[#2563EB] flex items-center justify-center font-bold">
+                  <span className="w-8 h-8 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center font-bold">
                     1
                   </span>
-                  <h3 className="text-xl font-bold font-heading text-[#0B1F44]">
+                  <h3 className="text-xl font-bold font-heading text-deep">
                     Invariant 1: Mentor Capacity Must Never Be Exceeded
                   </h3>
                 </div>
@@ -198,12 +198,12 @@ export default function FeaturesPage() {
               </div>
 
               {/* Invariant 2 Mockup */}
-              <div className="p-8 rounded-3xl bg-[#F8FAFF] border border-[#2563EB]/20 shadow-xs space-y-5">
+              <div className="p-8 rounded-3xl bg-background border border-primary-600/20 shadow-xs space-y-5">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-[#DBEAFE] text-[#2563EB] flex items-center justify-center font-bold">
+                  <span className="w-8 h-8 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center font-bold">
                     2
                   </span>
-                  <h3 className="text-xl font-bold font-heading text-[#0B1F44]">
+                  <h3 className="text-xl font-bold font-heading text-deep">
                     Invariant 2: Alumni Contact Details Must Never Leak
                   </h3>
                 </div>
@@ -224,7 +224,7 @@ export default function FeaturesPage() {
         </section>
 
         {/* CTA */}
-        <section className="bg-[#0B1F44] text-white py-16 px-4 text-center">
+        <section className="bg-deep text-white py-16 px-4 text-center">
           <div className="max-w-2xl mx-auto space-y-5">
             <h2 className="text-3xl font-bold font-heading text-white">
               Ready to see Alma in action?
@@ -235,7 +235,7 @@ export default function FeaturesPage() {
             <div className="pt-2">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-md transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-md transition-all hover:scale-105"
               >
                 <span>Create your account</span>
                 <ArrowRight className="w-4 h-4" />

@@ -353,7 +353,7 @@ export function CreateSessionModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-stone-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+            <div className="w-9 h-9 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -407,7 +407,7 @@ export function CreateSessionModal({
           {/* 1. Mentees Multi-Select */}
           <div className="space-y-1.5" ref={dropdownRef}>
             <label className="block text-xs font-bold text-stone-700">
-              Select Mentees <span className="text-[#2563EB]">*</span>
+              Select Mentees <span className="text-primary-600">*</span>
               <span className="text-[11px] font-normal text-stone-400 ml-1.5">
                 (From your active mentee list)
               </span>
@@ -423,7 +423,7 @@ export function CreateSessionModal({
                 fieldErrors.mentees
                   ? "border-red-400 bg-red-50/20"
                   : isDropdownOpen
-                  ? "border-[#2563EB] ring-2 ring-[#2563EB]/15 bg-white"
+                  ? "border-primary-600 ring-2 ring-primary-600/15 bg-white"
                   : "border-stone-200 bg-stone-50/60 hover:bg-stone-50"
               }`}
             >
@@ -441,7 +441,7 @@ export function CreateSessionModal({
                       className="w-4.5 h-4.5 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="w-4.5 h-4.5 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-[10px] flex items-center justify-center font-bold">
+                    <span className="w-4.5 h-4.5 rounded-full bg-primary-600/10 text-primary-600 text-[10px] flex items-center justify-center font-bold">
                       {m.name.slice(0, 1)}
                     </span>
                   )}
@@ -486,7 +486,7 @@ export function CreateSessionModal({
                 <div className="absolute top-1 left-0 right-0 z-30 max-h-52 overflow-y-auto bg-white rounded-2xl border border-stone-200 shadow-xl p-1.5 space-y-0.5">
                   {isLoadingMentees ? (
                     <div className="p-3 text-center text-xs text-stone-400 flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+                      <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
                       <span>Searching active mentees...</span>
                     </div>
                   ) : menteesList.length === 0 ? (
@@ -551,7 +551,7 @@ export function CreateSessionModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-stone-700">
-                Session Date <span className="text-[#2563EB]">*</span>
+                Session Date <span className="text-primary-600">*</span>
               </label>
               <div className="relative">
                 <input
@@ -562,7 +562,7 @@ export function CreateSessionModal({
                   className={`w-full px-3.5 py-2.5 rounded-2xl border text-xs text-stone-800 bg-white transition-all focus:outline-hidden ${
                     fieldErrors.date
                       ? "border-red-400 bg-red-50/20"
-                      : "border-stone-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                      : "border-stone-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15"
                   }`}
                 />
               </div>
@@ -573,7 +573,7 @@ export function CreateSessionModal({
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-stone-700">
-                Start Time (Your Timezone) <span className="text-[#2563EB]">*</span>
+                Start Time (Your Timezone) <span className="text-primary-600">*</span>
               </label>
               <div className="relative">
                 <input
@@ -584,7 +584,7 @@ export function CreateSessionModal({
                   className={`w-full px-3.5 py-2.5 rounded-2xl border text-xs text-stone-800 bg-white transition-all focus:outline-hidden font-mono ${
                     fieldErrors.time
                       ? "border-red-400 bg-red-50/20"
-                      : "border-stone-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                      : "border-stone-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15"
                   }`}
                 />
               </div>
@@ -598,9 +598,9 @@ export function CreateSessionModal({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-stone-700">
-                Duration <span className="text-[#2563EB]">*</span>
+                Duration <span className="text-primary-600">*</span>
               </label>
-              <span className="text-xs font-mono font-bold text-[#2563EB]">
+              <span className="text-xs font-mono font-bold text-primary-600">
                 {duration} minutes
               </span>
             </div>
@@ -613,7 +613,7 @@ export function CreateSessionModal({
                   onClick={() => handleDurationPreset(mins)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all cursor-pointer ${
                     !isCustomDuration && duration === mins
-                      ? "bg-[#2563EB] text-white shadow-2xs"
+                      ? "bg-primary-600 text-white shadow-2xs"
                       : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
@@ -626,7 +626,7 @@ export function CreateSessionModal({
                 onClick={() => setIsCustomDuration(true)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isCustomDuration
-                    ? "bg-[#2563EB] text-white shadow-2xs"
+                    ? "bg-primary-600 text-white shadow-2xs"
                     : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                 }`}
               >
@@ -644,7 +644,7 @@ export function CreateSessionModal({
                   value={customDurationInput}
                   onChange={(e) => handleCustomDurationChange(e.target.value)}
                   placeholder="Minutes (15-240)"
-                  className="w-36 px-3 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 font-mono focus:outline-hidden focus:border-[#2563EB]"
+                  className="w-36 px-3 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 font-mono focus:outline-hidden focus:border-primary-600"
                 />
                 <span className="text-[11px] text-stone-500">
                   Multiple of 5 mins (min 15, max 240)
@@ -676,7 +676,7 @@ export function CreateSessionModal({
               className={`w-full px-3.5 py-2.5 rounded-2xl border text-xs text-stone-800 bg-white transition-all focus:outline-hidden ${
                 fieldErrors.topic
                   ? "border-red-400 bg-red-50/20"
-                  : "border-stone-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                  : "border-stone-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15"
               }`}
             />
             {fieldErrors.topic && (
@@ -687,7 +687,7 @@ export function CreateSessionModal({
           {/* 5. Meeting Link (Required, Host Allow-List) */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-stone-700">
-              Meeting Video Link <span className="text-[#2563EB]">*</span>
+              Meeting Video Link <span className="text-primary-600">*</span>
               <span className="text-[11px] font-normal text-stone-400 ml-1.5">
                 (Google Meet, Zoom, Jitsi, or 8x8)
               </span>
@@ -701,7 +701,7 @@ export function CreateSessionModal({
                 className={`w-full pl-9 pr-3.5 py-2.5 rounded-2xl border text-xs text-stone-800 bg-white transition-all focus:outline-hidden font-mono ${
                   fieldErrors.meetingLink
                     ? "border-red-400 bg-red-50/20"
-                    : "border-stone-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                    : "border-stone-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/15"
                 }`}
               />
               <Video className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -724,7 +724,7 @@ export function CreateSessionModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-colors shadow-xs flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-xs flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

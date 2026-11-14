@@ -363,7 +363,7 @@ export function VerificationQueue({ initialRequests }: VerificationQueueProps) {
               <select
                 value={selectedReason}
                 onChange={(e) => setSelectedReason(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
               >
                 {REJECTION_REASONS.map((r) => (
                   <option key={r} value={r}>
@@ -384,7 +384,7 @@ export function VerificationQueue({ initialRequests }: VerificationQueueProps) {
                   placeholder="Detail the specific record discrepancy..."
                   rows={3}
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl p-3 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
             )}

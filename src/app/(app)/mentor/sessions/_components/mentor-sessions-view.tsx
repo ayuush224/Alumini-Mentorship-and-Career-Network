@@ -408,7 +408,7 @@ export function MentorSessionsView({
       ====================================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="uppercase tracking-widest text-[10px] font-semibold text-[#2563EB] font-mono">
+          <span className="uppercase tracking-widest text-[10px] font-semibold text-primary-600 font-mono">
             COORDINATION &amp; WORKSPACE
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-stone-900 mt-1">
@@ -423,7 +423,7 @@ export function MentorSessionsView({
         <button
           type="button"
           onClick={handleOpenModal}
-          className="px-4 sm:px-5 py-2.5 bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer self-start"
+          className="px-4 sm:px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer self-start"
         >
           <Plus className="w-4 h-4" />
           <span>Schedule Session</span>
@@ -449,7 +449,7 @@ export function MentorSessionsView({
       ====================================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-stone-200/90 p-4 shadow-2xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-primary-600/10 text-primary-600 flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
           <div>
@@ -496,7 +496,7 @@ export function MentorSessionsView({
           onClick={() => setActiveTab("upcoming")}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
             activeTab === "upcoming"
-              ? "bg-[#2563EB] text-white"
+              ? "bg-primary-600 text-white"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
@@ -507,7 +507,7 @@ export function MentorSessionsView({
           onClick={() => setActiveTab("past")}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
             activeTab === "past"
-              ? "bg-[#2563EB] text-white"
+              ? "bg-primary-600 text-white"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
@@ -518,7 +518,7 @@ export function MentorSessionsView({
           onClick={() => setActiveTab("all")}
           className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
             activeTab === "all"
-              ? "bg-[#2563EB] text-white"
+              ? "bg-primary-600 text-white"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
@@ -550,7 +550,7 @@ export function MentorSessionsView({
                 <div className="flex items-start gap-4">
                   {/* Calendar Date Pill */}
                   <div className="w-14 h-16 rounded-xl bg-stone-50 border border-stone-200 flex flex-col items-center justify-center shrink-0 text-center">
-                    <span className="text-[10px] font-mono uppercase font-bold text-[#2563EB]">
+                    <span className="text-[10px] font-mono uppercase font-bold text-primary-600">
                       {monthName}
                     </span>
                     <span className="text-xl font-bold font-mono text-stone-900 leading-none">
@@ -632,7 +632,7 @@ export function MentorSessionsView({
                     {/* Video Link */}
                     {session.location && (
                       <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-stone-500">
-                        <Video className="w-3.5 h-3.5 text-[#2563EB]" />
+                        <Video className="w-3.5 h-3.5 text-primary-600" />
                         <span className="truncate max-w-xs">{session.location}</span>
                         <button
                           type="button"
@@ -709,7 +709,7 @@ export function MentorSessionsView({
                             })()
                           ) : (
                             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-50 border border-stone-200 text-xs text-stone-700">
-                              <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
+                              <FileText className="w-3.5 h-3.5 text-primary-600" />
                               <span className="font-medium truncate max-w-[220px]">
                                 {session.attachedNote.title}
                               </span>
@@ -769,7 +769,7 @@ export function MentorSessionsView({
                         href={session.location}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                        className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
                       >
                         <Video className="w-3.5 h-3.5" />
                         <span>Join Room</span>
@@ -798,7 +798,7 @@ export function MentorSessionsView({
       ) : (
         /* Empty State */
         <div className="bg-white rounded-3xl border border-stone-200/90 p-12 text-center max-w-lg mx-auto shadow-xs space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-primary-600/10 text-primary-600 flex items-center justify-center mx-auto">
             <Calendar className="w-7 h-7" />
           </div>
           <div className="space-y-1">
@@ -814,7 +814,7 @@ export function MentorSessionsView({
           <button
             type="button"
             onClick={handleOpenModal}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Schedule Session</span>
@@ -839,7 +839,7 @@ export function MentorSessionsView({
             {/* Modal Header */}
             <div className="px-6 py-4 bg-stone-50/80 border-b border-stone-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-primary-600/10 text-primary-600 flex items-center justify-center">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
@@ -880,7 +880,7 @@ export function MentorSessionsView({
                   <select
                     value={selectedMenteeId}
                     onChange={(e) => setSelectedMenteeId(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                   >
                     <option value="all">ðŸ‘¥ All Active Mentees (Cohort / Group Session)</option>
                     {activeMentees.map((mentee) => (
@@ -906,7 +906,7 @@ export function MentorSessionsView({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. System Architecture Review & Career Roadmap"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                   required
                 />
               </div>
@@ -922,7 +922,7 @@ export function MentorSessionsView({
                     min={new Date().toISOString().split("T")[0]}
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                     required
                   />
                 </div>
@@ -935,7 +935,7 @@ export function MentorSessionsView({
                     type="time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                     required
                   />
                 </div>
@@ -966,7 +966,7 @@ export function MentorSessionsView({
                       setDurationMinutes(isNaN(val) ? 0 : Math.max(0, val));
                     }}
                     placeholder="Enter duration in minutes (e.g. 45)"
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 pr-12 text-xs text-stone-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 pr-12 text-xs text-stone-900 font-medium focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                     required
                   />
                   <span className="absolute right-3 top-2.5 text-xs text-stone-400 font-mono pointer-events-none">
@@ -988,7 +988,7 @@ export function MentorSessionsView({
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="https://meet.alma.edu/session/..."
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 font-mono focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 font-mono focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                   />
                   <Video className="w-4 h-4 text-stone-400 absolute right-3 top-2.5" />
                 </div>
@@ -1001,7 +1001,7 @@ export function MentorSessionsView({
               <div className="p-4 rounded-2xl bg-stone-50/90 border border-stone-200/90 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-primary-600/10 text-primary-600 flex items-center justify-center">
                       <FileText className="w-3.5 h-3.5" />
                     </div>
                     <div>
@@ -1018,7 +1018,7 @@ export function MentorSessionsView({
                   <button
                     type="button"
                     onClick={() => setShowNotesSection((prev) => !prev)}
-                    className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                    className="text-[11px] font-semibold text-primary-600 hover:underline cursor-pointer"
                   >
                     {showNotesSection ? "Hide" : "+ Add Notes / PDF"}
                   </button>
@@ -1036,7 +1036,7 @@ export function MentorSessionsView({
                         value={noteTitle}
                         onChange={(e) => setNoteTitle(e.target.value)}
                         placeholder={title ? `[Session Notes] ${title}` : "e.g. Session Agenda & Preparation Guide"}
-                        className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]"
+                        className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600"
                       />
                     </div>
 
@@ -1050,7 +1050,7 @@ export function MentorSessionsView({
                         value={noteContent}
                         onChange={(e) => setNoteContent(e.target.value)}
                         placeholder="Add preparation guidelines, talking points, or reading links for this session..."
-                        className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] resize-none"
+                        className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600 resize-none"
                       />
                     </div>
 
@@ -1108,9 +1108,9 @@ export function MentorSessionsView({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-full py-3 px-4 border-2 border-dashed border-stone-200 hover:border-[#2563EB]/60 bg-white rounded-xl text-center flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer group"
+                          className="w-full py-3 px-4 border-2 border-dashed border-stone-200 hover:border-primary-600/60 bg-white rounded-xl text-center flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer group"
                         >
-                          <Upload className="w-4 h-4 text-stone-400 group-hover:text-[#2563EB] transition-colors" />
+                          <Upload className="w-4 h-4 text-stone-400 group-hover:text-primary-600 transition-colors" />
                           <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
                             Click to attach PDF, slides, or document
                           </span>
@@ -1138,7 +1138,7 @@ export function MentorSessionsView({
                 <button
                   type="submit"
                   disabled={isSubmitting || (activeMentees.length === 0 && !selectedMenteeId)}
-                  className="px-5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
@@ -1167,7 +1167,7 @@ export function MentorSessionsView({
             {/* Modal Header */}
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-stone-100">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-[#2563EB]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-primary-600">
                   SESSION PREPARATION &amp; MATERIALS
                 </span>
                 <h3 className="text-lg font-bold font-serif text-stone-900 leading-tight">
@@ -1235,7 +1235,7 @@ export function MentorSessionsView({
                   value={editNoteTitle}
                   onChange={(e) => setEditNoteTitle(e.target.value)}
                   placeholder={`[Session Notes] ${editingSession.title}`}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-hidden focus:border-[#2563EB] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-hidden focus:border-primary-600 transition-colors"
                 />
               </div>
 
@@ -1249,7 +1249,7 @@ export function MentorSessionsView({
                   value={editNoteContent}
                   onChange={(e) => setEditNoteContent(e.target.value)}
                   placeholder="Provide preparation reading, agenda, or topics to review..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-hidden focus:border-[#2563EB] transition-colors resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-hidden focus:border-primary-600 transition-colors resize-none"
                 />
               </div>
 
@@ -1364,9 +1364,9 @@ export function MentorSessionsView({
                   <button
                     type="button"
                     onClick={() => editFileInputRef.current?.click()}
-                    className="w-full py-4 px-4 border-2 border-dashed border-stone-200 hover:border-[#2563EB]/60 bg-white rounded-xl text-center flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer group"
+                    className="w-full py-4 px-4 border-2 border-dashed border-stone-200 hover:border-primary-600/60 bg-white rounded-xl text-center flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer group"
                   >
-                    <Upload className="w-5 h-5 text-stone-400 group-hover:text-[#2563EB] transition-colors" />
+                    <Upload className="w-5 h-5 text-stone-400 group-hover:text-primary-600 transition-colors" />
                     <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
                       Click to attach PDF, slides, or document
                     </span>
@@ -1391,7 +1391,7 @@ export function MentorSessionsView({
                 <button
                   type="submit"
                   disabled={isSavingMaterials}
-                  className="px-5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   {isSavingMaterials ? (
                     <>

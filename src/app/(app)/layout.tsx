@@ -7,7 +7,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#F8FAFF] text-slate-800 selection:bg-blue-100 selection:text-blue-600">
+    <div className="min-h-screen bg-background text-slate-800 selection:bg-blue-100 selection:text-blue-600">
       <Suspense fallback={null}>
         <NavigationProgressBar />
       </Suspense>

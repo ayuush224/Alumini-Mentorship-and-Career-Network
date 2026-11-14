@@ -106,11 +106,11 @@ export function StudentCareerProfileModal({
       />
 
       {/* Modal Dialog Container */}
-      <div className="relative w-full max-w-4xl lg:max-w-5xl bg-[#F8FAFF] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden my-auto z-10 flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-4xl lg:max-w-5xl bg-background rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden my-auto z-10 flex flex-col max-h-[92vh]">
         {/* Top Header Bar */}
         <div className="px-6 py-4 bg-white border-b border-stone-200/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 text-xs font-semibold text-stone-700">
-            <span className="w-6 h-6 rounded-lg bg-blue-50 border border-blue-200/60 flex items-center justify-center text-[#2563EB]">
+            <span className="w-6 h-6 rounded-lg bg-blue-50 border border-blue-200/60 flex items-center justify-center text-primary-600">
               <GraduationCap className="w-3.5 h-3.5" />
             </span>
             <span className="font-heading text-stone-800">
@@ -157,20 +157,20 @@ export function StudentCareerProfileModal({
                   >
                     <defs>
                       <linearGradient id="modalBannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#DBEAFE" />
-                        <stop offset="50%" stopColor="#EFF6FF" />
-                        <stop offset="100%" stopColor="#BFDBFE" />
+                        <stop offset="0%" stopColor="#FFEDD5" />
+                        <stop offset="50%" stopColor="#FFF7ED" />
+                        <stop offset="100%" stopColor="#FED7AA" />
                       </linearGradient>
                     </defs>
                     <rect width="1200" height="400" fill="url(#modalBannerGrad)" />
                     <path
                       d="M0,280 C300,340 450,220 750,280 C1000,330 1150,260 1200,280 L1200,400 L0,400 Z"
-                      fill="#93C5FD"
+                      fill="#FDBA74"
                       fillOpacity="0.4"
                     />
                     <path
                       d="M0,320 C200,260 500,340 850,290 C1050,260 1150,300 1200,320 L1200,400 L0,400 Z"
-                      fill="#60A5FA"
+                      fill="#FDBA74"
                       fillOpacity="0.3"
                     />
                   </svg>
@@ -247,11 +247,11 @@ export function StudentCareerProfileModal({
           ====================================================================== */}
           {requestMessage && (
             <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-2 shadow-2xs">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB] font-mono uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary-600 font-mono uppercase tracking-wider">
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Introductory Note from {profile.name}</span>
               </div>
-              <p className="text-xs sm:text-sm text-stone-800 italic leading-relaxed pl-5 border-l-2 border-[#2563EB]/50">
+              <p className="text-xs sm:text-sm text-stone-800 italic leading-relaxed pl-5 border-l-2 border-primary-600/50">
                 &ldquo;{requestMessage}&rdquo;
               </p>
               {requestCreatedAt && (
@@ -276,7 +276,7 @@ export function StudentCareerProfileModal({
               {/* CARD 1: ABOUT */}
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <h3 className="text-base font-bold text-stone-900 mb-3 flex items-center gap-2 font-heading">
-                  <UserIcon className="w-4 h-4 text-[#2563EB]" />
+                  <UserIcon className="w-4 h-4 text-primary-600" />
                   <span>About</span>
                 </h3>
                 {profile.bio ? (
@@ -294,7 +294,7 @@ export function StudentCareerProfileModal({
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-stone-900 flex items-center gap-2 font-heading">
-                    <Briefcase className="w-4 h-4 text-[#2563EB]" />
+                    <Briefcase className="w-4 h-4 text-primary-600" />
                     <span>Work Experience</span>
                   </h3>
                   <span className="text-xs font-mono text-stone-400">
@@ -309,14 +309,14 @@ export function StudentCareerProfileModal({
                         key={`${exp.company}-${idx}`}
                         className={`flex items-start gap-3.5 ${idx > 0 ? "pt-4" : ""}`}
                       >
-                        <div className="w-10 h-10 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center justify-center shrink-0 text-[#2563EB]">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center justify-center shrink-0 text-primary-600">
                           <Building className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs sm:text-sm font-bold text-stone-900 leading-tight">
                             {exp.role}
                           </h4>
-                          <p className="text-xs font-semibold text-[#2563EB] mt-0.5">
+                          <p className="text-xs font-semibold text-primary-600 mt-0.5">
                             {exp.company}
                           </p>
                           <p className="text-[11px] text-stone-400 font-mono mt-0.5">
@@ -351,7 +351,7 @@ export function StudentCareerProfileModal({
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-stone-900 flex items-center gap-2 font-heading">
-                    <Code2 className="w-4 h-4 text-[#2563EB]" />
+                    <Code2 className="w-4 h-4 text-primary-600" />
                     <span>Featured Projects</span>
                   </h3>
                   <span className="text-xs font-mono text-stone-400">
@@ -377,7 +377,7 @@ export function StudentCareerProfileModal({
                                   href={proj.liveLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-stone-400 hover:text-[#2563EB] transition-colors"
+                                  className="text-stone-400 hover:text-primary-600 transition-colors"
                                   title="Live Demo"
                                 >
                                   <ExternalLink className="w-3.5 h-3.5" />
@@ -439,7 +439,7 @@ export function StudentCareerProfileModal({
               {/* CARD 4: EDUCATION */}
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <h3 className="text-base font-bold text-stone-900 mb-3 flex items-center gap-2 font-heading">
-                  <GraduationCap className="w-4 h-4 text-[#2563EB]" />
+                  <GraduationCap className="w-4 h-4 text-primary-600" />
                   <span>Education</span>
                 </h3>
                 <div className="space-y-3">
@@ -465,7 +465,7 @@ export function StudentCareerProfileModal({
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-base font-bold text-stone-900 flex items-center gap-2 font-heading">
-                    <Layers className="w-4 h-4 text-[#2563EB]" />
+                    <Layers className="w-4 h-4 text-primary-600" />
                     <span>Skills</span>
                   </h3>
                   <span className="text-xs font-mono text-stone-400">
@@ -543,7 +543,7 @@ export function StudentCareerProfileModal({
                           className="flex items-center justify-between p-2 rounded-xl bg-stone-50 hover:bg-blue-50 border border-stone-200/80 text-xs text-stone-800 transition-colors"
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <Globe className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                            <Globe className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                             <span className="font-semibold text-stone-900">{link.platform}</span>
                           </div>
                           <ExternalLink className="w-3 h-3 text-stone-400" />
@@ -575,7 +575,7 @@ export function StudentCareerProfileModal({
                           className="flex items-center justify-between p-2 rounded-xl bg-stone-50 hover:bg-blue-50 border border-stone-200/80 text-xs text-stone-800 transition-colors"
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <LinkIcon className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                            <LinkIcon className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                             <span className="font-semibold text-stone-900">{link.title}</span>
                           </div>
                           <ExternalLink className="w-3 h-3 text-stone-400" />
@@ -593,7 +593,7 @@ export function StudentCareerProfileModal({
               {/* CARD 7: CAREER FOCUS & TARGET INDUSTRIES */}
               <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs">
                 <h3 className="text-base font-bold text-stone-900 mb-3 flex items-center gap-2 font-heading">
-                  <Compass className="w-4 h-4 text-[#2563EB]" />
+                  <Compass className="w-4 h-4 text-primary-600" />
                   <span>Career Focus</span>
                 </h3>
 
@@ -664,7 +664,7 @@ export function StudentCareerProfileModal({
                 type="button"
                 disabled={isProcessing || isAtCapacity}
                 onClick={onAccept}
-                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {isProcessing ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -677,7 +677,7 @@ export function StudentCareerProfileModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Close Profile</span>
               </button>

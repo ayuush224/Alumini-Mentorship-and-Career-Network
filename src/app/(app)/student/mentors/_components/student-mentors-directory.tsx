@@ -436,7 +436,7 @@ export function StudentMentorsDirectory({
               <button
                 type="button"
                 onClick={() => setSelectedIndustry(studentFocusIndustry)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50/70 hover:bg-blue-100/70 text-[#2563EB] border border-blue-200/60 text-[11px] font-medium transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50/70 hover:bg-blue-100/70 text-primary-600 border border-blue-200/60 text-[11px] font-medium transition-colors cursor-pointer"
                 title="Filter by your declared target industry"
               >
                 <span>Target: {studentFocusIndustry}</span>
@@ -515,7 +515,7 @@ export function StudentMentorsDirectory({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-blue-800 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset filters</span>

@@ -435,7 +435,7 @@ export function MentorChatWorkspace({
                 placeholder="Search mentee..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-hidden focus:border-[#2563EB]"
+                className="w-full pl-8 pr-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-hidden focus:border-primary-600"
               />
             </div>
           </div>
@@ -458,7 +458,7 @@ export function MentorChatWorkspace({
                     onClick={() => setSelectedMentee(mentee)}
                     className={`w-full p-3.5 text-left flex items-start gap-3 transition-colors ${
                       isSelected
-                        ? "bg-[#2563EB]/5 border-l-4 border-[#2563EB]"
+                        ? "bg-primary-600/5 border-l-4 border-primary-600"
                         : "hover:bg-stone-50 border-l-4 border-transparent"
                     }`}
                   >
@@ -513,7 +513,7 @@ export function MentorChatWorkspace({
                       <Image src={selectedMentee.avatarUrl} alt={selectedMentee.name} fill className="object-cover" sizes="36px" />
                     </div>
                   ) : (
-                    <div className="w-9 h-9 rounded-full bg-[#2563EB]/10 text-[#2563EB] font-bold text-xs flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-full bg-primary-600/10 text-primary-600 font-bold text-xs flex items-center justify-center">
                       {selectedMentee.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -570,7 +570,7 @@ export function MentorChatWorkspace({
                         <div
                           className={`max-w-md px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-2xs ${
                             isFromMe
-                              ? "bg-[#2563EB] text-white rounded-tr-none"
+                              ? "bg-primary-600 text-white rounded-tr-none"
                               : "bg-white border border-stone-200 text-stone-900 rounded-tl-none"
                           }`}
                         >
@@ -786,7 +786,7 @@ export function MentorChatWorkspace({
                         : `Type message to ${selectedMentee.name}...`
                     }
                     disabled={isSending}
-                    className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] disabled:opacity-60"
+                    className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-primary-600/30 focus:border-primary-600 disabled:opacity-60"
                   />
                   <button
                     type="submit"
@@ -795,7 +795,7 @@ export function MentorChatWorkspace({
                       pendingAttachment?.isUploading ||
                       (!inputValue.trim() && !pendingAttachment?.uploadedData)
                     }
-                    className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] text-white font-semibold text-xs sm:text-sm transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs sm:text-sm transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Send</span>
@@ -816,7 +816,7 @@ export function MentorChatWorkspace({
               </p>
               <Link
                 href="/mentor/requests"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold shadow-2xs transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-2xs transition-colors"
               >
                 <span>View Pending Requests</span>
                 <ArrowRight className="w-3.5 h-3.5" />

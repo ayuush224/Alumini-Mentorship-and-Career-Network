@@ -55,7 +55,7 @@ export function DocumentModal({
         <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-stone-50/50">
           <div className="flex items-center gap-3">
             <span className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200/80 text-stone-700 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
+              <ShieldCheck className="w-4 h-4 text-primary-600" />
             </span>
             <div>
               <h3 className="font-semibold text-stone-900 text-sm">
@@ -127,7 +127,7 @@ export function DocumentModal({
                     className="p-4 rounded-xl border border-stone-200/80 bg-white hover:border-stone-300 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="flex items-start gap-3 min-w-0">
-                      <span className="w-10 h-10 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="w-10 h-10 rounded-lg bg-blue-50 text-primary-600 flex items-center justify-center shrink-0 mt-0.5">
                         {isImage ? (
                           <ImageIcon className="w-5 h-5" />
                         ) : (
@@ -139,7 +139,7 @@ export function DocumentModal({
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                               isPrimaryIdProof
-                                ? "bg-blue-100 text-[#1D4ED8] border border-blue-200"
+                                ? "bg-blue-100 text-primary-700 border border-blue-200"
                                 : "bg-purple-100 text-purple-800 border border-purple-200"
                             }`}
                           >

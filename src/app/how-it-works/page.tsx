@@ -72,7 +72,7 @@ export default function HowItWorksPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
+    <div className="min-h-screen flex flex-col bg-background">
       <MarketingNavbar />
 
       <main className="flex-1 relative overflow-hidden">
@@ -80,14 +80,14 @@ export default function HowItWorksPage() {
 
         {/* Hero */}
         <section className="pt-8 sm:pt-12 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DBEAFE] text-[#0B1F44] text-xs font-semibold mb-4">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 text-deep text-xs font-semibold mb-4">
+            <span className="w-2 h-2 rounded-full bg-primary-600" />
             <span>Step-by-Step Mentorship Lifecycle</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-[#0B1F44] tracking-tight max-w-3xl w-full mx-auto text-center mb-4">
+          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-deep tracking-tight max-w-3xl w-full mx-auto text-center mb-4">
             How Alma transforms outreach into{" "}
-            <span className="font-serif-accent font-normal italic text-[#2563EB]">
+            <span className="font-serif-accent font-normal italic text-primary-600">
               meaningful outcomes.
             </span>
           </h1>
@@ -99,7 +99,7 @@ export default function HowItWorksPage() {
 
         {/* Vertical Timeline */}
         <section className="pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
-          <div className="space-y-8 relative before:absolute before:inset-0 before:left-8 sm:before:left-1/2 before:w-0.5 before:bg-[#2563EB]/20 before:-translate-x-1/2 before:hidden sm:before:block">
+          <div className="space-y-8 relative before:absolute before:inset-0 before:left-8 sm:before:left-1/2 before:w-0.5 before:bg-primary-600/20 before:-translate-x-1/2 before:hidden sm:before:block">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isEven = idx % 2 === 0;
@@ -115,7 +115,7 @@ export default function HowItWorksPage() {
                   <div className="w-full sm:w-1/2">
                     <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs hover:shadow-md transition-all space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-bold text-[#2563EB] bg-[#EFF6FF] px-3 py-1 rounded-full border border-[#BFDBFE]">
+                        <span className="font-mono text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
                           Step {step.num}
                         </span>
                         <span className="text-xs font-medium text-slate-400">
@@ -123,7 +123,7 @@ export default function HowItWorksPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-xl font-bold font-heading text-[#0B1F44]">
+                      <h3 className="text-xl font-bold font-heading text-deep">
                         {step.title}
                       </h3>
 
@@ -134,7 +134,7 @@ export default function HowItWorksPage() {
                       <div className="pt-3 border-t border-slate-100 space-y-1.5">
                         {step.details.map((d, dIdx) => (
                           <div key={dIdx} className="flex items-center gap-2 text-xs text-slate-600">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                             <span>{d}</span>
                           </div>
                         ))}
@@ -143,7 +143,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   {/* Center Node Badge */}
-                  <div className="w-12 h-12 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold shadow-md shadow-[#2563EB]/30 shrink-0 z-10">
+                  <div className="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold shadow-md shadow-primary-600/30 shrink-0 z-10">
                     <Icon className="w-5 h-5" />
                   </div>
 
@@ -156,7 +156,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* Bottom CTA */}
-        <section className="bg-[#0B1F44] text-white py-16 px-4 text-center">
+        <section className="bg-deep text-white py-16 px-4 text-center">
           <div className="max-w-2xl mx-auto space-y-5">
             <h2 className="text-3xl font-bold font-heading text-white">
               Start your verified mentoring journey
@@ -167,7 +167,7 @@ export default function HowItWorksPage() {
             <div className="pt-2">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-md transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-md transition-all hover:scale-105"
               >
                 <span>Get started</span>
                 <ArrowRight className="w-4 h-4" />

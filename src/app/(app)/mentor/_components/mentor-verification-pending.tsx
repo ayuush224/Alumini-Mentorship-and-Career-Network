@@ -138,11 +138,11 @@ export function MentorVerificationPending({
         {/* Notice Strip */}
         {!isRejected && (
           <div className="px-6 sm:px-8 py-3.5 bg-blue-50/60 border-b border-blue-100/70 flex items-start gap-3 text-xs text-blue-900">
-            <Mail className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
+            <Mail className="w-4 h-4 text-primary-600 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
               <span>
                 You will receive an email confirmation at{" "}
-                <strong className="font-semibold text-[#1D4ED8]">{user.email}</strong> once your
+                <strong className="font-semibold text-primary-700">{user.email}</strong> once your
                 verification has been processed. Until the officer verifies your document, mentor
                 workspace features remain locked.
               </span>
@@ -227,7 +227,7 @@ export function MentorVerificationPending({
                     className="p-3.5 rounded-xl border border-stone-200 bg-white flex items-center justify-between gap-3 shadow-2xs hover:border-stone-300 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary-600 flex items-center justify-center shrink-0">
                         <FileText className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
@@ -324,7 +324,7 @@ export function MentorVerificationPending({
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
               <span>{isRefreshing ? "Checking Status..." : "Check Verification Status"}</span>

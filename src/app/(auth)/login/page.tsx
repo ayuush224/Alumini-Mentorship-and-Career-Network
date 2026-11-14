@@ -49,7 +49,7 @@ function FormInput({
             error
               ? "border-rose-300 focus:border-rose-500 ring-1 ring-rose-100"
               : "border-stone-200 focus:border-stone-400"
-          } rounded-xl py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 transition-all ${
+          } rounded-xl py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 transition-all ${
             icon ? "pl-10" : "pl-3.5"
           } ${rightIcon ? "pr-10" : "pr-3.5"} ${className}`}
           {...props}
@@ -394,7 +394,7 @@ export default function LoginPage() {
   return (
     <div className="max-w-md w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 p-8 relative transition-all">
       {/* Terracotta Sparkle Icon (Top-Right) */}
-      <div className="absolute top-7 right-7 text-[#2563EB] pointer-events-none">
+      <div className="absolute top-7 right-7 text-primary-600 pointer-events-none">
         <Sparkles className="w-4 h-4" />
       </div>
 
@@ -454,7 +454,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
+                className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -521,7 +521,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
+                className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -581,7 +581,7 @@ export default function LoginPage() {
                   : "hover:text-stone-900"
               }`}
             >
-              <KeyRound className="w-3.5 h-3.5 text-[#2563EB]" />
+              <KeyRound className="w-3.5 h-3.5 text-primary-600" />
               <span>Password</span>
             </button>
             <button
@@ -593,7 +593,7 @@ export default function LoginPage() {
                   : "hover:text-stone-900"
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-primary-600" />
               <span>Email Code (OTP)</span>
             </button>
           </div>
@@ -637,7 +637,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={handleSwitchToForgotPassword}
-                    className="text-[11px] text-stone-500 hover:text-[#2563EB] transition-colors cursor-pointer"
+                    className="text-[11px] text-stone-500 hover:text-primary-600 transition-colors cursor-pointer"
                   >
                     Forgot password?
                   </button>
@@ -647,7 +647,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-3 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
+                className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-3 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -689,7 +689,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
+                    className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
                   >
                     {isLoading ? (
                       <>
@@ -715,7 +715,7 @@ export default function LoginPage() {
                         setLoginOtpStep(1);
                         setLoginOtp("");
                       }}
-                      className="text-[#2563EB] hover:underline font-medium text-[11px] shrink-0 ml-2"
+                      className="text-primary-600 hover:underline font-medium text-[11px] shrink-0 ml-2"
                     >
                       Change
                     </button>
@@ -737,7 +737,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
+                    className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-2 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-xs cursor-pointer disabled:opacity-60"
                   >
                     {isLoading ? (
                       <>
@@ -778,7 +778,7 @@ export default function LoginPage() {
             <span>Don&apos;t have an account yet?</span>
             <Link
               href="/register"
-              className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold transition-colors flex items-center gap-1 group"
+              className="text-primary-600 hover:text-primary-700 font-semibold transition-colors flex items-center gap-1 group"
             >
               <span>Register</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />

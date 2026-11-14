@@ -422,7 +422,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                     type="button"
                     onClick={handleSaveHeader}
                     disabled={isPending}
-                    className="px-4 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-medium"
+                    className="px-4 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium"
                   >
                     Save Changes
                   </button>
@@ -445,7 +445,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 <button
                   type="button"
                   onClick={() => setEditingHeader(true)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#c4533a] shrink-0"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700 shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>Edit</span>
@@ -478,7 +478,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               Invariant: declared capacity limit enforced
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+          <div className="w-12 h-12 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
             <Users className="w-6 h-6" />
           </div>
         </div>
@@ -540,7 +540,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
           <button
             type="button"
             onClick={() => setShowAddExpModal(true)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#c4533a] transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Experience</span>
@@ -561,7 +561,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               return (
                 <div key={idx} className="relative group">
                   {/* Circular Node */}
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-[#2563EB] group-hover:scale-125 transition-transform" />
+                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-primary-600 group-hover:scale-125 transition-transform" />
 
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -579,7 +579,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                         <Clock className="w-3 h-3 text-stone-400" />
                         <span>{startStr} — {endStr}</span>
                         <span className="text-stone-300">&bull;</span>
-                        <span className="text-[#2563EB] font-semibold">{duration}</span>
+                        <span className="text-primary-600 font-semibold">{duration}</span>
                       </p>
 
                       {/* Bullets */}
@@ -633,7 +633,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               onClick={() => setShowAddExpModal(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-medium text-stone-700 hover:bg-stone-50 shadow-2xs"
             >
-              <Plus className="w-3.5 h-3.5 text-[#2563EB]" />
+              <Plus className="w-3.5 h-3.5 text-primary-600" />
               Add Experience
             </button>
           </div>
@@ -654,7 +654,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
             <button
               type="button"
               onClick={() => setShowAddAreaModal(true)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#c4533a]"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Area</span>
@@ -666,10 +666,10 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               {data.mentorshipAreas.map((area, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-xl border border-stone-200 bg-[#F8F9FC]/60 flex items-start justify-between gap-3"
+                  className="p-3.5 rounded-xl border border-stone-200 bg-background/60 flex items-start justify-between gap-3"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary-600/10 flex items-center justify-center text-primary-600 shrink-0 mt-0.5">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
@@ -703,7 +703,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 onClick={() => setShowAddAreaModal(true)}
                 className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white border border-stone-300 text-xs font-medium text-stone-700"
               >
-                <Plus className="w-3 h-3 text-[#2563EB]" />
+                <Plus className="w-3 h-3 text-primary-600" />
                 Add Area
               </button>
             </div>
@@ -725,12 +725,12 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               placeholder="Add skill (e.g. Distributed Systems, Kubernetes)..."
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
-              className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-hidden focus:ring-1 focus:ring-[#2563EB]"
+              className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-hidden focus:ring-1 focus:ring-primary-600"
             />
             <button
               type="submit"
               disabled={!newSkill.trim() || isPending}
-              className="px-3 py-1.5 bg-[#2563EB] hover:bg-[#c4533a] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
+              className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
             >
               Add
             </button>
@@ -778,7 +778,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
           <button
             type="button"
             onClick={() => setShowAddWorkModal(true)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#c4533a]"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Work</span>
@@ -790,7 +790,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
             {data.featuredWork.map((work, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-stone-200 bg-[#F8F9FC]/60 flex flex-col justify-between"
+                className="p-4 rounded-xl border border-stone-200 bg-background/60 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -829,7 +829,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                       href={work.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:underline"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       View Project / Article
@@ -851,7 +851,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
               onClick={() => setShowAddWorkModal(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-medium text-stone-700 hover:bg-stone-50 shadow-2xs"
             >
-              <Plus className="w-3.5 h-3.5 text-[#2563EB]" />
+              <Plus className="w-3.5 h-3.5 text-primary-600" />
               Add Featured Work
             </button>
           </div>
@@ -907,7 +907,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-medium"
+                  className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium"
                 >
                   Save Area
                 </button>
@@ -1006,7 +1006,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                   type="checkbox"
                   checked={expForm.current}
                   onChange={(e) => setExpForm({ ...expForm, current: e.target.checked })}
-                  className="rounded border-stone-300 text-[#2563EB]"
+                  className="rounded border-stone-300 text-primary-600"
                 />
                 <span>I currently work here</span>
               </label>
@@ -1048,7 +1048,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-medium"
+                  className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium"
                 >
                   Save Experience
                 </button>
@@ -1126,7 +1126,7 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-medium"
+                  className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium"
                 >
                   Save Work
                 </button>

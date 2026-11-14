@@ -123,7 +123,7 @@ export function PublicMentorView({
       ====================================================================== */}
       <section className="bg-white rounded-3xl border border-stone-200/90 overflow-hidden shadow-xs">
         {/* Banner */}
-        <div className="h-44 sm:h-56 w-full relative bg-gradient-to-r from-stone-900 via-stone-800 to-[#12264A]">
+        <div className="h-44 sm:h-56 w-full relative bg-gradient-to-r from-stone-900 via-stone-800 to-deep">
           {mentor.bannerUrl && (
             <Image
               src={mentor.bannerUrl}
@@ -198,7 +198,7 @@ export function PublicMentorView({
                 type="button"
                 onClick={() => setShowRequestModal(true)}
                 disabled={isAtCapacity}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>{isAtCapacity ? "Capacity Reached" : "Request Mentorship"}</span>
@@ -241,7 +241,7 @@ export function PublicMentorView({
               Strict capacity limits prevent mentor burnout
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+          <div className="w-12 h-12 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
             <Users className="w-6 h-6" />
           </div>
         </div>
@@ -309,7 +309,7 @@ export function PublicMentorView({
 
               return (
                 <div key={idx} className="relative group">
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-[#2563EB] group-hover:scale-125 transition-transform" />
+                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-primary-600 group-hover:scale-125 transition-transform" />
 
                   <div>
                     <h3 className="text-sm font-bold text-stone-900">{exp.role}</h3>
@@ -325,7 +325,7 @@ export function PublicMentorView({
                       <Clock className="w-3 h-3 text-stone-400" />
                       <span>{startStr} — {endStr}</span>
                       <span className="text-stone-300">&bull;</span>
-                      <span className="text-[#2563EB] font-semibold">{duration}</span>
+                      <span className="text-primary-600 font-semibold">{duration}</span>
                     </p>
 
                     {exp.bullets && exp.bullets.length > 0 && (
@@ -376,9 +376,9 @@ export function PublicMentorView({
               {mentor.mentorshipAreas.map((area, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-xl border border-stone-200 bg-[#F8F9FC]/60 flex items-start gap-3"
+                  className="p-3.5 rounded-xl border border-stone-200 bg-background/60 flex items-start gap-3"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary-600/10 flex items-center justify-center text-primary-600 shrink-0 mt-0.5">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
@@ -438,7 +438,7 @@ export function PublicMentorView({
             {mentor.featuredWork.map((work, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-stone-200 bg-[#F8F9FC]/60 flex flex-col justify-between"
+                className="p-4 rounded-xl border border-stone-200 bg-background/60 flex flex-col justify-between"
               >
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 mb-1">{work.title}</h3>
@@ -466,7 +466,7 @@ export function PublicMentorView({
                       href={work.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:underline"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       View Artifact
@@ -501,7 +501,7 @@ export function PublicMentorView({
                   &ldquo;{rev.quote}&rdquo;
                 </p>
                 {rev.outcome && (
-                  <p className="text-[11px] font-medium text-[#2563EB]">
+                  <p className="text-[11px] font-medium text-primary-600">
                     Outcome: {rev.outcome}
                   </p>
                 )}
@@ -519,7 +519,7 @@ export function PublicMentorView({
           <div className="bg-white rounded-2xl border border-stone-200 max-w-lg w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+                <div className="w-7 h-7 rounded-lg bg-primary-600/10 flex items-center justify-center text-primary-600">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-bold text-stone-900">
@@ -577,7 +577,7 @@ export function PublicMentorView({
                 {/* 1. Goal Selection */}
                 <div>
                   <label className="block text-xs font-bold text-stone-800 mb-1.5 flex items-center gap-1.5">
-                    <Target className="w-3.5 h-3.5 text-[#2563EB]" />
+                    <Target className="w-3.5 h-3.5 text-primary-600" />
                     <span>Select Mentorship Goal *</span>
                   </label>
                   <select
@@ -625,7 +625,7 @@ export function PublicMentorView({
                 {/* 2. Personalized Message */}
                 <div>
                   <label className="block text-xs font-bold text-stone-800 mb-1.5 flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-[#2563EB]" />
+                    <MessageSquare className="w-3.5 h-3.5 text-primary-600" />
                     <span>Personalized Note to Mentor *</span>
                   </label>
                   <textarea
@@ -634,7 +634,7 @@ export function PublicMentorView({
                     placeholder="Introduce yourself, your academic background, and what specific questions or guidance you'd like to explore..."
                     value={introMessage}
                     onChange={(e) => setIntroMessage(e.target.value)}
-                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 leading-relaxed focus:outline-hidden focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 leading-relaxed focus:outline-hidden focus:ring-1 focus:ring-primary-600"
                   />
                   <p className="text-[11px] text-stone-400 mt-1">
                     Keep your message focused and clear (max 1,000 characters).
@@ -652,7 +652,7 @@ export function PublicMentorView({
                   <button
                     type="submit"
                     disabled={isPending || !introMessage.trim()}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] disabled:opacity-50 text-white text-xs font-semibold transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors shadow-2xs"
                   >
                     {isPending ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

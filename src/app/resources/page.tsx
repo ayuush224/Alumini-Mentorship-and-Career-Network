@@ -57,7 +57,7 @@ export default function ResourcesPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF]">
+    <div className="min-h-screen flex flex-col bg-background">
       <MarketingNavbar />
 
       <main className="flex-1 relative overflow-hidden">
@@ -65,14 +65,14 @@ export default function ResourcesPage() {
 
         {/* Hero */}
         <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DBEAFE] text-[#0B1F44] text-xs font-semibold mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 text-deep text-xs font-semibold mb-6">
+            <span className="w-2 h-2 rounded-full bg-primary-600" />
             <span>Knowledge Base &amp; Playbooks</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-[#0B1F44] tracking-tight max-w-3xl mx-auto mb-6">
+          <h1 className="text-4xl sm:text-6xl font-bold font-heading text-deep tracking-tight max-w-3xl mx-auto mb-6">
             Guides and frameworks for{" "}
-            <span className="font-serif-accent font-normal italic text-[#2563EB]">
+            <span className="font-serif-accent font-normal italic text-primary-600">
               productive mentorship.
             </span>
           </h1>
@@ -100,8 +100,8 @@ export default function ResourcesPage() {
                 key={c}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   i === 0
-                    ? "bg-[#2563EB] text-white shadow-xs"
-                    : "bg-white border border-slate-200 text-slate-600 hover:border-[#2563EB]/40 hover:text-[#0B1F44]"
+                    ? "bg-primary-600 text-white shadow-xs"
+                    : "bg-white border border-slate-200 text-slate-600 hover:border-primary-600/40 hover:text-deep"
                 }`}
               >
                 {c}
@@ -120,13 +120,13 @@ export default function ResourcesPage() {
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                    <span className="font-semibold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-0.5 rounded-full border border-[#BFDBFE]">
+                    <span className="font-semibold text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-full border border-primary-200">
                       {g.category}
                     </span>
                     <span>{g.readTime}</span>
                   </div>
 
-                  <h3 className="text-lg font-bold font-heading text-[#0B1F44] hover:text-[#2563EB] transition-colors cursor-pointer">
+                  <h3 className="text-lg font-bold font-heading text-deep hover:text-primary-600 transition-colors cursor-pointer">
                     {g.title}
                   </h3>
 
@@ -135,7 +135,7 @@ export default function ResourcesPage() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#2563EB]">
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-primary-600">
                   <span>Read playbook</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
@@ -145,10 +145,10 @@ export default function ResourcesPage() {
         </section>
 
         {/* Contact Support Banner */}
-        <section className="bg-white border-y border-[#2563EB]/15 py-16 px-4">
-          <div className="max-w-4xl mx-auto rounded-3xl bg-[#F0F5FF] border border-[#2563EB]/20 p-8 sm:p-12 text-center space-y-4">
-            <MessageCircle className="w-10 h-10 text-[#2563EB] mx-auto" />
-            <h2 className="text-2xl font-bold font-heading text-[#0B1F44]">
+        <section className="bg-white border-y border-primary-600/15 py-16 px-4">
+          <div className="max-w-4xl mx-auto rounded-3xl bg-primary-50 border border-primary-600/20 p-8 sm:p-12 text-center space-y-4">
+            <MessageCircle className="w-10 h-10 text-primary-600 mx-auto" />
+            <h2 className="text-2xl font-bold font-heading text-deep">
               Have questions about university onboarding?
             </h2>
             <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
@@ -157,7 +157,7 @@ export default function ResourcesPage() {
             <div className="pt-2">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-semibold bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-xs transition-all hover:scale-105"
               >
                 <span>Contact Institutional Team</span>
                 <ArrowRight className="w-3.5 h-3.5" />

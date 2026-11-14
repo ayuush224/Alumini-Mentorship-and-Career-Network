@@ -70,10 +70,10 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
         <div className="flex items-center gap-6 sm:gap-8 min-w-0">
           <Link
             href="/mentor/dashboard"
-            className="inline-flex items-center gap-1 font-heading font-black text-2xl tracking-tight text-[#0B1F44] group shrink-0"
+            className="inline-flex items-center gap-1 font-heading font-black text-2xl tracking-tight text-deep group shrink-0"
           >
             <span>alma</span>
-            <span className="text-[#2563EB] font-black text-2xl leading-none">.</span>
+            <span className="text-primary-600 font-black text-2xl leading-none">.</span>
           </Link>
 
           {/* Horizontal Navigation Tabs */}
@@ -91,23 +91,23 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
                     key={tab.href}
                     href={tab.href}
                     prefetch={true}
-                    className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors duration-150 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 relative active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:outline-none focus-visible:ring-offset-1 ${
+                    className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors duration-150 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 relative active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:outline-none focus-visible:ring-offset-1 ${
                       isActive
-                        ? "bg-[#E8F0FE] text-[#2563EB] shadow-2xs"
-                        : "text-slate-600 hover:text-[#0B1F44] hover:bg-slate-100/70"
+                        ? "bg-primary-50 text-primary-600 shadow-2xs"
+                        : "text-slate-600 hover:text-deep hover:bg-slate-100/70"
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? "text-[#2563EB]" : "text-slate-500"}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-primary-600" : "text-slate-500"}`} />
                     <span>{tab.label}</span>
 
                     {tab.badge !== undefined && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#2563EB] text-white leading-tight">
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-primary-600 text-white leading-tight">
                         {tab.badge}
                       </span>
                     )}
 
                     {tab.hasDot && !tab.badge && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-600" />
                     )}
                   </Link>
                 );
@@ -118,10 +118,10 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
 
         {/* Right: Mentor Portal Badge & Profile User Menu */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#BFDBFE] text-[#2563EB] text-xs font-semibold shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-primary-200 text-primary-600 text-xs font-semibold shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-primary-600" />
             <span>Mentor Portal</span>
-            <ExternalLink className="w-3 h-3 text-[#2563EB]" />
+            <ExternalLink className="w-3 h-3 text-primary-600" />
           </div>
 
           <div className="flex items-center gap-2">
@@ -131,15 +131,15 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
               title="View & Edit Mentor Profile"
             >
               {user.avatarUrl ? (
-                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[#BFDBFE]">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary-200">
                   <Image src={user.avatarUrl} alt="Mentor avatar" fill className="object-cover" sizes="32px" />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-full bg-[#DBEAFE] border border-[#BFDBFE] text-[#1D4ED8] font-bold text-xs flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-primary-100 border border-primary-200 text-primary-700 font-bold text-xs flex items-center justify-center">
                   {initials}
                 </div>
               )}
-              <span className="hidden sm:inline text-sm font-medium text-[#0F172A]">
+              <span className="hidden sm:inline text-sm font-medium text-deep">
                 {user.name || "Mentor"}
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:inline" />
@@ -153,7 +153,7 @@ export function MentorHeader({ user, pendingRequestsCount = 0 }: MentorHeaderPro
                 className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer disabled:opacity-50"
               >
                 {isLoggingOut ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+                  <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
                 ) : (
                   <LogOut className="w-4 h-4" />
                 )}

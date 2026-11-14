@@ -211,12 +211,12 @@ export function OfficerDashboardView({
         {/* Subtle decorative texture & light ambient accent */}
         <div className="absolute inset-0 bg-gradient-to-r from-stone-50/80 via-white to-amber-50/20 pointer-events-none" />
         <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#d6d3d1_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        <div className="absolute -top-16 -right-16 w-64 h-64 bg-[#2563EB]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-64 h-64 bg-primary-600/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-stone-100 border border-stone-200/80 text-stone-700 text-xs font-semibold shadow-2xs">
-              <Building2 className="w-3.5 h-3.5 text-[#2563EB]" />
+              <Building2 className="w-3.5 h-3.5 text-primary-600" />
               <span className="capitalize">{officer.institutionName}</span>
               <span className="text-stone-300">&bull;</span>
               <span className="text-stone-600 font-medium">Command Center</span>
@@ -289,7 +289,7 @@ export function OfficerDashboardView({
         <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-2.5 hover:border-stone-300 transition-colors">
           <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
             <span>Active Relationships</span>
-            <span className="w-8 h-8 rounded-xl bg-amber-50 text-[#2563EB] border border-amber-200 flex items-center justify-center">
+            <span className="w-8 h-8 rounded-xl bg-amber-50 text-primary-600 border border-amber-200 flex items-center justify-center">
               <Activity className="w-4 h-4" />
             </span>
           </div>
@@ -328,7 +328,7 @@ export function OfficerDashboardView({
             <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  metrics.mentorSaturationRate > 85 ? "bg-rose-500" : metrics.mentorSaturationRate > 65 ? "bg-amber-500" : "bg-[#2563EB]"
+                  metrics.mentorSaturationRate > 85 ? "bg-rose-500" : metrics.mentorSaturationRate > 65 ? "bg-amber-500" : "bg-primary-600"
                 }`}
                 style={{ width: `${Math.min(100, metrics.mentorSaturationRate)}%` }}
               />
@@ -370,7 +370,7 @@ export function OfficerDashboardView({
               </h2>
               <Link
                 href="/officer/momentum"
-                className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-primary-600 hover:underline flex items-center gap-1"
               >
                 <span>Full Watchdog</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -445,12 +445,12 @@ export function OfficerDashboardView({
           <div>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#2563EB]" />
+                <Users className="w-4 h-4 text-primary-600" />
                 <span>Mentor Capacity &amp; Saturation</span>
               </h2>
               <Link
                 href="/officer/capacity"
-                className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-primary-600 hover:underline flex items-center gap-1"
               >
                 <span>Manage Limits</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -536,7 +536,7 @@ export function OfficerDashboardView({
             </div>
             <Link
               href="/officer/verifications"
-              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-primary-600 hover:underline flex items-center gap-1"
             >
               <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -615,7 +615,7 @@ export function OfficerDashboardView({
             </div>
             <Link
               href="/officer/momentum"
-              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-primary-600 hover:underline flex items-center gap-1"
             >
               <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -663,7 +663,7 @@ export function OfficerDashboardView({
                             type="button"
                             onClick={() => handleQuickNudge(p)}
                             disabled={isNudging}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#2563EB] hover:bg-[#c5563d] text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
+                            className="px-3.5 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
                           >
                             {isNudging ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -695,7 +695,7 @@ export function OfficerDashboardView({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-8 h-8 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-                <Briefcase className="w-4 h-4 text-[#2563EB]" />
+                <Briefcase className="w-4 h-4 text-primary-600" />
               </span>
               <div>
                 <h3 className="text-sm font-bold text-stone-900">
@@ -706,7 +706,7 @@ export function OfficerDashboardView({
             </div>
             <Link
               href="/officer/capacity"
-              className="text-xs font-semibold text-[#2563EB] hover:underline"
+              className="text-xs font-semibold text-primary-600 hover:underline"
             >
               Manage &rarr;
             </Link>
@@ -751,7 +751,7 @@ export function OfficerDashboardView({
             </div>
             <Link
               href="/officer/reports"
-              className="text-xs font-semibold text-[#2563EB] hover:underline"
+              className="text-xs font-semibold text-primary-600 hover:underline"
             >
               Full Audit Trail &rarr;
             </Link>

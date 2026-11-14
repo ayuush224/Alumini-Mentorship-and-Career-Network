@@ -296,7 +296,7 @@ export function StudentDashboardView({
       ====================================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="uppercase tracking-widest text-[10px] font-semibold text-[#2563EB] font-mono">
+          <span className="uppercase tracking-widest text-[10px] font-semibold text-primary-600 font-mono">
             STUDENT DASHBOARD
           </span>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-stone-900 mt-1">
@@ -310,7 +310,7 @@ export function StudentDashboardView({
         {/* Reputation Points Pill */}
         <div className="flex items-center gap-3">
           <div className="px-4 py-2 rounded-2xl bg-white border border-stone-200 shadow-2xs flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+            <div className="w-8 h-8 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -349,14 +349,14 @@ export function StudentDashboardView({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#2563EB]" />
+                <Calendar className="w-4 h-4 text-primary-600" />
                 <span>Next on Your Calendar</span>
               </h2>
               <span className="text-xs font-mono text-stone-400">Step 4 Widget</span>
             </div>
 
             {upcomingSession ? (
-              <div className="p-5 rounded-2xl bg-[#F8F9FC] border border-stone-200/80 space-y-4">
+              <div className="p-5 rounded-2xl bg-background border border-stone-200/80 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex items-start gap-3.5">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-stone-200 border border-stone-300 relative shrink-0">
@@ -385,7 +385,7 @@ export function StudentDashboardView({
                           {upcomingSession.mentorName}
                         </span>
                         {upcomingSession.isCohort && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary-600/10 text-primary-600 border border-primary-600/20">
                             Cohort Session
                           </span>
                         )}
@@ -401,7 +401,7 @@ export function StudentDashboardView({
 
                   <div className="text-left sm:text-right shrink-0">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-xs font-mono font-semibold text-stone-800 shadow-2xs">
-                      <Clock className="w-3.5 h-3.5 text-[#2563EB]" />
+                      <Clock className="w-3.5 h-3.5 text-primary-600" />
                       <span>{upcomingSession.time}</span>
                     </span>
                     <p className="text-[11px] text-stone-400 font-mono mt-1">
@@ -442,7 +442,7 @@ export function StudentDashboardView({
                       href={upcomingSession.location}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold transition-colors shadow-2xs"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shadow-2xs"
                     >
                       <Video className="w-3.5 h-3.5" />
                       <span>Join Video Consultation</span>
@@ -467,7 +467,7 @@ export function StudentDashboardView({
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-300 text-xs font-medium text-stone-700 hover:bg-stone-50 shadow-2xs"
                 >
                   <span>Find a Mentor</span>
-                  <ArrowRight className="w-3 h-3 text-[#2563EB]" />
+                  <ArrowRight className="w-3 h-3 text-primary-600" />
                 </Link>
               </div>
             )}
@@ -479,10 +479,10 @@ export function StudentDashboardView({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
-                <Target className="w-4 h-4 text-[#2563EB]" />
+                <Target className="w-4 h-4 text-primary-600" />
                 <span>Your Goals</span>
               </h2>
-              <span className="text-xs font-mono font-bold text-[#2563EB]">
+              <span className="text-xs font-mono font-bold text-primary-600">
                 {currentPercentage}%
               </span>
             </div>
@@ -504,7 +504,7 @@ export function StudentDashboardView({
                     cx="50"
                     cy="50"
                     r={radius}
-                    className="text-[#2563EB] transition-all duration-1000 ease-out"
+                    className="text-primary-600 transition-all duration-1000 ease-out"
                     strokeWidth="8"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -568,7 +568,7 @@ export function StudentDashboardView({
           <button
             type="button"
             onClick={() => setShowAddTask(true)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-blue-700 cursor-pointer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-blue-700 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Personal Sub-Task</span>
@@ -590,7 +590,7 @@ export function StudentDashboardView({
                     type="button"
                     disabled={isPending}
                     aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
-                    className="text-stone-400 hover:text-[#2563EB] transition-colors shrink-0 cursor-pointer p-0.5 mt-0.5"
+                    className="text-stone-400 hover:text-primary-600 transition-colors shrink-0 cursor-pointer p-0.5 mt-0.5"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!isPending) handleToggle(task);
@@ -599,7 +599,7 @@ export function StudentDashboardView({
                     {task.completed ? (
                       <CheckCircle2 className="w-5 h-5 text-emerald-600 fill-emerald-50" />
                     ) : (
-                      <Circle className="w-5 h-5 group-hover/task:text-[#2563EB]" />
+                      <Circle className="w-5 h-5 group-hover/task:text-primary-600" />
                     )}
                   </button>
 
@@ -632,7 +632,7 @@ export function StudentDashboardView({
 
                 <div className="flex items-center gap-2 shrink-0 pt-0.5">
                   {task.addedBy === "mentor" ? (
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary-600/10 text-primary-600 border border-primary-600/20 flex items-center gap-1">
                       <Shield className="w-3 h-3" />
                       Mentor Assigned (+20 pts)
                     </span>
@@ -648,7 +648,7 @@ export function StudentDashboardView({
                           handleOpenEdit(task);
                         }}
                         title="Edit personal task"
-                        className="p-1.5 text-stone-400 hover:text-[#2563EB] hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-stone-400 hover:text-primary-600 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -681,7 +681,7 @@ export function StudentDashboardView({
               onClick={() => setShowAddTask(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-medium text-stone-700 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 text-[#2563EB]" />
+              <Plus className="w-3.5 h-3.5 text-primary-600" />
               <span>Add Sub-Task</span>
             </button>
           </div>
@@ -714,7 +714,7 @@ export function StudentDashboardView({
                   placeholder="e.g. Implement Redis caching layer"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -727,7 +727,7 @@ export function StudentDashboardView({
                   placeholder="Additional context or notes..."
                   value={newTaskDescription}
                   onChange={(e) => setNewTaskDescription(e.target.value)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -740,7 +740,7 @@ export function StudentDashboardView({
                   required
                   value={newTaskDate}
                   onChange={(e) => setNewTaskDate(e.target.value)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -754,7 +754,7 @@ export function StudentDashboardView({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-medium cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-blue-700 text-white text-xs font-medium cursor-pointer transition-colors"
                 >
                   Add Task
                 </button>
@@ -796,7 +796,7 @@ export function StudentDashboardView({
                   required
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -809,7 +809,7 @@ export function StudentDashboardView({
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Task details or requirements..."
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -822,7 +822,7 @@ export function StudentDashboardView({
                   required
                   value={editDueDate}
                   onChange={(e) => setEditDueDate(e.target.value)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
               </div>
 
@@ -836,7 +836,7 @@ export function StudentDashboardView({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-medium cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-blue-700 text-white text-xs font-medium cursor-pointer transition-colors"
                 >
                   Save Changes
                 </button>

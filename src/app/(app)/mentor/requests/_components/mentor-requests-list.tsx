@@ -107,7 +107,7 @@ export function MentorRequestsList({
       {/* Capacity Status Banner */}
       <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600 shrink-0">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -163,7 +163,7 @@ export function MentorRequestsList({
               <div
                 key={req.id}
                 onClick={() => setSelectedRequestForProfile(req)}
-                className="bg-white rounded-2xl border border-stone-200/90 p-6 shadow-xs hover:border-[#2563EB]/50 hover:shadow-md transition-all flex flex-col md:flex-row md:items-start justify-between gap-6 cursor-pointer group"
+                className="bg-white rounded-2xl border border-stone-200/90 p-6 shadow-xs hover:border-primary-600/50 hover:shadow-md transition-all flex flex-col md:flex-row md:items-start justify-between gap-6 cursor-pointer group"
               >
                 {/* Left: Student Identity & Note */}
                 <div className="flex items-start gap-4 flex-1">
@@ -190,7 +190,7 @@ export function MentorRequestsList({
                   <div className="space-y-2 flex-1">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-stone-900 text-sm group-hover:text-[#2563EB] transition-colors">
+                        <h3 className="font-bold text-stone-900 text-sm group-hover:text-primary-600 transition-colors">
                           {req.studentName}
                         </h3>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
@@ -204,7 +204,7 @@ export function MentorRequestsList({
                     </div>
 
                     {/* Introductory Note Quote Box */}
-                    <div className="p-3.5 rounded-xl bg-[#F8F9FC] border border-stone-200/70 text-xs text-stone-700 leading-relaxed italic">
+                    <div className="p-3.5 rounded-xl bg-background border border-stone-200/70 text-xs text-stone-700 leading-relaxed italic">
                       &ldquo;{req.message}&rdquo;
                     </div>
 
@@ -221,7 +221,7 @@ export function MentorRequestsList({
                         </span>
                       </div>
 
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] group-hover:underline">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 group-hover:underline">
                         <GraduationCap className="w-3.5 h-3.5" />
                         <span>View Career Profile</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -259,7 +259,7 @@ export function MentorRequestsList({
                       e.stopPropagation();
                       handleAccept(req.id);
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
                   >
                     {isProcessingThis ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

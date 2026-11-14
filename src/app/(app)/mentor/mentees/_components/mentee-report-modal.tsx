@@ -169,7 +169,7 @@ export function MenteeReportModal({
         <div className="p-5 sm:p-6 border-b border-stone-100 bg-stone-50/70">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-[#2563EB]/10 text-[#2563EB] font-bold flex items-center justify-center text-sm border border-stone-200 shadow-2xs shrink-0">
+              <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-primary-600/10 text-primary-600 font-bold flex items-center justify-center text-sm border border-stone-200 shadow-2xs shrink-0">
                 {mentee.avatarUrl ? (
                   <Image
                     src={mentee.avatarUrl}
@@ -235,7 +235,7 @@ export function MenteeReportModal({
                       ? "bg-emerald-500"
                       : report.completionRate >= 40
                       ? "bg-amber-500"
-                      : "bg-[#2563EB]"
+                      : "bg-primary-600"
                   }`}
                   style={{ width: `${report.completionRate}%` }}
                 />
@@ -251,7 +251,7 @@ export function MenteeReportModal({
                 <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-stone-400">
                   Tasks Done
                 </span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-primary-600" />
               </div>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <span className="text-2xl font-black font-mono text-stone-900">
@@ -312,7 +312,7 @@ export function MenteeReportModal({
               onClick={() => setActiveTab("tasks")}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "tasks"
-                  ? "bg-[#2563EB] text-white shadow-2xs"
+                  ? "bg-primary-600 text-white shadow-2xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200/80"
               }`}
             >
@@ -325,7 +325,7 @@ export function MenteeReportModal({
               onClick={() => setActiveTab("sessions")}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "sessions"
-                  ? "bg-[#2563EB] text-white shadow-2xs"
+                  ? "bg-primary-600 text-white shadow-2xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200/80"
               }`}
             >
@@ -338,7 +338,7 @@ export function MenteeReportModal({
               onClick={() => setActiveTab("snapshot")}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "snapshot"
-                  ? "bg-[#2563EB] text-white shadow-2xs"
+                  ? "bg-primary-600 text-white shadow-2xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200/80"
               }`}
             >
@@ -401,7 +401,7 @@ export function MenteeReportModal({
                       onClose();
                       onOpenAddTask();
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#2563EB] hover:bg-[#c4533a] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer self-start sm:self-auto"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer self-start sm:self-auto"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Assign New Task</span>
@@ -579,7 +579,7 @@ export function MenteeReportModal({
                           </div>
 
                           <div className="flex items-center gap-2 text-xs font-mono text-stone-600 bg-white px-3 py-1.5 rounded-xl border border-stone-200 self-start">
-                            <Calendar className="w-3 h-3 text-[#2563EB]" />
+                            <Calendar className="w-3 h-3 text-primary-600" />
                             <span>{formattedDate}</span>
                             <span className="text-stone-300">&bull;</span>
                             <span>{sess.time}</span>
@@ -591,7 +591,7 @@ export function MenteeReportModal({
                         {/* Meeting Room Link */}
                         {sess.location && (
                           <div className="flex items-center gap-2 text-[11px] font-mono text-stone-500">
-                            <Video className="w-3.5 h-3.5 text-[#2563EB]" />
+                            <Video className="w-3.5 h-3.5 text-primary-600" />
                             <span className="truncate max-w-sm">{sess.location}</span>
                             <button
                               type="button"
@@ -663,7 +663,7 @@ export function MenteeReportModal({
                                   download={sess.attachedNote.fileName || "materials"}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#2563EB] hover:bg-[#c4533a] text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer"
                                 >
                                   <Download className="w-3 h-3" />
                                   <span>Download</span>
@@ -694,7 +694,7 @@ export function MenteeReportModal({
               {/* Target Job Roles & Industries */}
               <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-3">
                 <div className="flex items-center gap-2 text-stone-900 font-bold text-xs uppercase tracking-wider font-mono">
-                  <Target className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <Target className="w-3.5 h-3.5 text-primary-600" />
                   <span>Target Industries &amp; Goals</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -716,7 +716,7 @@ export function MenteeReportModal({
               {/* Skills to Develop */}
               <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-3">
                 <div className="flex items-center gap-2 text-stone-900 font-bold text-xs uppercase tracking-wider font-mono">
-                  <Briefcase className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <Briefcase className="w-3.5 h-3.5 text-primary-600" />
                   <span>Skills Being Developed</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -724,7 +724,7 @@ export function MenteeReportModal({
                     mentee.careerProfile.skillsToDevelop.map((skill, i) => (
                       <span
                         key={i}
-                        className="px-2.5 py-1 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] text-xs font-medium"
+                        className="px-2.5 py-1 rounded-lg bg-primary-600/10 border border-primary-600/20 text-primary-600 text-xs font-medium"
                       >
                         {skill}
                       </span>

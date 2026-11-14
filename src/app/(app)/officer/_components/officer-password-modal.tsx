@@ -61,7 +61,7 @@ export function OfficerPasswordModal({ isOpen, onClose }: OfficerPasswordModalPr
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-stone-50/50">
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center">
+            <span className="w-8 h-8 rounded-lg bg-primary-600/10 text-primary-600 flex items-center justify-center">
               <Lock className="w-4 h-4" />
             </span>
             <div>
@@ -102,7 +102,7 @@ export function OfficerPasswordModal({ isOpen, onClose }: OfficerPasswordModalPr
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 8 characters"
                 required
-                className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
               />
               <button
                 type="button"
@@ -122,7 +122,7 @@ export function OfficerPasswordModal({ isOpen, onClose }: OfficerPasswordModalPr
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter password"
               required
-              className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+              className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
             />
           </div>
 
@@ -138,7 +138,7 @@ export function OfficerPasswordModal({ isOpen, onClose }: OfficerPasswordModalPr
             <button
               type="submit"
               disabled={isLoading || !newPassword}
-              className="px-5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c5563d] text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>Save Password</span>

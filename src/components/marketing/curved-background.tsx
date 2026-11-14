@@ -7,7 +7,7 @@ export function CurvedBackground() {
       <div
         className="absolute -top-32 -left-32 w-[650px] h-[650px] rounded-full opacity-70 blur-3xl"
         style={{
-          background: "radial-gradient(circle, #DBEAFE 0%, #EFF6FF 55%, transparent 75%)",
+          background: "radial-gradient(circle, #FFEDD5 0%, #FFF7ED 55%, transparent 75%)",
         }}
       />
 
@@ -15,7 +15,7 @@ export function CurvedBackground() {
       <div
         className="absolute -top-24 -right-24 w-[550px] h-[550px] rounded-full opacity-60 blur-3xl"
         style={{
-          background: "radial-gradient(circle, #BFDBFE 0%, #DBEAFE 50%, transparent 75%)",
+          background: "radial-gradient(circle, #FED7AA 0%, #FFEDD5 50%, transparent 75%)",
         }}
       />
 
@@ -34,9 +34,9 @@ export function CurvedBackground() {
           />
           <defs>
             <linearGradient id="upperLeftWaveGrad" x1="0" y1="80" x2="450" y2="550" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#DBEAFE" stopOpacity="0.75" />
-              <stop offset="0.6" stopColor="#EFF6FF" stopOpacity="0.45" />
-              <stop offset="1" stopColor="#F8FAFF" stopOpacity="0" />
+              <stop stopColor="#FFEDD5" stopOpacity="0.75" />
+              <stop offset="0.6" stopColor="#FFF7ED" stopOpacity="0.45" />
+              <stop offset="1" stopColor="#FFFCF8" stopOpacity="0" />
             </linearGradient>
           </defs>
         </svg>
@@ -65,14 +65,14 @@ export function CurvedBackground() {
 
           <defs>
             <linearGradient id="outerBlueWave" x1="950" y1="60" x2="200" y2="850" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#BFDBFE" stopOpacity="0.65" />
-              <stop offset="0.5" stopColor="#93C5FD" stopOpacity="0.75" />
-              <stop offset="1" stopColor="#60A5FA" stopOpacity="0.85" />
+              <stop stopColor="#FED7AA" stopOpacity="0.65" />
+              <stop offset="0.5" stopColor="#FDBA74" stopOpacity="0.75" />
+              <stop offset="1" stopColor="#FDBA74" stopOpacity="0.85" />
             </linearGradient>
             <linearGradient id="innerBlueWave" x1="950" y1="200" x2="350" y2="850" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#93C5FD" stopOpacity="0.7" />
-              <stop offset="0.45" stopColor="#60A5FA" stopOpacity="0.85" />
-              <stop offset="1" stopColor="#2563EB" stopOpacity="0.95" />
+              <stop stopColor="#FDBA74" stopOpacity="0.7" />
+              <stop offset="0.45" stopColor="#FDBA74" stopOpacity="0.85" />
+              <stop offset="1" stopColor="#F58220" stopOpacity="0.95" />
             </linearGradient>
           </defs>
         </svg>
