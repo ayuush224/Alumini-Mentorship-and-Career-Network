@@ -5,148 +5,165 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
-  LayoutGrid,
-  Users,
-  Heart,
-  BarChart2,
-  User,
-  ShieldCheck,
-  LogOut,
-  Loader2,
-  ExternalLink,
-  ChevronDown,
+	LayoutGrid,
+	Users,
+	Heart,
+	BarChart2,
+	User,
+	ShieldCheck,
+	LogOut,
+	Loader2,
+	ExternalLink,
+	ChevronDown,
 } from "lucide-react";
 
 interface StudentHeaderProps {
-  user: {
-    name?: string;
-    avatarUrl?: string;
-  };
+	user: {
+		name?: string;
+		avatarUrl?: string;
+	};
 }
 
 export function StudentHeader({ user }: StudentHeaderProps) {
-  const pathname = usePathname();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+	const pathname = usePathname();
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoggingOut(true);
-    try {
-      await fetch("/api/v1/auth/logout", { method: "POST" });
-    } finally {
-      window.location.href = "/login";
-    }
-  };
+	const handleLogout = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoggingOut(true);
+		try {
+			await fetch("/api/v1/auth/logout", { method: "POST" });
+		} finally {
+			window.location.href = "/login";
+		}
+	};
 
-  const tabs = [
-    { label: "Dashboard", href: "/student/dashboard", icon: LayoutGrid },
-    { label: "Mentors", href: "/student/mentors", icon: Users },
-    { label: "My Mentorship", href: "/student/mentorship", icon: Heart },
-    { label: "Analytics", href: "/student/analytics", icon: BarChart2 },
-    { label: "Profile", href: "/student/profile", icon: User },
-  ];
+	const tabs = [
+		{ label: "Dashboard", href: "/student/dashboard", icon: LayoutGrid },
+		{ label: "Mentors", href: "/student/mentors", icon: Users },
+		{ label: "My Mentorship", href: "/student/mentorship", icon: Heart },
+		{ label: "Analytics", href: "/student/analytics", icon: BarChart2 },
+		{ label: "Profile", href: "/student/profile", icon: User },
+	];
 
-  const initials = user.name
-    ? user.name
-        .split(/\s+/)
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "ST";
+	const initials = user.name
+		? user.name
+				.split(/\s+/)
+				.map((p) => p[0])
+				.join("")
+				.slice(0, 2)
+				.toUpperCase()
+		: "ST";
 
-  return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px] flex items-center justify-between gap-4">
-        {/* Left: Brand Logo & Navigation Tabs */}
-        <div className="flex items-center gap-6 sm:gap-8 min-w-0">
-          <Link
-            href="/student/dashboard"
-            className="inline-flex items-center gap-1 font-heading font-black text-2xl tracking-tight text-deep group shrink-0"
-          >
-            <span>alma</span>
-            <span className="text-primary-600 font-black text-2xl leading-none">.</span>
-          </Link>
+	return (
+		<header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs transition-colors">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px] flex items-center justify-between gap-4">
+				{/* Left: Brand Logo & Navigation Tabs */}
+				<div className="flex items-center gap-6 sm:gap-8 min-w-0">
+					<Link
+						href="/student/dashboard"
+						className="inline-flex items-center gap-2 font-heading font-black text-2xl tracking-tight text-deep group shrink-0"
+					>
+						<Image
+							src="/lpu_logo.png"
+							alt="Lovely Professional University"
+							width={32}
+							height={32}
+							priority
+							className="h-10 w-10 object-contain"
+						/>
+						<span>alma</span>
+						<span className="text-primary-600 font-black text-2xl leading-none">.</span>
+					</Link>
 
-          {/* Horizontal Navigation Tabs */}
-          <div className="relative min-w-0">
-            <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-1 [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent_100%)] sm:[mask-image:none]">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive =
-                  pathname === tab.href ||
-                  (tab.href === "/student/dashboard" && (pathname === "/student" || pathname === "/dashboard")) ||
-                  (tab.href === "/student/mentors" && pathname === "/mentors") ||
-                  (tab.href === "/student/mentorship" && pathname === "/mentorship") ||
-                  (tab.href === "/student/analytics" && pathname === "/analytics") ||
-                  pathname.startsWith(`${tab.href}/`);
+					{/* Horizontal Navigation Tabs */}
+					<div className="relative min-w-0">
+						<nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-1 [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent_100%)] sm:[mask-image:none]">
+							{tabs.map((tab) => {
+								const Icon = tab.icon;
+								const isActive =
+									pathname === tab.href ||
+									(tab.href === "/student/dashboard" &&
+										(pathname === "/student" || pathname === "/dashboard")) ||
+									(tab.href === "/student/mentors" && pathname === "/mentors") ||
+									(tab.href === "/student/mentorship" && pathname === "/mentorship") ||
+									(tab.href === "/student/analytics" && pathname === "/analytics") ||
+									pathname.startsWith(`${tab.href}/`);
 
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    prefetch={true}
-                    className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors duration-150 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:outline-none focus-visible:ring-offset-1 ${
-                      isActive
-                        ? "bg-primary-50 text-primary-600 shadow-2xs"
-                        : "text-slate-600 hover:text-deep hover:bg-slate-100/70"
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 ${isActive ? "text-primary-600" : "text-slate-500"}`} />
-                    <span>{tab.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+								return (
+									<Link
+										key={tab.href}
+										href={tab.href}
+										prefetch={true}
+										className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors duration-150 ease-out flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:outline-none focus-visible:ring-offset-1 ${
+											isActive
+												? "bg-primary-50 text-primary-600 shadow-2xs"
+												: "text-slate-600 hover:text-deep hover:bg-slate-100/70"
+										}`}
+									>
+										<Icon
+											className={`w-4 h-4 ${isActive ? "text-primary-600" : "text-slate-500"}`}
+										/>
+										<span>{tab.label}</span>
+									</Link>
+								);
+							})}
+						</nav>
+					</div>
+				</div>
 
-        {/* Right: Portal Badge & Profile User Menu */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-primary-200 text-primary-600 text-xs font-semibold shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary-600" />
-            <span>Student Portal</span>
-            <ExternalLink className="w-3 h-3 text-primary-600" />
-          </div>
+				{/* Right: Portal Badge & Profile User Menu */}
+				<div className="flex items-center gap-3 shrink-0">
+					<div className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-primary-200 text-primary-600 text-xs font-semibold shadow-2xs">
+						<ShieldCheck className="w-3.5 h-3.5 text-primary-600" />
+						<span>Student Portal</span>
+						<ExternalLink className="w-3 h-3 text-primary-600" />
+					</div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/student/profile"
-              className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-full hover:bg-slate-100/70 transition-colors"
-              title="View & Edit Profile"
-            >
-              {user.avatarUrl ? (
-                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary-200">
-                  <Image src={user.avatarUrl} alt="Student avatar" fill className="object-cover" sizes="32px" />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-primary-100 border border-primary-200 text-primary-700 font-bold text-xs flex items-center justify-center">
-                  {initials}
-                </div>
-              )}
-              <span className="hidden sm:inline text-sm font-medium text-deep">
-                {user.name || "Student"}
-              </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:inline" />
-            </Link>
+					<div className="flex items-center gap-2">
+						<Link
+							href="/student/profile"
+							className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-full hover:bg-slate-100/70 transition-colors"
+							title="View & Edit Profile"
+						>
+							{user.avatarUrl ? (
+								<div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary-200">
+									<Image
+										src={user.avatarUrl}
+										alt="Student avatar"
+										fill
+										className="object-cover"
+										sizes="32px"
+									/>
+								</div>
+							) : (
+								<div className="w-8 h-8 rounded-full bg-primary-100 border border-primary-200 text-primary-700 font-bold text-xs flex items-center justify-center">
+									{initials}
+								</div>
+							)}
+							<span className="hidden sm:inline text-sm font-medium text-deep">
+								{user.name || "Student"}
+							</span>
+							<ChevronDown className="w-4 h-4 text-slate-400 hidden sm:inline" />
+						</Link>
 
-            <form action="/api/v1/auth/logout" method="POST" onSubmit={handleLogout}>
-              <button
-                type="submit"
-                disabled={isLoggingOut}
-                title="Sign out"
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {isLoggingOut ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-                ) : (
-                  <LogOut className="w-4 h-4" />
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+						<form action="/api/v1/auth/logout" method="POST" onSubmit={handleLogout}>
+							<button
+								type="submit"
+								disabled={isLoggingOut}
+								title="Sign out"
+								className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer disabled:opacity-50"
+							>
+								{isLoggingOut ? (
+									<Loader2 className="w-4 h-4 animate-spin text-primary-600" />
+								) : (
+									<LogOut className="w-4 h-4" />
+								)}
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</header>
+	);
 }

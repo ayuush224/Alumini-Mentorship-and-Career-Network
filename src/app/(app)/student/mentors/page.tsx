@@ -249,33 +249,60 @@ export default async function StudentMentorsPage() {
   mentors.sort((a, b) => b.matchScore - a.matchScore);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {/* Top Banner: Verification & Matching Transparency */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 p-7 text-white shadow-md border border-stone-800">
-        <div className="relative z-10 max-w-2xl space-y-2">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Verified Alumni Directory</span>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white font-serif">
-            Discover Your Career Mentor
-          </h1>
-          <p className="text-sm text-stone-300 leading-relaxed">
-            Recommendations are computed transparently based on your target industries, desired skills, and alumni expertise. Every mentor has declared active bandwidth to ensure quality engagement.
-          </p>
+      <section className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-deep via-plum to-deep px-6 py-7 text-white shadow-xl shadow-deep/10 sm:px-8 sm:py-9 lg:px-10">
+        <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-primary-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 right-24 h-72 w-72 rounded-full border border-primary-300/20" />
 
-          <div className="pt-2 flex flex-wrap gap-4 text-xs text-stone-400">
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-stone-400" />
-              14-day auto-expiry on requests
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Target className="h-3.5 w-3.5 text-stone-400" />
-              Transparent match score (0–100%)
-            </span>
+        <div className="relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
+          <div className="max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary-300/30 bg-primary-600/15 px-3 py-1 text-xs font-semibold text-primary-200">
+              <Sparkles className="h-3.5 w-3.5 text-primary-300" />
+              <span>Verified alumni directory</span>
+            </div>
+            <h1 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Discover your career mentor
+            </h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
+              Find trusted alumni who match your goals, interests, and next step. Every recommendation is explainable, and every mentor has a visible capacity limit.
+            </p>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-xs text-white/60">
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-primary-300" />
+                14-day request expiry
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5 text-primary-300" />
+                Transparent 0–100% matching
+              </span>
+            </div>
+          </div>
+
+          <div className="hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm lg:block">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-200">
+              How matches work
+            </p>
+            <div className="mt-4 space-y-3 text-xs text-white/70">
+              <div className="flex items-center justify-between gap-4">
+                <span>Career direction</span>
+                <span className="font-semibold text-white">60%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full w-3/5 rounded-full bg-primary-500" />
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Shared skills</span>
+                <span className="font-semibold text-white">40%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full w-2/5 rounded-full bg-primary-300" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Interactive Directory with Search, Filter & Modals */}
       <StudentMentorsDirectory

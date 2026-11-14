@@ -232,7 +232,7 @@ export function StudentMentorsDirectory({
         <div className="bg-white/85 backdrop-blur-xs rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-2xs space-y-3 transition-all animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-600" />
+              <Clock className="w-4 h-4 text-primary-600" />
               <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-700">
                 Recently Viewed Mentors
               </h3>
@@ -263,13 +263,13 @@ export function StudentMentorsDirectory({
                   key={m.id || m.mentorId}
                   type="button"
                   onClick={() => handleOpenMentorModal(m)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-stone-50 hover:bg-blue-50/70 border border-stone-200/80 hover:border-blue-200 text-left transition-all shrink-0 cursor-pointer group shadow-2xs"
+                  className="group flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xl border border-stone-200/80 bg-stone-50 px-3 py-2 text-left shadow-2xs transition-all hover:border-primary-200 hover:bg-primary-50/70"
                 >
-                  <div className="w-7 h-7 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-[10px] shrink-0">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-primary-200 bg-primary-100 text-[10px] font-bold text-primary-700">
                     {mentorInitials}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-stone-800 group-hover:text-blue-700 transition-colors truncate max-w-[130px]">
+                    <div className="max-w-[130px] truncate text-xs font-semibold text-stone-800 transition-colors group-hover:text-primary-700">
                       {m.name}
                     </div>
                     <div className="text-[10px] text-stone-500 truncate max-w-[130px]">
@@ -277,7 +277,7 @@ export function StudentMentorsDirectory({
                     </div>
                   </div>
                   {m.matchScore !== undefined && (
-                    <span className="ml-1 text-[10px] font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.5 rounded-md shrink-0">
+                    <span className="ml-1 shrink-0 rounded-md bg-primary-100/70 px-1.5 py-0.5 text-[10px] font-bold text-primary-600">
                       {m.matchScore}%
                     </span>
                   )}
@@ -300,7 +300,7 @@ export function StudentMentorsDirectory({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by mentor name, company (e.g. Stripe, Uber), job title, or skill..."
-              className="w-full pl-10 pr-9 py-2.5 bg-stone-50 hover:bg-stone-100/70 focus:bg-white border border-stone-200/80 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
+              className="w-full rounded-xl border border-stone-200/80 bg-stone-50 py-2.5 pl-10 pr-9 text-xs text-stone-900 placeholder:text-stone-400 transition-all hover:bg-stone-100/70 focus:border-primary-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-600/20"
             />
             {searchQuery && (
               <button
@@ -319,7 +319,7 @@ export function StudentMentorsDirectory({
             <select
               value={selectedIndustry}
               onChange={(e) => setSelectedIndustry(e.target.value)}
-              className="w-full appearance-none px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100/70 focus:bg-white border border-stone-200/80 rounded-xl text-xs font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all pr-8 cursor-pointer"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-stone-200/80 bg-stone-50 px-3.5 py-2.5 pr-8 text-xs font-medium text-stone-800 transition-all hover:bg-stone-100/70 focus:border-primary-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-600/20"
             >
               <option value="all">All Industries ({availableIndustries.length})</option>
               {availableIndustries.map((ind) => (
@@ -336,7 +336,7 @@ export function StudentMentorsDirectory({
             <select
               value={selectedSkill}
               onChange={(e) => setSelectedSkill(e.target.value)}
-              className="w-full appearance-none px-3.5 py-2.5 bg-stone-50 hover:bg-stone-100/70 focus:bg-white border border-stone-200/80 rounded-xl text-xs font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all pr-8 cursor-pointer"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-stone-200/80 bg-stone-50 px-3.5 py-2.5 pr-8 text-xs font-medium text-stone-800 transition-all hover:bg-stone-100/70 focus:border-primary-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-600/20"
             >
               <option value="all">All Skills & Topics ({availableSkills.length})</option>
               {availableSkills.map((sk) => (
@@ -372,11 +372,11 @@ export function StudentMentorsDirectory({
                   onClick={() => setMinMatchScore(scoreOpt.value)}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
                     active
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 font-semibold"
+                      ? "border border-primary-200 bg-primary-50 font-semibold text-primary-600"
                       : "bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200/70"
                   }`}
                 >
-                  {scoreOpt.value > 0 && <Sparkles className="w-3 h-3 text-blue-600" />}
+                  {scoreOpt.value > 0 && <Sparkles className="w-3 h-3 text-primary-600" />}
                   <span>{scoreOpt.label}</span>
                 </button>
               );
@@ -436,7 +436,7 @@ export function StudentMentorsDirectory({
               <button
                 type="button"
                 onClick={() => setSelectedIndustry(studentFocusIndustry)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50/70 hover:bg-blue-100/70 text-primary-600 border border-blue-200/60 text-[11px] font-medium transition-colors cursor-pointer"
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-primary-200/60 bg-primary-50/70 px-2.5 py-1 text-[11px] font-medium text-primary-600 transition-colors hover:bg-primary-100/70"
                 title="Filter by your declared target industry"
               >
                 <span>Target: {studentFocusIndustry}</span>
@@ -458,12 +458,12 @@ export function StudentMentorsDirectory({
 
             {/* Active Filters List */}
             {selectedIndustry !== "all" && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-medium">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-[11px] font-medium text-primary-600">
                 <span>Industry: {selectedIndustry}</span>
                 <button
                   type="button"
                   onClick={() => setSelectedIndustry("all")}
-                  className="hover:text-blue-800 cursor-pointer"
+                  className="cursor-pointer hover:text-primary-800"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -484,12 +484,12 @@ export function StudentMentorsDirectory({
             )}
 
             {minMatchScore > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-medium">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-[11px] font-medium text-primary-600">
                 <span>Min: {minMatchScore}% Match</span>
                 <button
                   type="button"
                   onClick={() => setMinMatchScore(0)}
-                  className="hover:text-blue-800 cursor-pointer"
+                  className="cursor-pointer hover:text-primary-800"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -515,7 +515,7 @@ export function StudentMentorsDirectory({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-blue-800 transition-colors cursor-pointer"
+              className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-primary-600 transition-colors hover:text-primary-800"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset filters</span>
@@ -552,7 +552,7 @@ export function StudentMentorsDirectory({
           <button
             type="button"
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-700"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset All Filters</span>
