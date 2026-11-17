@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { NavigationProgressBar } from "@/app/_components/navigation-progress-bar";
+import { NavigationProgressBar } from "@/components/shared/navigation-progress-bar";
 
 export default function AppLayout({
   children,

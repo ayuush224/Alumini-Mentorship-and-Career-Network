@@ -13,7 +13,7 @@ import {
   ActiveMenteeItem,
 } from "./_components/mentor-mentees-view";
 import { MenteeReportData } from "./_components/mentee-report-modal";
-import { StudentCareerProfileViewData } from "@/app/actions/profile";
+import { StudentCareerProfileViewData } from "@/actions/profile";
 
 
 export const metadata = {

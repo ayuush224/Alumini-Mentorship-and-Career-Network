@@ -22,7 +22,7 @@ import {
   fetchScoredMentorsAction,
   requestMentorship,
   ScoredMentorCardItem,
-} from "@/app/actions/mentorship";
+} from "@/actions/mentorship";
 
 interface MentorDiscoveryViewProps {
   initialMentors: ScoredMentorCardItem[];

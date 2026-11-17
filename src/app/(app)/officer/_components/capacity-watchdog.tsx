@@ -12,7 +12,7 @@ import {
   Briefcase,
   Search,
 } from "lucide-react";
-import { toggleMentorAcceptance } from "@/app/actions/officer";
+import { toggleMentorAcceptance } from "@/actions/officer";
 
 export interface MentorCapacityItem {
   id: string;

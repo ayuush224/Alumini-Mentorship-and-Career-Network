@@ -23,7 +23,7 @@ import {
   Quote,
 } from "lucide-react";
 import { formatDuration } from "@/app/(app)/mentor/profile/_components/mentor-profile-editor";
-import { requestMentorship } from "@/app/actions/mentorship";
+import { requestMentorship } from "@/actions/mentorship";
 
 export interface PublicMentorData {
   id: string;

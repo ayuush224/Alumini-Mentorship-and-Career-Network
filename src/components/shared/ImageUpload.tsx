@@ -16,7 +16,7 @@ import {
   Link as LinkIcon,
   AlertCircle,
 } from "lucide-react";
-import { uploadCroppedProfileImageAction } from "@/app/actions/profile";
+import { uploadCroppedProfileImageAction } from "@/actions/profile";
 
 export interface ImageUploadProps {
   variant: "avatar" | "banner";

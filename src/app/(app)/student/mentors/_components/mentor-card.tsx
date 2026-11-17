@@ -11,7 +11,7 @@ import {
   X,
   ShieldCheck,
 } from "lucide-react";
-import { requestMentorship } from "@/app/actions/mentorship";
+import { requestMentorship } from "@/actions/mentorship";
 
 export interface Mentor {
   id: string;

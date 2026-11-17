@@ -28,8 +28,8 @@ import {
   scheduleMentorshipSession,
   updateSessionStatusAction,
   updateSessionMaterialsAction,
-} from "@/app/actions/mentorship";
-import { uploadSessionAttachmentAction } from "@/app/actions/chat";
+} from "@/actions/mentorship";
+import { uploadSessionAttachmentAction } from "@/actions/chat";
 import {
   formatAttachmentBytes,
   getFileTypeInfo,

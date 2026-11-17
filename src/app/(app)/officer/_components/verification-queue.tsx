@@ -12,7 +12,7 @@ import {
   Calendar,
   GraduationCap,
 } from "lucide-react";
-import { decideVerification } from "@/app/actions/officer";
+import { decideVerification } from "@/actions/officer";
 import { DocumentModal, VerificationDocumentItem } from "./document-modal";
 
 export interface VerificationRequestItem {

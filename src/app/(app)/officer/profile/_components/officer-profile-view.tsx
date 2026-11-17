@@ -29,7 +29,7 @@ import {
   updateOfficerBanner,
   updateOfficerProfileDetails,
   updateInstitutionDetails,
-} from "@/app/actions/officer";
+} from "@/actions/officer";
 
 export interface OfficerProfileData {
   id: string;

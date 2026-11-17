@@ -8,6 +8,25 @@ const nextConfig: NextConfig = {
       static: 180,  // 3 minutes for static routes
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/mentors",
+        destination: "/student/mentors",
+        permanent: true,
+      },
+      {
+        source: "/mentorship",
+        destination: "/student/mentorship",
+        permanent: true,
+      },
+      {
+        source: "/analytics",
+        destination: "/student/analytics",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

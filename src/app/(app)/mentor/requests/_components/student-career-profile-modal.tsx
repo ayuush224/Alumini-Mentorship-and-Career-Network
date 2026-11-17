@@ -23,7 +23,7 @@ import {
   Globe,
   Link as LinkIcon,
 } from "lucide-react";
-import { StudentCareerProfileViewData } from "@/app/actions/profile";
+import { StudentCareerProfileViewData } from "@/actions/profile";
 
 function formatExperienceDate(dateVal?: string | Date | null): string {
   if (!dateVal) return "";

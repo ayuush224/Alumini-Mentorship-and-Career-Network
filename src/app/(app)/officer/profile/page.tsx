@@ -1,6 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { getOfficerProfileData } from "@/app/actions/officer";
+import { getOfficerProfileData } from "@/actions/officer";
 import { OfficerProfileView } from "./_components/officer-profile-view";
 
 

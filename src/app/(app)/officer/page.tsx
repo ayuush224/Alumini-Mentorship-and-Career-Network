@@ -1,6 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { getOfficerDashboardData } from "@/app/actions/officer";
+import { getOfficerDashboardData } from "@/actions/officer";
 import { OfficerDashboardView } from "./_components/officer-dashboard-view";
 
 
