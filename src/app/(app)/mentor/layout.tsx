@@ -2,8 +2,14 @@ import React from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyAccess } from "@/lib/app-tokens";
+import { connectDB } from "@/lib/db";
+import { User } from "@/lib/models/User";
+import { VerificationRequest } from "@/lib/models/Verification";
 import { getCachedUser, getCachedMentorProfile, getCachedPendingRequestsCount } from "@/lib/dal";
 import { MentorHeader } from "./_components/mentor-header";
+import { MentorVerificationPending } from "./_components/mentor-verification-pending";
+
+export const dynamic = "force-dynamic";
 
 export default async function MentorLayout({
   children,
@@ -36,19 +42,58 @@ export default async function MentorLayout({
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
-    if (token) {
-      const payload = await verifyAccess(token);
-      if (payload?.sub) {
-        const [user, profile, reqCount] = await Promise.all([
-          getCachedUser(payload.sub),
-          getCachedMentorProfile(payload.sub),
-          getCachedPendingRequestsCount(payload.sub),
-        ]);
-        if (user) {
-          mentorName = user.name || (user.email ? user.email.split("@")[0] : "Mentor");
-          avatarUrl = profile?.avatarUrl || user.mentorProfile?.avatarUrl;
-          pendingRequestsCount = reqCount;
-        }
+    if (!token) {
+      redirect("/login");
+    }
+
+    const payload = await verifyAccess(token);
+    if (!payload?.sub) {
+      redirect("/login");
+    }
+
+    mentorId = payload.sub;
+
+    await connectDB();
+    const [user, profile, reqCount, verificationReq] = await Promise.all([
+      getCachedUser(mentorId),
+      getCachedMentorProfile(mentorId),
+      getCachedPendingRequestsCount(mentorId),
+      VerificationRequest.findOne({
+        $or: [{ userId: mentorId }, { alumnusId: mentorId }],
+      })
+        .sort({ submittedAt: -1 })
+        .populate("documents")
+        .lean(),
+    ]);
+
+    if (!user) {
+      redirect("/login");
+    }
+
+    mentorName = user.name || (user.email ? user.email.split("@")[0] : "Mentor");
+    mentorEmail = user.email;
+    avatarUrl = profile?.avatarUrl || user.mentorProfile?.avatarUrl;
+    pendingRequestsCount = reqCount;
+
+    // Determine verification status
+    // A user is verified if:
+    // 1. user.isVerified === true OR user.verificationStatus === "verified"
+    // 2. OR their latest VerificationRequest status is "verified"
+    // 3. OR profile.isVerified === true
+    if (
+      user.isVerified === true ||
+      user.verificationStatus === "verified" ||
+      verificationReq?.status === "verified" ||
+      profile?.isVerified === true
+    ) {
+      isVerified = true;
+      verificationStatus = "verified";
+
+      // Self-heal user document if needed
+      if (!user.isVerified || user.verificationStatus !== "verified") {
+        await User.findByIdAndUpdate(mentorId, {
+          $set: { isVerified: true, verificationStatus: "verified" },
+        });
       }
     } else if (
       user.verificationStatus === "rejected" ||
@@ -92,6 +137,7 @@ export default async function MentorLayout({
     if (err && typeof err === "object" && "digest" in err) {
       throw err;
     }
+    console.error("Mentor layout authentication error:", err);
     redirect("/login");
   }
 
