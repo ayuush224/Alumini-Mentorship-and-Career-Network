@@ -104,7 +104,7 @@ export function AuditReports({ initialStats, initialLogs }: AuditReportsProps) {
         <div className="p-5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
             <span>Active Relationships</span>
-            <BarChart3 className="w-4 h-4 text-[#2563EB]" />
+            <BarChart3 className="w-4 h-4 text-primary-600" />
           </div>
           <p className="text-2xl font-bold text-stone-900">{initialStats.activePairings}</p>
           <p className="text-[11px] text-stone-500">Currently in progress</p>
@@ -160,7 +160,7 @@ export function AuditReports({ initialStats, initialLogs }: AuditReportsProps) {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Filter audit logs by action, role, resource, or details..."
-          className="w-full bg-white border border-stone-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400 transition-all shadow-2xs"
+          className="w-full bg-white border border-stone-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400 transition-all shadow-2xs"
         />
       </div>
 

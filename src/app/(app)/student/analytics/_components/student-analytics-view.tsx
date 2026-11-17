@@ -42,7 +42,7 @@ export function StudentAnalyticsView({
       ====================================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="uppercase tracking-widest text-[10px] font-semibold text-[#2563EB] font-mono">
+          <span className="uppercase tracking-widest text-[10px] font-semibold text-primary-600 font-mono">
             80/20 WEIGHTED ANALYTICS ENGINE
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-stone-900 mt-1">
@@ -56,7 +56,7 @@ export function StudentAnalyticsView({
         {/* Total Points Badge */}
         <div className="flex items-center gap-3">
           <div className="px-5 py-2.5 rounded-2xl bg-white border border-stone-200 shadow-2xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
+            <div className="w-10 h-10 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
               <Award className="w-5 h-5" />
             </div>
             <div>
@@ -195,7 +195,7 @@ export function StudentAnalyticsView({
                   />
                   <Bar
                     dataKey="weightedScore"
-                    fill="#2563EB"
+                    fill="#F58220"
                     radius={[6, 6, 0, 0]}
                     maxBarSize={42}
                   />

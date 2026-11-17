@@ -130,7 +130,7 @@ export function CapacityWatchdog({ initialMentors }: CapacityWatchdogProps) {
           <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                overallUtilization > 85 ? "bg-amber-500" : "bg-[#2563EB]"
+                overallUtilization > 85 ? "bg-amber-500" : "bg-primary-600"
               }`}
               style={{ width: `${Math.min(100, overallUtilization)}%` }}
             />
@@ -140,7 +140,7 @@ export function CapacityWatchdog({ initialMentors }: CapacityWatchdogProps) {
         <div className="p-5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-stone-600">Overall Utilization</span>
-            <span className="text-xs font-semibold text-[#2563EB]">{overallUtilization}%</span>
+            <span className="text-xs font-semibold text-primary-600">{overallUtilization}%</span>
           </div>
           <p className="text-2xl font-bold text-stone-900">{overallUtilization}%</p>
           <p className="text-[11px] text-stone-500">
@@ -170,7 +170,7 @@ export function CapacityWatchdog({ initialMentors }: CapacityWatchdogProps) {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Filter by mentor name, company, title, or industry..."
-          className="w-full bg-white border border-stone-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400 transition-all shadow-2xs"
+          className="w-full bg-white border border-stone-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400 transition-all shadow-2xs"
         />
       </div>
 
@@ -255,7 +255,7 @@ export function CapacityWatchdog({ initialMentors }: CapacityWatchdogProps) {
                             ? "bg-rose-500"
                             : m.saturationPercentage >= 75
                             ? "bg-amber-500"
-                            : "bg-[#2563EB]"
+                            : "bg-primary-600"
                         }`}
                         style={{ width: `${Math.min(100, m.saturationPercentage)}%` }}
                       />

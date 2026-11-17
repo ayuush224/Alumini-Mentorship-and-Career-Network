@@ -183,7 +183,7 @@ export default async function MentorRequestsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div>
-        <span className="uppercase tracking-widest text-[10px] font-semibold text-[#2563EB] font-mono">
+        <span className="uppercase tracking-widest text-[10px] font-semibold text-primary-600 font-mono">
           INCOMING INTRODUCTIONS
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold font-serif text-stone-900 mt-1">

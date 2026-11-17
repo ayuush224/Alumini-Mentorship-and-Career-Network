@@ -330,6 +330,8 @@ export interface IMentorProfileData {
   jobTitle?: string;
   industry?: string;
   expertiseTags?: string[];
+  isVerified?: boolean;
+  verifiedAt?: Date;
 }
 
 export const MentorProfileSchema = new Schema<IMentorProfileData>(
@@ -358,6 +360,8 @@ export const MentorProfileSchema = new Schema<IMentorProfileData>(
     jobTitle: { type: String, trim: true },
     industry: { type: String, trim: true },
     expertiseTags: { type: [String], default: [] },
+    isVerified: { type: Boolean, default: false },
+    verifiedAt: { type: Date },
   },
   { _id: false }
 );
@@ -401,6 +405,8 @@ const StandaloneMentorProfileSchema = new Schema<IMentorProfile>(
     jobTitle: { type: String, default: "Mentor", trim: true },
     industry: { type: String, default: "Technology", trim: true },
     expertiseTags: { type: [String], default: [] },
+    isVerified: { type: Boolean, default: false },
+    verifiedAt: { type: Date },
   },
   { timestamps: true }
 );
@@ -431,6 +437,8 @@ export interface IUser extends Document {
   twoFactorSecret?: string;
   studentProfile?: IStudentProfileData;
   mentorProfile?: IMentorProfileData;
+  verificationStatus?: "pending" | "verified" | "rejected";
+  isVerified?: boolean;
   isDeleted?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -492,6 +500,15 @@ export const UserSchema = new Schema<IUser>(
     },
     mentorProfile: {
       type: MentorProfileSchema,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: "pending",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     isDeleted: {
       type: Boolean,

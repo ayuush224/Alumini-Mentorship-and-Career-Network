@@ -493,7 +493,7 @@ export function ImageUpload({
             priority
           />
         ) : (
-          <div className="w-full h-full relative overflow-hidden bg-gradient-to-r from-[#EBF3FF] via-[#E2EEFF] to-[#D5E6FF]">
+          <div className="w-full h-full relative overflow-hidden bg-gradient-to-r from-[#FFF7ED] via-[#FFEDD5] to-[#FED7AA]">
             <svg
               className="w-full h-full object-cover absolute inset-0 opacity-80 pointer-events-none"
               viewBox="0 0 1200 300"
@@ -502,12 +502,12 @@ export function ImageUpload({
             >
               <defs>
                 <linearGradient id="soft-wave-1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#D2E4FF" />
-                  <stop offset="100%" stopColor="#EAF2FF" />
+                  <stop offset="0%" stopColor="#FED7AA" />
+                  <stop offset="100%" stopColor="#FFF7ED" />
                 </linearGradient>
                 <linearGradient id="soft-wave-2" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#C0DAFF" stopOpacity="0.75" />
-                  <stop offset="100%" stopColor="#DFEDFF" stopOpacity="0.5" />
+                  <stop offset="0%" stopColor="#FDBA74" stopOpacity="0.75" />
+                  <stop offset="100%" stopColor="#FFEDD5" stopOpacity="0.5" />
                 </linearGradient>
               </defs>
               <path

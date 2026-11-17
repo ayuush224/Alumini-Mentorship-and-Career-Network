@@ -203,7 +203,7 @@ export function MentorPublicProfileModal({
       />
 
       {/* Modal Dialog Container */}
-      <div className="relative w-full max-w-4xl lg:max-w-5xl bg-[#F8FAFF] rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden my-auto z-10 flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-4xl lg:max-w-5xl bg-background rounded-3xl border border-stone-200/90 shadow-2xl overflow-hidden my-auto z-10 flex flex-col max-h-[92vh]">
         {/* Top Header Bar */}
         <div className="px-6 py-4 bg-white border-b border-stone-200/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 text-xs font-semibold text-stone-700">
@@ -277,9 +277,9 @@ export function MentorPublicProfileModal({
                             x2="100%"
                             y2="100%"
                           >
-                            <stop offset="0%" stopColor="#DBEAFE" />
-                            <stop offset="50%" stopColor="#E0E7FF" />
-                            <stop offset="100%" stopColor="#BFDBFE" />
+                            <stop offset="0%" stopColor="#FFEDD5" />
+                            <stop offset="50%" stopColor="#FFEDD5" />
+                            <stop offset="100%" stopColor="#FED7AA" />
                           </linearGradient>
                         </defs>
                         <rect
@@ -289,7 +289,7 @@ export function MentorPublicProfileModal({
                         />
                         <path
                           d="M0,280 C300,340 450,220 750,280 C1000,330 1150,260 1200,280 L1200,400 L0,400 Z"
-                          fill="#93C5FD"
+                          fill="#FDBA74"
                           fillOpacity="0.45"
                         />
                         <path

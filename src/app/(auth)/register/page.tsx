@@ -25,6 +25,10 @@ import {
   Check,
   ArrowLeft,
   AlertCircle,
+  UploadCloud,
+  FileCheck2,
+  Clock,
+  X,
 } from "lucide-react";
 
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -59,7 +63,7 @@ function FormInput({
         <input
           className={`w-full bg-white border ${
             error ? "border-rose-300 focus:border-rose-500 ring-1 ring-rose-100" : "border-stone-200 focus:border-stone-400"
-          } rounded-xl py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 transition-all ${
+          } rounded-xl py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 transition-all ${
             icon ? "pl-10" : "pl-3.5"
           } ${rightIcon ? "pr-10" : "pr-3.5"} ${className}`}
           {...props}
@@ -112,6 +116,8 @@ export default function RegisterPage() {
   const [industry, setIndustry] = useState("");
   const [professionalHeadline, setProfessionalHeadline] = useState("");
   const [mentoringInterests, setMentoringInterests] = useState("");
+  const [idProofFile, setIdProofFile] = useState<File | null>(null);
+  const [extraDocFile, setExtraDocFile] = useState<File | null>(null);
 
   // UI status state
   const [errorMessage, setErrorMessage] = useState("");
@@ -239,33 +245,38 @@ export default function RegisterPage() {
       return;
     }
 
+    if (role === "alumni" && !idProofFile) {
+      setErrorMessage("Please upload your Institutional ID proof document so the officer can verify your request.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const payload: Record<string, unknown> = {
-        email: email.trim().toLowerCase(),
-        password,
-        role,
-        fullName: fullName.trim(),
-      };
+      const formData = new FormData();
+      formData.append("email", email.trim().toLowerCase());
+      formData.append("password", password);
+      formData.append("role", role);
+      formData.append("fullName", fullName.trim());
 
       if (role === "student") {
-        payload.careerInterests = careerInterests.trim();
-        payload.rolesExploring = rolesExploring.trim();
-        payload.industriesCurious = industriesCurious.trim();
+        formData.append("careerInterests", careerInterests.trim());
+        formData.append("rolesExploring", rolesExploring.trim());
+        formData.append("industriesCurious", industriesCurious.trim());
       } else {
-        payload.institutionalId = institutionalId.trim();
-        payload.graduationYear = graduationYear.trim();
-        payload.currentRole = currentRole.trim();
-        payload.industry = industry.trim();
-        payload.professionalHeadline = professionalHeadline.trim();
-        payload.mentoringInterests = mentoringInterests.trim();
+        formData.append("institutionalId", institutionalId.trim());
+        formData.append("graduationYear", graduationYear.trim());
+        formData.append("currentRole", currentRole.trim());
+        formData.append("industry", industry.trim());
+        formData.append("professionalHeadline", professionalHeadline.trim());
+        formData.append("mentoringInterests", mentoringInterests.trim());
+        if (idProofFile) formData.append("idProof", idProofFile);
+        if (extraDocFile) formData.append("extraDocument", extraDocFile);
       }
 
       const response = await fetch("/api/v1/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       const data = await response.json();
@@ -289,7 +300,7 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 p-8 relative transition-all">
       {/* Terracotta Sparkle Icon (Top-Right) */}
-      <div className="absolute top-7 right-7 text-[#2563EB] pointer-events-none">
+      <div className="absolute top-7 right-7 text-primary-600 pointer-events-none">
         <Sparkles className="w-4 h-4" />
       </div>
 
@@ -315,13 +326,13 @@ export default function RegisterPage() {
               onClick={() => setRole("student")}
               className={`p-4 rounded-xl border text-left flex items-start gap-3.5 transition-all cursor-pointer ${
                 role === "student"
-                  ? "border-[#2563EB] bg-[#2563EB]/5 ring-1 ring-[#2563EB]"
+                  ? "border-primary-600 bg-primary-600/5 ring-1 ring-primary-600"
                   : "border-stone-200 hover:border-stone-300 bg-white"
               }`}
             >
               <div
                 className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                  role === "student" ? "bg-[#2563EB] text-white" : "bg-stone-100 text-stone-600"
+                  role === "student" ? "bg-primary-600 text-white" : "bg-stone-100 text-stone-600"
                 }`}
               >
                 <User className="w-5 h-5" />
@@ -330,7 +341,7 @@ export default function RegisterPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-stone-900">I&apos;m a student</h3>
                   {role === "student" && (
-                    <span className="w-4 h-4 rounded-full bg-[#2563EB] flex items-center justify-center text-white">
+                    <span className="w-4 h-4 rounded-full bg-primary-600 flex items-center justify-center text-white">
                       <Check className="w-2.5 h-2.5" />
                     </span>
                   )}
@@ -347,13 +358,13 @@ export default function RegisterPage() {
               onClick={() => setRole("alumni")}
               className={`p-4 rounded-xl border text-left flex items-start gap-3.5 transition-all cursor-pointer ${
                 role === "alumni"
-                  ? "border-[#2563EB] bg-[#2563EB]/5 ring-1 ring-[#2563EB]"
+                  ? "border-primary-600 bg-primary-600/5 ring-1 ring-primary-600"
                   : "border-stone-200 hover:border-stone-300 bg-white"
               }`}
             >
               <div
                 className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                  role === "alumni" ? "bg-[#2563EB] text-white" : "bg-stone-100 text-stone-600"
+                  role === "alumni" ? "bg-primary-600 text-white" : "bg-stone-100 text-stone-600"
                 }`}
               >
                 <Users className="w-5 h-5" />
@@ -362,7 +373,7 @@ export default function RegisterPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-stone-900">I&apos;m an alum</h3>
                   {role === "alumni" && (
-                    <span className="w-4 h-4 rounded-full bg-[#2563EB] flex items-center justify-center text-white">
+                    <span className="w-4 h-4 rounded-full bg-primary-600 flex items-center justify-center text-white">
                       <Check className="w-2.5 h-2.5" />
                     </span>
                   )}
@@ -377,7 +388,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={handleContinueRole}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-6 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-6 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
           >
             <span>Continue</span>
             <ArrowRight className="w-4 h-4" />
@@ -388,7 +399,7 @@ export default function RegisterPage() {
             <span>Already have an account?</span>
             <Link
               href="/login"
-              className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold transition-colors flex items-center gap-1 group"
+              className="text-primary-600 hover:text-primary-700 font-semibold transition-colors flex items-center gap-1 group"
             >
               <span>Sign in</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -445,7 +456,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
           >
             {isLoading ? (
               <>
@@ -504,7 +515,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
           >
             {isLoading ? (
               <>
@@ -583,7 +594,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
           >
             <span>Continue to your profile</span>
             <ArrowRight className="w-4 h-4" />
@@ -670,7 +681,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-6 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-6 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
           >
             {isLoading ? (
               <>
@@ -784,6 +795,98 @@ export default function RegisterPage() {
               onChange={(e) => setMentoringInterests(e.target.value)}
               icon={<HeartHandshake className="w-4 h-4" />}
             />
+
+            {/* FIELD 1: Institutional ID Proof Upload */}
+            <div className="w-full">
+              <label className="block text-xs font-medium text-stone-600 mb-1.5 flex items-center justify-between">
+                <span>Institutional ID Proof (Student ID / Degree) <span className="text-rose-500">*</span></span>
+                <span className="text-[10px] text-stone-400">PDF, PNG, JPG (Max 10MB)</span>
+              </label>
+              {idProofFile ? (
+                <div className="flex items-center justify-between p-3 bg-blue-50/70 border border-blue-200/90 rounded-xl text-xs">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <FileCheck2 className="w-4 h-4 text-primary-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-stone-900 truncate">{idProofFile.name}</p>
+                      <p className="text-[10px] text-stone-500">{(idProofFile.size / 1024).toFixed(0)} KB • Ready to verify</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIdProofFile(null)}
+                    className="p-1 text-stone-400 hover:text-rose-600 hover:bg-stone-100 rounded-lg transition-colors ml-2 shrink-0 cursor-pointer"
+                    title="Remove file"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3.5 border border-dashed border-stone-300 hover:border-primary-600 rounded-xl bg-stone-50/60 hover:bg-blue-50/30 cursor-pointer transition-all group">
+                  <UploadCloud className="w-5 h-5 text-stone-400 group-hover:text-primary-600 mb-1 transition-colors" />
+                  <span className="text-xs font-medium text-stone-700 group-hover:text-primary-600">
+                    Upload Institutional ID Proof
+                  </span>
+                  <span className="text-[10px] text-stone-400 mt-0.5">
+                    Click to select university student card, degree, or transcript
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/png,image/jpeg,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setIdProofFile(file);
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* FIELD 2: Additional Supporting Document Upload */}
+            <div className="w-full">
+              <label className="block text-xs font-medium text-stone-600 mb-1.5 flex items-center justify-between">
+                <span>Additional Document (Optional)</span>
+                <span className="text-[10px] text-stone-400">Experience, offer letter, or ID</span>
+              </label>
+              {extraDocFile ? (
+                <div className="flex items-center justify-between p-3 bg-blue-50/70 border border-blue-200/90 rounded-xl text-xs">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <FileCheck2 className="w-4 h-4 text-primary-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-stone-900 truncate">{extraDocFile.name}</p>
+                      <p className="text-[10px] text-stone-500">{(extraDocFile.size / 1024).toFixed(0)} KB • Attached</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setExtraDocFile(null)}
+                    className="p-1 text-stone-400 hover:text-rose-600 hover:bg-stone-100 rounded-lg transition-colors ml-2 shrink-0 cursor-pointer"
+                    title="Remove file"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3.5 border border-dashed border-stone-300 hover:border-primary-600 rounded-xl bg-stone-50/60 hover:bg-blue-50/30 cursor-pointer transition-all group">
+                  <UploadCloud className="w-5 h-5 text-stone-400 group-hover:text-primary-600 mb-1 transition-colors" />
+                  <span className="text-xs font-medium text-stone-700 group-hover:text-primary-600">
+                    Upload Extra Supporting Document
+                  </span>
+                  <span className="text-[10px] text-stone-400 mt-0.5">
+                    Optional: Offer letter, company badge, or work certificate
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/png,image/jpeg,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setExtraDocFile(file);
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
           {/* Yellow/Orange pending banner */}
@@ -804,7 +907,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 mt-5 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer disabled:opacity-60"
           >
             {isLoading ? (
               <>
@@ -826,27 +929,31 @@ export default function RegisterPage() {
       {/* ================================================================ */}
       {step === 6 && (
         <div className="flex flex-col items-center text-center py-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
-            <Check className="w-6 h-6 stroke-[2.5]" />
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${
+            role === "student" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"
+          }`}>
+            {role === "student" ? <Check className="w-6 h-6 stroke-[2.5]" /> : <Clock className="w-6 h-6 stroke-[2.5]" />}
           </div>
           <span className="uppercase tracking-widest text-[10px] font-semibold text-stone-400">
-            WELCOME TO ALMA
+            {role === "student" ? "WELCOME TO ALMA" : "VERIFICATION SUBMITTED"}
           </span>
           <h1 className="text-2xl font-bold text-stone-900 mt-1 mb-2 font-serif">
-            You&apos;re all set{fullName ? `, ${fullName.split(" ")[0]}` : ""}!
+            {role === "student"
+              ? `You're all set${fullName ? `, ${fullName.split(" ")[0]}` : ""}!`
+              : "Verification Request Received!"}
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed max-w-xs">
             {role === "student"
               ? "Your student account is active. Start exploring verified mentors right away."
-              : "Your alumni profile has been submitted for institutional verification."}
+              : "Your alumni profile and institutional ID proof are pending verification by the Alumni Relations Office. You will receive an email once your account has been verified."}
           </p>
 
           <button
             type="button"
             onClick={() => router.push(role === "student" ? "/student/dashboard" : "/mentor/dashboard")}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-lg py-3 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
+            className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white rounded-lg py-3 flex justify-center items-center gap-2 transition-all font-medium text-sm shadow-sm cursor-pointer"
           >
-            <span>{role === "student" ? "Go to your dashboard" : "Go to mentor workspace"}</span>
+            <span>{role === "student" ? "Go to your dashboard" : "Check Verification Status"}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

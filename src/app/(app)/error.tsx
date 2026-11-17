@@ -21,7 +21,7 @@ export default function AppError({
         <AlertCircle className="w-8 h-8" />
       </div>
 
-      <h2 className="text-2xl font-bold font-heading text-[#0B1F44] tracking-tight mb-2">
+      <h2 className="text-2xl font-bold font-heading text-deep tracking-tight mb-2">
         Something went wrong
       </h2>
       <p className="text-sm text-slate-600 max-w-md mx-auto mb-6 leading-relaxed">
@@ -31,7 +31,7 @@ export default function AppError({
       <div className="flex items-center gap-3">
         <button
           onClick={() => reset()}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors shadow-2xs cursor-pointer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-2xs cursor-pointer"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Try again</span>

@@ -104,7 +104,7 @@ export function MentorCard({
               <button
                 type="button"
                 onClick={() => onViewProfile(mentor)}
-                className="w-11 h-11 rounded-full bg-stone-100 hover:bg-blue-50 border border-stone-200 hover:border-blue-300 flex items-center justify-center text-stone-700 hover:text-blue-600 font-bold text-sm shrink-0 shadow-xs cursor-pointer transition-all"
+                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-stone-200 bg-stone-100 text-sm font-bold text-stone-700 shadow-xs transition-all hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
                 title={`View ${mentor.name}'s full profile`}
               >
                 {initials}
@@ -121,7 +121,7 @@ export function MentorCard({
                   <button
                     type="button"
                     onClick={() => onViewProfile(mentor)}
-                    className="font-bold text-stone-900 hover:text-blue-600 text-base tracking-tight leading-snug cursor-pointer transition-colors text-left"
+                    className="cursor-pointer text-left text-base font-bold leading-snug tracking-tight text-stone-900 transition-colors hover:text-primary-600"
                     title={`View ${mentor.name}'s full profile`}
                   >
                     {mentor.name || displayName}
@@ -144,8 +144,8 @@ export function MentorCard({
           </div>
 
           {/* Match Score Badge */}
-          <div className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200">
-            <Sparkles className="w-3 h-3 text-blue-600" />
+          <div className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-bold text-primary-600">
+            <Sparkles className="w-3 h-3 text-primary-600" />
             <span>+{mentor.matchScore}% Match</span>
           </div>
         </div>
@@ -227,7 +227,7 @@ export function MentorCard({
               }...`}
               rows={3}
               maxLength={1000}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all resize-none"
+              className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 placeholder:text-slate-400 transition-all focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
             />
 
             {error && (
@@ -242,7 +242,7 @@ export function MentorCard({
                 type="button"
                 onClick={handleSendRequest}
                 disabled={isPending}
-                className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-xs cursor-pointer"
+                className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-700 active:bg-primary-800 disabled:opacity-60"
               >
                 {isPending ? (
                   <>
@@ -324,7 +324,7 @@ export function MentorCard({
             <button
               type="button"
               onClick={() => setIsExpanded(true)}
-              className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-all text-center cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+              className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-all hover:bg-primary-700 active:bg-primary-800"
             >
               <span>Request Intro</span>
             </button>

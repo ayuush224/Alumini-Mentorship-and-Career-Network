@@ -112,7 +112,7 @@ export default async function StudentProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF] pb-16">
+    <div className="min-h-screen bg-background pb-16">
       <StudentProfileEditor initialData={profileData} upcomingSessions={upcomingSessions} />
     </div>
   );

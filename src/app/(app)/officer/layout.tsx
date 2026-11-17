@@ -92,7 +92,7 @@ export default async function OfficerLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF] text-stone-900">
+    <div className="min-h-screen flex flex-col bg-background text-stone-900">
       <OfficerHeader
         user={{
           name: officerName,

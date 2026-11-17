@@ -497,7 +497,7 @@ export function OfficerProfileView({
             <div className="absolute inset-0 bg-gradient-to-r from-stone-50 via-white to-stone-100 flex items-center justify-between px-8">
               <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#d6d3d1_1px,transparent_1px)] [background-size:16px_16px]" />
               <div className="absolute -top-12 -left-12 w-48 h-48 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#2563EB]/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-primary-600/5 rounded-full blur-2xl pointer-events-none" />
             </div>
           )}
 
@@ -516,7 +516,7 @@ export function OfficerProfileView({
               className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-white/95 hover:bg-white text-stone-700 text-xs font-semibold shadow-xs border border-stone-200/90 transition-all hover:scale-105 flex items-center gap-1.5 backdrop-blur-xs"
             >
               {bannerLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-primary-600" />
               ) : (
                 <ImageIcon className="w-3.5 h-3.5 text-stone-600" />
               )}
@@ -533,7 +533,7 @@ export function OfficerProfileView({
               <div className="relative group shrink-0 -mt-16 sm:-mt-20">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-stone-100 flex items-center justify-center relative cursor-pointer hover:ring-2 hover:ring-[#2563EB]/30 transition-all"
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-stone-100 flex items-center justify-center relative cursor-pointer hover:ring-2 hover:ring-primary-600/30 transition-all"
                 title="Click to change profile photo from laptop"
               >
                 {officer.avatarUrl ? (
@@ -637,7 +637,7 @@ export function OfficerProfileView({
       <section className="bg-white rounded-3xl border border-stone-200/90 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="flex items-center gap-3">
           <span className="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-            <Award className="w-4 h-4 text-[#2563EB]" />
+            <Award className="w-4 h-4 text-primary-600" />
           </span>
           <div>
             <h2 className="font-semibold text-stone-900 text-base">Lifetime Governance Impact</h2>
@@ -662,7 +662,7 @@ export function OfficerProfileView({
           <div className="p-5 rounded-2xl bg-stone-50/70 border border-stone-100 space-y-1">
             <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
               <span>Engagement Nudges</span>
-              <Zap className="w-4 h-4 text-[#2563EB]" />
+              <Zap className="w-4 h-4 text-primary-600" />
             </div>
             <p className="text-2xl font-bold text-stone-900">
               {officer.stats?.nudgesIssued ?? 0}
@@ -690,7 +690,7 @@ export function OfficerProfileView({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-[#2563EB]" />
+              <Building2 className="w-4 h-4 text-primary-600" />
             </span>
             <div>
               <h2 className="font-semibold text-stone-900 text-base">Institutional Tenancy &amp; Office</h2>
@@ -830,7 +830,7 @@ export function OfficerProfileView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-              <KeyRound className="w-4 h-4 text-[#2563EB]" />
+              <KeyRound className="w-4 h-4 text-primary-600" />
             </span>
             <div>
               <h2 className="font-semibold text-stone-900 text-base">Security &amp; Credentials</h2>
@@ -846,7 +846,7 @@ export function OfficerProfileView({
             onClick={() => setIsPasswordModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-2 self-start sm:self-auto shrink-0"
           >
-            <KeyRound className="w-3.5 h-3.5 text-[#2563EB]" />
+            <KeyRound className="w-3.5 h-3.5 text-primary-600" />
             <span>Change Password</span>
           </button>
         </div>
@@ -895,7 +895,7 @@ export function OfficerProfileView({
           </div>
           <Link
             href="/officer/reports"
-            className="text-xs font-semibold text-[#2563EB] hover:underline"
+            className="text-xs font-semibold text-primary-600 hover:underline"
           >
             Full Program Audit Trail &rarr;
           </Link>
@@ -939,7 +939,7 @@ export function OfficerProfileView({
                     className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-100/80 border border-stone-200/70 text-stone-600 text-xs font-medium shrink-0 shadow-2xs self-start sm:self-auto"
                     title={auditTime.full}
                   >
-                    <Clock className="w-3.5 h-3.5 text-[#2563EB]" />
+                    <Clock className="w-3.5 h-3.5 text-primary-600" />
                     <span className="font-semibold text-stone-800">{auditTime.relative}</span>
                     <span className="text-stone-300">&bull;</span>
                     <span className="text-stone-500 text-[11px] font-mono">{auditTime.timeStr}</span>
@@ -960,7 +960,7 @@ export function OfficerProfileView({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
-                  <KeyRound className="w-4 h-4 text-[#2563EB]" />
+                  <KeyRound className="w-4 h-4 text-primary-600" />
                 </span>
                 <div>
                   <h3 className="font-semibold text-stone-900 text-sm">Update Password</h3>
@@ -987,7 +987,7 @@ export function OfficerProfileView({
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="At least 8 characters"
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1001,7 +1001,7 @@ export function OfficerProfileView({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1036,7 +1036,7 @@ export function OfficerProfileView({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
-                  <Edit3 className="w-4 h-4 text-[#2563EB]" />
+                  <Edit3 className="w-4 h-4 text-primary-600" />
                 </span>
                 <div>
                   <h3 className="font-semibold text-stone-900 text-sm">Edit Profile Details</h3>
@@ -1063,7 +1063,7 @@ export function OfficerProfileView({
                   onChange={(e) => setNameInput(e.target.value)}
                   placeholder="e.g. Dr. Eleanor Vance"
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1077,13 +1077,13 @@ export function OfficerProfileView({
                   onChange={(e) => setDesignationInput(e.target.value)}
                   placeholder="e.g. Director of Alumni Relations & Mentorship Governance"
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
               <div className="hidden">
                 <input
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1118,7 +1118,7 @@ export function OfficerProfileView({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
-                  <Building2 className="w-4 h-4 text-[#2563EB]" />
+                  <Building2 className="w-4 h-4 text-primary-600" />
                 </span>
                 <div>
                   <h3 className="font-semibold text-stone-900 text-sm">Edit Institution Details</h3>
@@ -1145,7 +1145,7 @@ export function OfficerProfileView({
                   onChange={(e) => setInstName(e.target.value)}
                   placeholder="e.g. Apex Institute of Technology"
                   required
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1158,7 +1158,7 @@ export function OfficerProfileView({
                   value={instLocation}
                   onChange={(e) => setInstLocation(e.target.value)}
                   placeholder="e.g. Administration Hall, Suite 402"
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 
@@ -1171,7 +1171,7 @@ export function OfficerProfileView({
                   value={instHours}
                   onChange={(e) => setInstHours(e.target.value)}
                   placeholder="e.g. Mon–Fri, 9:00 AM – 5:00 PM"
-                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-stone-400"
+                  className="w-full bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-600/15 focus:border-stone-400"
                 />
               </div>
 

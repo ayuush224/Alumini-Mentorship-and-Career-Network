@@ -161,7 +161,7 @@ export function RelationshipMomentum({ initialPairings }: RelationshipMomentumPr
           </span>
           <button
             onClick={() => setFilter("all")}
-            className="text-xs font-medium text-[#2563EB] hover:underline"
+            className="text-xs font-medium text-primary-600 hover:underline"
           >
             Show All Active Pairings ({pairings.length})
           </button>
@@ -248,7 +248,7 @@ export function RelationshipMomentum({ initialPairings }: RelationshipMomentumPr
                       <button
                         onClick={() => handleNudge(pairing)}
                         disabled={isNudging}
-                        className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#c5563d] text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
+                        className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
                       >
                         {isNudging ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

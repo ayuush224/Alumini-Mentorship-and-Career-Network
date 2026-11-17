@@ -424,11 +424,11 @@ export default async function StudentMentorshipPage() {
           MAIN HERO CARD
       ====================================================================== */}
       <section className="bg-white rounded-3xl border border-stone-200/90 shadow-xs p-8 sm:p-12 flex flex-col items-center justify-center text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] flex items-center justify-center mb-4 shadow-2xs">
+        <div className="w-14 h-14 rounded-2xl bg-primary-600/10 border border-primary-600/20 text-primary-600 flex items-center justify-center mb-4 shadow-2xs">
           <Users className="w-7 h-7" />
         </div>
 
-        <span className="block text-center uppercase tracking-widest text-[10px] sm:text-[11px] font-semibold text-[#2563EB] font-mono mb-2">
+        <span className="block text-center uppercase tracking-widest text-[10px] sm:text-[11px] font-semibold text-primary-600 font-mono mb-2">
           1-ON-1 CAREER GUIDANCE
         </span>
 
@@ -450,7 +450,7 @@ export default async function StudentMentorshipPage() {
           <Link
             href="/student/mentors"
             prefetch={true}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs sm:text-sm font-semibold shadow-xs flex items-center justify-center gap-2 transition-all hover:shadow-md"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs sm:text-sm font-semibold shadow-xs flex items-center justify-center gap-2 transition-all hover:shadow-md"
           >
             <Compass className="w-4 h-4" />
             <span>Discover Alumni Mentors</span>
@@ -594,7 +594,7 @@ export default async function StudentMentorshipPage() {
         </div>
         <Link
           href="/student/mentors"
-          className="text-xs font-semibold text-[#2563EB] hover:underline shrink-0 ml-4 hidden sm:inline"
+          className="text-xs font-semibold text-primary-600 hover:underline shrink-0 ml-4 hidden sm:inline"
         >
           Find a Mentor &rarr;
         </Link>

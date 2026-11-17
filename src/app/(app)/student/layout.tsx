@@ -33,7 +33,7 @@ export default async function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFF] text-stone-900">
+    <div className="min-h-screen flex flex-col bg-background text-stone-900">
       <StudentHeader user={{ name: userName, avatarUrl }} />
       <main className="flex-1">{children}</main>
     </div>
