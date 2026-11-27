@@ -10,11 +10,11 @@ import {
   REDIS_MENTOR_LOCK_RETRY_DELAY_MS,
 } from "@/lib/config";
 
-// Maximum time in milliseconds to wait for any Upstash Redis HTTP round-trip
-const REDIS_NETWORK_TIMEOUT_MS = 350;
+// Maximum time in milliseconds to wait for any Upstash Redis HTTP round-trip (fail fast to local fallback)
+const REDIS_NETWORK_TIMEOUT_MS = 120;
 
-// Circuit Breaker: if Redis fails consecutively, stop calling it for 60 seconds
-const CIRCUIT_BREAKER_RESET_MS = 60_000;
+// Circuit Breaker: if Redis fails consecutively, stop calling it for 5 minutes
+const CIRCUIT_BREAKER_RESET_MS = 300_000;
 let consecutiveFailures = 0;
 let circuitOpenUntil = 0;
 
@@ -39,7 +39,7 @@ function recordFailure(err?: unknown): void {
     circuitOpenUntil = Date.now() + CIRCUIT_BREAKER_RESET_MS;
     console.warn(
       `[Redis CircuitBreaker] Tripped open for 60s due to consecutive failures. Using in-memory fallback.`,
-      err ? `(${String((err as any)?.message || err)})` : ""
+      err ? `(${err instanceof Error ? err.message : String(err)})` : ""
     );
   }
 }
@@ -147,7 +147,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
       return data;
     }
     return null;
-  } catch (err) {
+  } catch {
     return (memoryStore.get(key)?.value as T) ?? null;
   }
 }
@@ -178,7 +178,7 @@ export async function setCached<T>(
       await withTimeout(redis.set(key, value));
     }
     return true;
-  } catch (err) {
+  } catch {
     return true; // In-memory write succeeded
   }
 }
@@ -195,7 +195,7 @@ export async function invalidateCache(...keys: string[]): Promise<void> {
 
   try {
     await withTimeout(Promise.all(keys.map((k) => redis!.del(k))));
-  } catch (err) {
+  } catch {
     // In-memory already deleted
   }
 }
@@ -248,7 +248,7 @@ export async function storeRedisOtp(
   try {
     await withTimeout(redis.set(key, payload, { ex: ttlSeconds }));
     return true;
-  } catch (err) {
+  } catch {
     return true; // Memory fallback succeeded
   }
 }

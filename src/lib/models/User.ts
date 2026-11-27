@@ -650,6 +650,10 @@ export const UserSchema = new Schema<IUser>(
   }
 );
 
+// Compound indexes for rapid login lookups and mentor discovery queries
+UserSchema.index({ role: 1, isVerified: 1, verificationStatus: 1, isDeleted: 1 });
+UserSchema.index({ email: 1 });
+
 // Exclude soft-deleted users automatically
 function excludeDeletedUsers(this: mongoose.Query<unknown, unknown>) {
   const filter = this.getFilter();

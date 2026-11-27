@@ -315,51 +315,44 @@ export async function fetchScoredMentorsAction({
     }
 
     // 2. Fetch pending requests count for this student
-    let pendingRequestsCount = 0;
-    let pendingMentorIds = new Set<string>();
-    let activeMentorIds = new Set<string>();
+    // 2 & 3. Fetch student requests and all eligible mentors in PARALLEL (Eliminates sequential waterfalls)
+    const [pendingReqs, activeMentorships, mentorUsers] = await Promise.all([
+      studentId
+        ? MentorshipRequest.find({ studentId, status: "pending" }).select("mentorId").lean()
+        : Promise.resolve([]),
+      studentId
+        ? Mentorship.find({ studentId, status: "active" }).select("mentorId").lean()
+        : Promise.resolve([]),
+      User.find({
+        role: { $in: ["alumni", "alumni_mentor"] },
+        isVerified: true,
+        verificationStatus: "verified",
+        isDeleted: { $ne: true },
+        ...(studentId ? { _id: { $ne: studentId } } : {}),
+      })
+        .select("_id name mentorProfile")
+        .lean(),
+    ]);
 
-    if (studentId) {
-      const pendingReqs = await MentorshipRequest.find({
-        studentId,
-        status: "pending",
-      }).select("mentorId").lean();
-
-      pendingRequestsCount = pendingReqs.length;
-      pendingMentorIds = new Set(pendingReqs.map((r) => String(r.mentorId)));
-
-      const activeMentorships = await Mentorship.find({
-        studentId,
-        status: "active",
-      }).select("mentorId").lean();
-
-      activeMentorIds = new Set(activeMentorships.map((m) => String(m.mentorId)));
-    }
-
+    const pendingRequestsCount = pendingReqs.length;
+    const pendingMentorIds = new Set(pendingReqs.map((r) => String(r.mentorId)));
+    const activeMentorIds = new Set(activeMentorships.map((m) => String(m.mentorId)));
     const hasReachedPendingLimit = pendingRequestsCount >= MAX_PENDING_REQUESTS_PER_STUDENT;
 
-    // 3. Fetch all eligible mentors (Sanitizing to NEVER leak email, phone, passwords)
-    // Only verified alumni whose credentials have been validated by an alumni relations officer
-    const mentorUsers = await User.find({
-      role: { $in: ["alumni", "alumni_mentor"] },
-      isVerified: true,
-      verificationStatus: "verified",
-      isDeleted: { $ne: true },
-      ...(studentId ? { _id: { $ne: studentId } } : {}),
-    })
-      .select("_id name mentorProfile")
-      .lean();
-
     const mentorUserIds = mentorUsers.map((u) => u._id);
-    const standaloneProfiles = await MentorProfile.find({
-      userId: { $in: mentorUserIds },
-      isVerified: { $ne: false },
-    }).lean();
-    const capacityRecords = await MentorCapacity.find({
-      mentorId: { $in: mentorUserIds },
-      acceptingRequests: { $ne: false },
-      status: { $ne: "paused" },
-    }).lean();
+
+    // Fetch standalone profiles and capacity records in PARALLEL
+    const [standaloneProfiles, capacityRecords] = await Promise.all([
+      MentorProfile.find({
+        userId: { $in: mentorUserIds },
+        isVerified: { $ne: false },
+      }).lean(),
+      MentorCapacity.find({
+        mentorId: { $in: mentorUserIds },
+        acceptingRequests: { $ne: false },
+        status: { $ne: "paused" },
+      }).lean(),
+    ]);
 
     const profileMap = new Map(standaloneProfiles.map((p) => [String(p.userId), p]));
     const capacityMap = new Map(capacityRecords.map((c) => [String(c.mentorId), c]));
@@ -412,8 +405,8 @@ export async function fetchScoredMentorsAction({
         skillsCanTeach: (standalone?.skillsCanTeach as string[]) || (embedded.skillsCanTeach as string[]) || undefined,
         topicsCanMentor: (standalone?.topicsCanMentor as string[]) || (embedded.topicsCanMentor as string[]) || undefined,
         preferredMentoringStyle: (standalone?.preferredMentoringStyle as string) || (embedded.preferredMentoringStyle as string) || undefined,
-        availabilitySchedule: (standalone?.availabilitySchedule as any) || (embedded.availabilitySchedule as any) || undefined,
-        reliabilityStats: (standalone?.reliabilityStats as any) || (embedded.reliabilityStats as any) || undefined,
+        availabilitySchedule: (standalone?.availabilitySchedule as RawMentorItem["availabilitySchedule"]) || (embedded.availabilitySchedule as RawMentorItem["availabilitySchedule"]) || undefined,
+        reliabilityStats: (standalone?.reliabilityStats as RawMentorItem["reliabilityStats"]) || (embedded.reliabilityStats as RawMentorItem["reliabilityStats"]) || undefined,
       }];
     });
 

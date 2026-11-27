@@ -273,6 +273,9 @@ export const MentorCapacitySchema = new Schema<IMentorCapacity>(
   }
 );
 
+// High-speed capacity index for batch discovery checks
+MentorCapacitySchema.index({ mentorId: 1, acceptingRequests: 1, status: 1 });
+
 // ============================================================================
 // MODEL EXPORTS
 // ============================================================================

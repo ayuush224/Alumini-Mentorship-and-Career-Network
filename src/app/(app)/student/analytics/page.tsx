@@ -6,7 +6,6 @@ import { connectDB } from "@/lib/db";
 import { User } from "@/lib/models/User";
 import {
   fetchStudent12MonthAnalytics,
-  StudentAnalyticsOverview,
 } from "@/lib/utils/analytics";
 import { StudentAnalyticsView } from "./_components/student-analytics-view";
 
@@ -29,14 +28,6 @@ export default async function StudentAnalyticsPage() {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
         studentId = payload.sub;
-        const user = await User.findById(studentId).lean();
-        if (user) {
-          studentName = user.name
-            ? user.name.split(" ")[0]
-            : user.email
-            ? user.email.split("@")[0]
-            : "Student";
-        }
       }
     }
   } catch (err) {
@@ -50,7 +41,18 @@ export default async function StudentAnalyticsPage() {
     redirect("/login");
   }
 
-  const analyticsData: StudentAnalyticsOverview = await fetchStudent12MonthAnalytics(studentId);
+  const [user, analyticsData] = await Promise.all([
+    User.findById(studentId).select("name email").lean() as Promise<{ name?: string; email?: string } | null>,
+    fetchStudent12MonthAnalytics(studentId),
+  ]);
+
+  if (user) {
+    studentName = user.name
+      ? user.name.split(" ")[0]
+      : user.email
+      ? user.email.split("@")[0]
+      : "Student";
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 pb-16">

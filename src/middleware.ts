@@ -109,16 +109,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Case B: User is visiting a Public Marketing page (/, /features, /how-it-works, etc.)
+  // Fast path: bypass JWT verification completely so public pages render with 0ms middleware overhead
   if (isPublicMarketingPath(pathname)) {
-    if (accessToken) {
-      const payload = await verifyAccessToken(accessToken);
-      if (!payload) {
-        // Clear stale/expired token while allowing the public page to render
-        const response = NextResponse.next();
-        clearResponseAuthCookies(response);
-        return response;
-      }
-    }
     return NextResponse.next();
   }
 
