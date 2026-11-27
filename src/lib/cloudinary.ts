@@ -111,19 +111,18 @@ export async function uploadChatAttachmentToCloudinary(
     return { success: false, error: "Cloudinary credentials not configured." };
   }
 
-  const extMatch = originalFilename.match(/\.([a-zA-Z0-9]+)$/);
-  const ext = extMatch ? `.${extMatch[1].toLowerCase()}` : "";
-  const cleanBaseName = originalFilename
-    .replace(/\.[^/.]+$/, "")
-    .replace(/[^a-zA-Z0-9_-]/g, "_")
-    .slice(0, 40);
+  const cleanBaseName =
+    originalFilename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 40) || "chat_asset";
 
   return new Promise((resolve) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: "alma_chat_attachments",
         resource_type: "auto",
-        public_id: `${Date.now()}_${cleanBaseName}${ext}`,
+        public_id: `${Date.now()}_${cleanBaseName}`,
       },
       (error, result) => {
         if (error || !result) {

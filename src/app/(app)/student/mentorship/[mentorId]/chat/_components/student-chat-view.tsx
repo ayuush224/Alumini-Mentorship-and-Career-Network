@@ -33,6 +33,7 @@ import {
   formatAttachmentBytes,
   isImageFile,
 } from "@/lib/chat-attachments";
+import { compressChatImageFile } from "@/lib/client-image-compression";
 import { ChatImageCropModal } from "@/components/shared/chat-image-crop-modal";
 
 interface StudentChatViewProps {
@@ -256,8 +257,13 @@ export function StudentChatView({
 
       // 2. Upload to Cloudinary when User clicks Send
       if (attachment) {
+        // Automatically compress image client-side if oversized to prevent 413 / Next.js payload crashes
+        const fileToUpload = attachment.isImage
+          ? await compressChatImageFile(attachment.file)
+          : attachment.file;
+
         const formData = new FormData();
-        formData.append("file", attachment.file);
+        formData.append("file", fileToUpload);
         const uploadRes = await uploadChatAttachmentAction(mentorshipId, formData);
 
         if (!uploadRes.success || !uploadRes.fileUrl) {
@@ -266,9 +272,9 @@ export function StudentChatView({
 
         uploadedAttachmentData = {
           fileUrl: uploadRes.fileUrl,
-          fileName: uploadRes.fileName || attachment.file.name,
-          fileType: uploadRes.fileType || attachment.file.type,
-          fileSize: uploadRes.fileSize || attachment.file.size,
+          fileName: uploadRes.fileName || fileToUpload.name,
+          fileType: uploadRes.fileType || fileToUpload.type,
+          fileSize: uploadRes.fileSize || fileToUpload.size,
         };
       }
 
@@ -290,7 +296,10 @@ export function StudentChatView({
     } catch (err: unknown) {
       // Rollback on network failure
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      const msg = err instanceof Error ? err.message : "Network exception. Please check your connection.";
+      let msg = err instanceof Error ? err.message : "Network exception. Please check your connection.";
+      if (msg.includes("441") || msg.includes("Server Components") || msg.includes("body")) {
+        msg = "The image could not be uploaded (exceeded server payload limit or timed out). Please try selecting a smaller image.";
+      }
       alert(msg);
     } finally {
       setIsSending(false);
