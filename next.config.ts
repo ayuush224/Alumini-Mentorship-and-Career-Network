@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   experimental: {
+    serverActions: {
+      bodySizeLimit: "15mb",
+    },
     optimizePackageImports: ["lucide-react", "recharts"],
     staleTimes: {
       dynamic: 180, // 3 minutes for dynamic routes (instant 0ms client re-visits)
