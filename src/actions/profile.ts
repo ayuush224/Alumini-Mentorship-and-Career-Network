@@ -7,6 +7,7 @@ import { User, StudentProfile, MentorProfile } from "@/lib/models/User";
 import { MentorCapacity } from "@/lib/models/Mentorship";
 import { verifyAccess } from "@/lib/app-tokens";
 import { purgeCloudinaryAsset, extractCloudinaryPublicId, cloudinary } from "@/lib/cloudinary";
+import { invalidateMentorDirectoryCache } from "@/lib/dal";
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   try {
@@ -299,7 +300,8 @@ export async function deleteStudentExperience(company: string, role: string) {
 export async function updateMentorProfile(data: {
   headline?: string;
   bio?: string;
-  availability?: "open" | "waitlist";
+  availability?: "open" | "waitlist" | "stopped";
+  maxMentees?: number;
 }) {
   await connectDB();
   const userId = await getAuthenticatedUserId();
@@ -316,21 +318,64 @@ export async function updateMentorProfile(data: {
     updateFields["mentorProfile.availability"] = data.availability;
   }
 
-  await User.findByIdAndUpdate(userId, { $set: updateFields });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    {
-      $set: {
-        ...(data.headline !== undefined && { headline: data.headline.trim() }),
-        ...(data.bio !== undefined && { bio: data.bio.trim() }),
-        ...(data.availability !== undefined && { availability: data.availability }),
+  if (Object.keys(updateFields).length > 0) {
+    await User.findByIdAndUpdate(userId, { $set: updateFields });
+    await MentorProfile.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          ...(data.headline !== undefined && { headline: data.headline.trim() }),
+          ...(data.bio !== undefined && { bio: data.bio.trim() }),
+          ...(data.availability !== undefined && { availability: data.availability }),
+        },
       },
-    },
-    { upsert: true }
-  );
+      { upsert: true }
+    );
+  }
+
+  // Handle Capacity & Stopped Status updates
+  if (data.maxMentees !== undefined || data.availability !== undefined) {
+    const existingCapacity = await MentorCapacity.findOne({ mentorId: userId });
+    const currentMax = existingCapacity?.maxMentees ?? 5;
+    const currentActive = existingCapacity?.activeMentees ?? 0;
+    const newMax = data.maxMentees !== undefined ? Math.max(1, Math.floor(Number(data.maxMentees))) : currentMax;
+
+    // Determine whether requests are stopped
+    let isStopped = false;
+    if (data.availability === "stopped" || data.availability === "waitlist") {
+      isStopped = true;
+    } else if (data.availability === "open") {
+      isStopped = false;
+    } else {
+      isStopped = existingCapacity?.acceptingRequests === false || existingCapacity?.status === "paused";
+    }
+
+    const calculatedStatus = isStopped ? "paused" : currentActive >= newMax ? "at_capacity" : "available";
+
+    await MentorCapacity.findOneAndUpdate(
+      { mentorId: userId },
+      {
+        $set: {
+          maxMentees: newMax,
+          acceptingRequests: !isStopped,
+          status: calculatedStatus,
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    // Invalidate discovery directory cache so student searches update immediately
+    await invalidateMentorDirectoryCache();
+  }
 
   revalidatePath("/mentor/profile");
+  revalidatePath("/mentor/dashboard");
+  revalidatePath("/student/mentors");
   return { success: true };
+}
+
+export async function updateMentorCapacity(maxMentees: number) {
+  return updateMentorProfile({ maxMentees });
 }
 
 export async function addMentorSkill(name: string) {
@@ -1116,7 +1161,7 @@ export async function getMentorPublicProfile(
 
     // 2. Query MongoDB user record (Strict projection to prevent contact detail leakage)
     const mentorUser = await User.findById(mentorId)
-      .select("name role mentorProfile")
+      .select("name role mentorProfile isVerified verificationStatus")
       .lean();
 
     if (!mentorUser) {
@@ -1128,6 +1173,34 @@ export async function getMentorPublicProfile(
         return { success: true, profile: foundDemo };
       }
       return { success: false, error: "Mentor profile not found." };
+    }
+
+    // Check if requester is privileged viewer (self or staff)
+    let isPrivilegedViewer = false;
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("access_token")?.value;
+      if (token) {
+        const payload = await verifyAccess(token);
+        if (
+          payload?.sub === mentorId ||
+          payload?.role === "administrator" ||
+          payload?.role === "alumni_relations_officer"
+        ) {
+          isPrivilegedViewer = true;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+
+    const isVerified =
+      mentorUser.isVerified === true && mentorUser.verificationStatus === "verified";
+    if (!isVerified && !isPrivilegedViewer) {
+      return {
+        success: false,
+        error: "This alumni mentor is pending verification and is not publicly visible yet.",
+      };
     }
 
     const standalone = (await MentorProfile.findOne({ userId: mentorId }).lean()) as Record<string, unknown> | null;

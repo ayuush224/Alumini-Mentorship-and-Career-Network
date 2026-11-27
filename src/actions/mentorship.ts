@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { connectDB, startSafeTransaction } from "@/lib/db";
-import { MentorshipRequest, MentorCapacity, Mentorship, User } from "@/lib/models";
+import { MentorshipRequest, MentorCapacity, Mentorship, User, MentorProfile } from "@/lib/models";
 import { Session } from "@/lib/models/Mentorship";
 import { SharedNote } from "@/lib/models/Communication";
 import { MentorSession } from "@/lib/models/MentorSession";
@@ -92,7 +92,7 @@ export async function requestMentorship(
       };
     }
 
-    // 3. Verify mentor exists and is an alumni
+    // 3. Verify mentor exists, is an alumni, and is officially verified
     const mentorUser = await User.findById(mentorId);
     if (!mentorUser) {
       return {
@@ -101,8 +101,39 @@ export async function requestMentorship(
       };
     }
 
-    // 4. Invariant: Mentor capacity must never be exceeded
+    if (mentorUser.role !== "alumni" && mentorUser.role !== "alumni_mentor") {
+      return {
+        success: false,
+        error: "The selected user is not registered as a mentor.",
+      };
+    }
+
+    if (!mentorUser.isVerified || mentorUser.verificationStatus !== "verified") {
+      return {
+        success: false,
+        error: "This alumni mentor has not been verified by an alumni relations officer yet.",
+      };
+    }
+
+    // 4. Invariant: Mentor capacity must never be exceeded and requests must not be stopped
     const capacity = await MentorCapacity.findOne({ mentorId });
+    const standaloneProfile = await MentorProfile.findOne({ userId: mentorId }).lean();
+
+    const isStopped =
+      capacity?.acceptingRequests === false ||
+      capacity?.status === "paused" ||
+      mentorUser.mentorProfile?.availability === "stopped" ||
+      mentorUser.mentorProfile?.availability === "waitlist" ||
+      (standaloneProfile as { availability?: string })?.availability === "stopped" ||
+      (standaloneProfile as { availability?: string })?.availability === "waitlist";
+
+    if (isStopped) {
+      return {
+        success: false,
+        error: "This mentor has stopped accepting new mentorship requests.",
+      };
+    }
+
     if (capacity && capacity.activeMentees >= capacity.maxMentees) {
       return {
         success: false,
@@ -293,8 +324,12 @@ export async function fetchScoredMentorsAction({
     const hasReachedPendingLimit = pendingRequestsCount >= MAX_PENDING_REQUESTS_PER_STUDENT;
 
     // 3. Fetch all eligible mentors (Sanitizing to NEVER leak email, phone, passwords)
+    // Only verified alumni whose credentials have been validated by an alumni relations officer
     const mentorUsers = await User.find({
-      role: "alumni",
+      role: { $in: ["alumni", "alumni_mentor"] },
+      isVerified: true,
+      verificationStatus: "verified",
+      isDeleted: { $ne: true },
       ...(studentId ? { _id: { $ne: studentId } } : {}),
     })
       .select("_id name mentorProfile")
@@ -303,9 +338,12 @@ export async function fetchScoredMentorsAction({
     const mentorUserIds = mentorUsers.map((u) => u._id);
     const standaloneProfiles = await MentorProfile.find({
       userId: { $in: mentorUserIds },
+      isVerified: { $ne: false },
     }).lean();
     const capacityRecords = await MentorCapacity.find({
       mentorId: { $in: mentorUserIds },
+      acceptingRequests: { $ne: false },
+      status: { $ne: "paused" },
     }).lean();
 
     const profileMap = new Map(standaloneProfiles.map((p) => [String(p.userId), p]));
@@ -313,16 +351,32 @@ export async function fetchScoredMentorsAction({
 
     // Construct raw mentor list for scoring utility
     type RawMentorItem = Parameters<typeof matchMentors>[1][number];
-    const rawMentorList: RawMentorItem[] = mentorUsers.map((u) => {
+    const rawMentorList: RawMentorItem[] = mentorUsers.flatMap((u) => {
       const userIdStr = String(u._id);
       const standalone = profileMap.get(userIdStr) as Record<string, unknown> | undefined;
       const embedded = (u.mentorProfile || {}) as Record<string, unknown>;
       const capacity = capacityMap.get(userIdStr);
 
-      const activeMentees = (capacity?.activeMentees as number) ?? ((standalone?.totalMentees as number) ? Math.min(Number(standalone?.totalMentees), 2) : 1);
+      // Exclude mentor if capacity record explicitly has acceptingRequests false or status paused
+      if (capacity?.acceptingRequests === false || capacity?.status === "paused") {
+        return [];
+      }
+
+      // Exclude if availability is stopped or waitlist
+      const isStopped =
+        embedded?.availability === "stopped" ||
+        embedded?.availability === "waitlist" ||
+        standalone?.availability === "stopped" ||
+        standalone?.availability === "waitlist";
+
+      if (isStopped) {
+        return [];
+      }
+
+      const activeMentees = (capacity?.activeMentees as number) ?? ((standalone?.totalMentees as number) ? Math.min(Number(standalone?.totalMentees), 2) : 0);
       const maxMentees = (capacity?.maxMentees as number) ?? MAX_MENTEES_PER_MENTOR;
 
-      return {
+      return [{
         mentorId: userIdStr,
         name: u.name || "Alumni Mentor",
         avatarUrl: (standalone?.avatarUrl as string) || (embedded.avatarUrl as string | undefined),
@@ -338,8 +392,8 @@ export async function fetchScoredMentorsAction({
         skills: ((standalone?.skills as RawMentorItem["skills"])?.length ? (standalone?.skills as RawMentorItem["skills"]) : (embedded.skills as RawMentorItem["skills"])) || [],
         activeMentees,
         maxMentees,
-        availability: ((standalone?.availability as "open" | "waitlist") || (embedded.availability as "open" | "waitlist") || "open") as "open" | "waitlist",
-      };
+        availability: "open" as const,
+      }];
     });
 
     // Fallback seed mentors if database has none

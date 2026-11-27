@@ -48,7 +48,27 @@ export default async function MentorLayout({
 
     const payload = await verifyAccess(token);
     if (!payload?.sub) {
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
       redirect("/login");
+    }
+
+    // Role-based boundary: only mentors/alumni (or admin)
+    if (
+      payload.role !== "alumni" &&
+      payload.role !== "mentor" &&
+      payload.role !== "alumni_mentor" &&
+      payload.role !== "administrator"
+    ) {
+      if (
+        payload.role === "alumni_relations_officer" ||
+        payload.role === "placement_officer"
+      ) {
+        redirect("/officer");
+      } else {
+        redirect("/student/dashboard");
+      }
     }
 
     mentorId = payload.sub;
@@ -67,6 +87,9 @@ export default async function MentorLayout({
     ]);
 
     if (!user) {
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
       redirect("/login");
     }
 

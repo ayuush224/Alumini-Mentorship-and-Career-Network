@@ -22,17 +22,21 @@ export default async function AuthLayout({
           payload.role === "alumni_mentor"
         ) {
           redirect("/mentor/dashboard");
-        } else if (payload.role === "alumni_relations_officer") {
-          redirect("/officer");
         } else if (
+          payload.role === "alumni_relations_officer" ||
           payload.role === "administrator" ||
           payload.role === "admin" ||
           payload.role === "placement_officer"
         ) {
-          redirect("/analytics");
+          redirect("/officer");
         } else {
           redirect("/student/dashboard");
         }
+      } else {
+        // Token exists but failed verification: purge corrupt cookies immediately to avoid loops
+        cookieStore.delete("access_token");
+        cookieStore.delete("refresh_token");
+        cookieStore.delete("better-auth.session_token");
       }
     }
   } catch (err) {

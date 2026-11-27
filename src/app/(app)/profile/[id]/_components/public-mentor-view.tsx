@@ -35,7 +35,7 @@ export interface PublicMentorData {
   industry?: string;
   headline?: string;
   bio?: string;
-  availability: "open" | "waitlist";
+  availability: "open" | "stopped" | "waitlist";
   activeMentees: number;
   maxMentees: number;
   sessionsCompleted: number;
@@ -90,8 +90,9 @@ export function PublicMentorView({
     error?: string;
   } | null>(null);
 
+  const isStopped = mentor.availability === "stopped" || mentor.availability === "waitlist";
   const isAtCapacity = mentor.activeMentees >= mentor.maxMentees;
-  const isWaitlistOnly = mentor.availability === "waitlist" || isAtCapacity;
+  const isWaitlistOnly = isStopped || isAtCapacity;
 
   const handleSendRequest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,27 +182,39 @@ export function PublicMentorView({
             <div className="flex items-center gap-3">
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                  !isWaitlistOnly
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
+                  isStopped
+                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                    : isAtCapacity
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
                 }`}
               >
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    !isWaitlistOnly ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                    isStopped
+                      ? "bg-rose-500"
+                      : isAtCapacity
+                      ? "bg-amber-500"
+                      : "bg-emerald-500 animate-pulse"
                   }`}
                 />
-                {!isWaitlistOnly ? "Accepting Mentees" : isAtCapacity ? "At Capacity" : "Waitlist Only"}
+                {isStopped ? "Stopped" : isAtCapacity ? "At Capacity" : "Accepting Mentees"}
               </span>
 
               <button
                 type="button"
                 onClick={() => setShowRequestModal(true)}
-                disabled={isAtCapacity}
+                disabled={isStopped || isAtCapacity}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all shadow-xs hover:shadow-md cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>{isAtCapacity ? "Capacity Reached" : "Request Mentorship"}</span>
+                <span>
+                  {isStopped
+                    ? "Requests Stopped"
+                    : isAtCapacity
+                    ? "Capacity Reached"
+                    : "Request Mentorship"}
+                </span>
               </button>
             </div>
           </div>

@@ -316,7 +316,7 @@ export interface IMentorProfileData {
   bannerPublicId?: string;
   bio?: string;
   headline?: string;
-  availability: "open" | "waitlist";
+  availability: "open" | "waitlist" | "stopped";
   skills: IMentorSkill[];
   mentorshipAreas: IMentorshipArea[];
   experience: IMentorExperience[];
@@ -344,7 +344,7 @@ export const MentorProfileSchema = new Schema<IMentorProfileData>(
     headline: { type: String, trim: true },
     availability: {
       type: String,
-      enum: ["open", "waitlist"],
+      enum: ["open", "waitlist", "stopped"],
       default: "open",
       required: true,
     },
@@ -389,7 +389,7 @@ const StandaloneMentorProfileSchema = new Schema<IMentorProfile>(
     headline: { type: String, trim: true },
     availability: {
       type: String,
-      enum: ["open", "waitlist"],
+      enum: ["open", "waitlist", "stopped"],
       default: "open",
       required: true,
     },

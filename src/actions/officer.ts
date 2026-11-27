@@ -575,7 +575,24 @@ export async function decideVerification(
 
         if (decision === "verified") {
           const subject = "Congratulations! Your Alma Alumni Verification is Approved 🎉";
-          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nGreat news! Your alumni verification request for Lovely Professional University has been reviewed and approved by the Alumni Relations Office.\n\nYour Mentor Workspace is now unlocked, and students can now discover you in the mentor directory.\n\nSign in to your dashboard: ${appUrl}/mentor/dashboard\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nGreat news! Your alumni verification request for Lovely Professional University has been reviewed and approved by the Alumni Relations Office.\n\nYour Mentor Workspace is now unlocked, and students can now discover you in the mentor directory.\n\nSign in to your account\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+          const bodyHtml = `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; line-height: 1.6;">
+              <p style="font-size: 16px; margin-bottom: 16px;">Hello ${alumnus.name || "Alumnus"},</p>
+              <p style="font-size: 16px; margin-bottom: 16px;">Great news! Your alumni verification request for Lovely Professional University has been reviewed and approved by the Alumni Relations Office.</p>
+              <p style="font-size: 16px; margin-bottom: 24px;">Your Mentor Workspace is now unlocked, and students can now discover you in the mentor directory.</p>
+              <div style="margin: 28px 0;">
+                <a href="${appUrl}/mentor/dashboard" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                  Sign in to your account
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                Warm regards,<br />
+                <strong>Alumni Relations Office</strong><br />
+                Lovely Professional University
+              </p>
+            </div>
+          `;
 
           if (resendApiKey) {
             const resend = new Resend(resendApiKey);
@@ -584,13 +601,34 @@ export async function decideVerification(
               to: [alumnus.email],
               subject,
               text: bodyText,
+              html: bodyHtml,
             });
           }
           console.log(`[ALMA EMAIL] Verification approval email dispatched to ${alumnus.email}`);
         } else {
           const subject = "Update regarding your Alma Alumni Verification Request";
           const reasonText = rejectionReason || "Credential mismatch with institutional records";
-          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nYour alumni verification request for Lovely Professional University could not be verified at this time.\n\nReason: ${reasonText}\n\nPlease log in to review your submission or contact the Alumni Relations Office at alumni@university.edu for assistance.\n\nPortal: ${appUrl}/mentor/dashboard\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+          const bodyText = `Hello ${alumnus.name || "Alumnus"},\n\nYour alumni verification request for Lovely Professional University could not be verified at this time.\n\nReason: ${reasonText}\n\nPlease log in to review your submission or contact the Alumni Relations Office at alumni@university.edu for assistance.\n\nSign in to your account\n\nWarm regards,\nAlumni Relations Office\nLovely Professional University`;
+          const bodyHtml = `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; line-height: 1.6;">
+              <p style="font-size: 16px; margin-bottom: 16px;">Hello ${alumnus.name || "Alumnus"},</p>
+              <p style="font-size: 16px; margin-bottom: 16px;">Your alumni verification request for Lovely Professional University could not be verified at this time.</p>
+              <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px; color: #991b1b;"><strong>Reason:</strong> ${reasonText}</p>
+              </div>
+              <p style="font-size: 15px; margin-bottom: 24px;">Please sign in to review your submission or contact the Alumni Relations Office at alumni@university.edu for assistance.</p>
+              <div style="margin: 28px 0;">
+                <a href="${appUrl}/mentor/dashboard" style="background-color: #475569; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                  Sign in to your account
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                Warm regards,<br />
+                <strong>Alumni Relations Office</strong><br />
+                Lovely Professional University
+              </p>
+            </div>
+          `;
 
           if (resendApiKey) {
             const resend = new Resend(resendApiKey);
@@ -599,6 +637,7 @@ export async function decideVerification(
               to: [alumnus.email],
               subject,
               text: bodyText,
+              html: bodyHtml,
             });
           }
           console.log(`[ALMA EMAIL] Verification rejection notice dispatched to ${alumnus.email}`);
@@ -782,12 +821,29 @@ export async function nudgeMentorship(mentorshipId: string) {
       try {
         const resend = new Resend(resendApiKey);
 
+        const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
         // Send email to student
         await resend.emails.send({
           from: fromEmail,
           to: [student.email],
           subject: "Keep the momentum going! Check in with your Alma mentor",
-          text: `Hi ${student.name || "Student"},\n\nIt has been a little while since your last activity with your mentor ${mentor.name || "Alumni Mentor"}. Log in to Alma to review your goals, share updates, or schedule your next check-in session:\n\nhttps://alma.network/mentorship\n\nBest regards,\nAlumni Relations Office`,
+          text: `Hi ${student.name || "Student"},\n\nIt has been a little while since your last activity with your mentor ${mentor.name || "Alumni Mentor"}. Log in to Alma to review your goals, share updates, or schedule your next check-in session:\n\nSign in to your account\n\nBest regards,\nAlumni Relations Office`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; line-height: 1.6;">
+              <p style="font-size: 16px;">Hi ${student.name || "Student"},</p>
+              <p style="font-size: 16px;">It has been a little while since your last activity with your mentor <strong>${mentor.name || "Alumni Mentor"}</strong>. Log in to Alma to review your goals, share updates, or schedule your next check-in session:</p>
+              <div style="margin: 28px 0;">
+                <a href="${appUrl}/student/mentorship" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                  Sign in to your account
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                Best regards,<br />
+                <strong>Alumni Relations Office</strong>
+              </p>
+            </div>
+          `,
         });
 
         // Send email to mentor
@@ -795,7 +851,22 @@ export async function nudgeMentorship(mentorshipId: string) {
           from: fromEmail,
           to: [mentor.email],
           subject: "Mentorship Check-in: Reconnect with your mentee",
-          text: `Hi ${mentor.name || "Mentor"},\n\nWe noticed your mentorship pairing with ${student.name || "Student"} hasn't had recent activity. A quick message or 15-minute sync can make a world of difference in their career journey!\n\nVisit your mentor workspace to send a message or suggest a time:\n\nhttps://alma.network/mentor/dashboard\n\nThank you for your dedication,\nAlumni Relations Office`,
+          text: `Hi ${mentor.name || "Mentor"},\n\nWe noticed your mentorship pairing with ${student.name || "Student"} hasn't had recent activity. A quick message or 15-minute sync can make a world of difference in their career journey!\n\nSign in to your account\n\nThank you for your dedication,\nAlumni Relations Office`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; line-height: 1.6;">
+              <p style="font-size: 16px;">Hi ${mentor.name || "Mentor"},</p>
+              <p style="font-size: 16px;">We noticed your mentorship pairing with <strong>${student.name || "Student"}</strong> hasn't had recent activity. A quick message or 15-minute sync can make a world of difference in their career journey!</p>
+              <div style="margin: 28px 0;">
+                <a href="${appUrl}/mentor/dashboard" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                  Sign in to your account
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                Thank you for your dedication,<br />
+                <strong>Alumni Relations Office</strong>
+              </p>
+            </div>
+          `,
         });
       } catch (emailErr) {
         console.warn("Resend email dispatch notice (non-fatal):", emailErr);

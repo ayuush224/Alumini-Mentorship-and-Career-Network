@@ -29,6 +29,9 @@ export default async function OfficerLayout({
 
     const payload = await verifyAccess(token);
     if (!payload?.sub) {
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
       redirect("/login");
     }
 
@@ -54,6 +57,13 @@ export default async function OfficerLayout({
       }),
       Mentorship.find({ status: "active" }).select("_id createdAt mentorId studentId").lean(),
     ]);
+
+    if (!user) {
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
+      redirect("/login");
+    }
 
     if (user) {
       officerName = user.name || (user.email ? user.email.split("@")[0] : "Officer");
