@@ -11,6 +11,7 @@ import {
   Trash2,
   Edit3,
   X,
+  Check,
   ExternalLink,
   Briefcase,
   Compass,
@@ -42,7 +43,7 @@ export interface MentorProfileData {
   company?: string;
   jobTitle?: string;
   industry?: string;
-  availability: "open" | "waitlist";
+  availability: "open" | "stopped" | "waitlist";
   totalMentees: number;
   activeMentees?: number;
   maxMentees?: number;
@@ -99,6 +100,10 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
   const [headlineInput, setHeadlineInput] = useState(data.headline || "");
   const [bioInput, setBioInput] = useState(data.bio || "");
 
+  // Editing capacity max limit
+  const [editingCapacity, setEditingCapacity] = useState(false);
+  const [maxMenteesInput, setMaxMenteesInput] = useState<number>(data.maxMentees ?? 5);
+
   // Modal states
   const [newSkill, setNewSkill] = useState("");
   const [showAddAreaModal, setShowAddAreaModal] = useState(false);
@@ -137,12 +142,22 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
     await updateAvatarUrl(url, publicId);
   };
 
-  // Availability toggle
+  // Availability toggle: "open" (Accepting Mentees) <-> "stopped" (Stopped)
   const handleToggleAvailability = () => {
-    const nextAvailability = data.availability === "open" ? "waitlist" : "open";
+    const nextAvailability = data.availability === "open" ? "stopped" : "open";
     startTransition(async () => {
       await updateMentorProfile({ availability: nextAvailability });
       setData((prev) => ({ ...prev, availability: nextAvailability }));
+    });
+  };
+
+  // Save max mentees limit
+  const handleSaveCapacity = () => {
+    const validLimit = Math.max(1, Math.min(50, Math.floor(Number(maxMenteesInput))));
+    startTransition(async () => {
+      await updateMentorProfile({ maxMentees: validLimit });
+      setData((prev) => ({ ...prev, maxMentees: validLimit }));
+      setEditingCapacity(false);
     });
   };
 
@@ -365,22 +380,32 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
                 type="button"
                 onClick={handleToggleAvailability}
                 disabled={isPending}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors shadow-2xs ${
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all shadow-2xs cursor-pointer ${
                   data.availability === "open"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                    : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                    : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
                 }`}
-                title="Click to toggle availability status"
+                title="Click to toggle availability status (Accepting Mentees vs Stopped)"
               >
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    data.availability === "open" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                    data.availability === "open" ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
                   }`}
                 />
-                <span>{data.availability === "open" ? "Accepting Mentees" : "Waitlist Only"}</span>
+                <span>{data.availability === "open" ? "Accepting Mentees" : "Stopped"}</span>
               </button>
             </div>
           </div>
+
+          {/* Stopped Status Warning Banner */}
+          {data.availability === "stopped" && (
+            <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center gap-2.5 text-xs text-amber-900">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+              <span>
+                <strong>Profile Stopped:</strong> You are currently hidden from student mentor search and cannot receive new mentorship requests. Click &ldquo;Stopped&rdquo; above to resume accepting mentees.
+              </span>
+            </div>
+          )}
 
           {/* Headline & Bio Row */}
           <div className="pt-2 border-t border-stone-100">
@@ -461,25 +486,84 @@ export function MentorProfileEditor({ initialData }: { initialData: MentorProfil
       ====================================================================== */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Active Mentees / Capacity */}
-        <div className="bg-white rounded-2xl border border-stone-200/90 p-5 shadow-xs flex items-center justify-between">
-          <div>
+        <div className="bg-white rounded-2xl border border-stone-200/90 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wider font-mono">
-              Active Mentees
+              Active Mentees & Capacity
             </p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
-              {data.activeMentees ?? 0}{" "}
-              {data.maxMentees !== undefined && (
-                <span className="text-sm font-normal text-stone-400">
-                  / {data.maxMentees} max
-                </span>
-              )}
-            </p>
-            <p className="text-[11px] text-stone-600 mt-0.5">
-              Invariant: declared capacity limit enforced
-            </p>
+            <div className="w-10 h-10 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
+              <Users className="w-5 h-5" />
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
-            <Users className="w-6 h-6" />
+
+          <div className="mt-2">
+            {!editingCapacity ? (
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-stone-900">
+                    {data.activeMentees ?? 0}{" "}
+                    <span className="text-sm font-normal text-stone-400">
+                      / {data.maxMentees ?? 5} max
+                    </span>
+                  </p>
+                  <p className="text-[11px] text-stone-500 mt-0.5">
+                    {data.availability === "stopped"
+                      ? "Status: Stopped (hidden from search)"
+                      : (data.activeMentees ?? 0) >= (data.maxMentees ?? 5)
+                      ? "At full capacity (no new requests allowed)"
+                      : `${(data.maxMentees ?? 5) - (data.activeMentees ?? 0)} mentee slot${((data.maxMentees ?? 5) - (data.activeMentees ?? 0)) > 1 ? "s" : ""} available`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMaxMenteesInput(data.maxMentees ?? 5);
+                    setEditingCapacity(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg border border-primary-200/70 transition-colors cursor-pointer"
+                  title="Edit maximum mentee limit"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Limit</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2 pt-1">
+                <label className="block text-[11px] font-semibold text-stone-700 uppercase tracking-wider">
+                  Set Max Mentees Limit (1–50):
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={maxMenteesInput}
+                    onChange={(e) => setMaxMenteesInput(Number(e.target.value))}
+                    className="w-20 px-2.5 py-1.5 text-sm font-bold border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveCapacity}
+                    disabled={isPending || maxMenteesInput < 1}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Save</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingCapacity(false)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:text-stone-800 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-stone-400">
+                  Defines the maximum simultaneous mentees you can take without burnout.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { connectDB, startSafeTransaction } from "@/lib/db";
-import { MentorshipRequest, MentorCapacity, Mentorship, User } from "@/lib/models";
+import { MentorshipRequest, MentorCapacity, Mentorship, User, MentorProfile } from "@/lib/models";
 import { Session } from "@/lib/models/Mentorship";
 import { SharedNote } from "@/lib/models/Communication";
 import { MentorSession } from "@/lib/models/MentorSession";
@@ -12,6 +12,7 @@ import { checkSessionOverlap, calculateSessionInterval } from "@/lib/utils/sched
 import { verifyAccess } from "@/lib/app-tokens";
 import { MAX_PENDING_REQUESTS_PER_STUDENT } from "@/lib/config";
 import { invalidateMentorDirectoryCache } from "@/lib/dal";
+import { STANDARD_INDUSTRIES } from "@/lib/recommendation/taxonomy";
 
 export interface RequestMentorshipResult {
   success: boolean;
@@ -92,7 +93,7 @@ export async function requestMentorship(
       };
     }
 
-    // 3. Verify mentor exists and is an alumni
+    // 3. Verify mentor exists, is an alumni, and is officially verified
     const mentorUser = await User.findById(mentorId);
     if (!mentorUser) {
       return {
@@ -101,8 +102,39 @@ export async function requestMentorship(
       };
     }
 
-    // 4. Invariant: Mentor capacity must never be exceeded
+    if (mentorUser.role !== "alumni" && mentorUser.role !== "alumni_mentor") {
+      return {
+        success: false,
+        error: "The selected user is not registered as a mentor.",
+      };
+    }
+
+    if (!mentorUser.isVerified || mentorUser.verificationStatus !== "verified") {
+      return {
+        success: false,
+        error: "This alumni mentor has not been verified by an alumni relations officer yet.",
+      };
+    }
+
+    // 4. Invariant: Mentor capacity must never be exceeded and requests must not be stopped
     const capacity = await MentorCapacity.findOne({ mentorId });
+    const standaloneProfile = await MentorProfile.findOne({ userId: mentorId }).lean();
+
+    const isStopped =
+      capacity?.acceptingRequests === false ||
+      capacity?.status === "paused" ||
+      mentorUser.mentorProfile?.availability === "stopped" ||
+      mentorUser.mentorProfile?.availability === "waitlist" ||
+      (standaloneProfile as { availability?: string })?.availability === "stopped" ||
+      (standaloneProfile as { availability?: string })?.availability === "waitlist";
+
+    if (isStopped) {
+      return {
+        success: false,
+        error: "This mentor has stopped accepting new mentorship requests.",
+      };
+    }
+
     if (capacity && capacity.activeMentees >= capacity.maxMentees) {
       return {
         success: false,
@@ -203,6 +235,20 @@ export interface ScoredMentorCardItem {
   isAtCapacity: boolean;
   hasPendingRequest: boolean;
   hasActiveMentorship: boolean;
+  scoreBreakdown?: {
+    semantic: number;
+    skillCoverage: number;
+    careerRelevance: number;
+    mentoringCapability: number;
+    seniority: number;
+    availability: number;
+    reliability: number;
+    rating: number;
+  };
+  reasons?: string[];
+  canTeachSkills?: string[];
+  compatibleTimes?: string[];
+  yearsOfExperience?: number;
 }
 
 export interface FetchMentorsBatchResult {
@@ -269,60 +315,76 @@ export async function fetchScoredMentorsAction({
     }
 
     // 2. Fetch pending requests count for this student
-    let pendingRequestsCount = 0;
-    let pendingMentorIds = new Set<string>();
-    let activeMentorIds = new Set<string>();
+    // 2 & 3. Fetch student requests and all eligible mentors in PARALLEL (Eliminates sequential waterfalls)
+    const [pendingReqs, activeMentorships, mentorUsers] = await Promise.all([
+      studentId
+        ? MentorshipRequest.find({ studentId, status: "pending" }).select("mentorId").lean()
+        : Promise.resolve([]),
+      studentId
+        ? Mentorship.find({ studentId, status: "active" }).select("mentorId").lean()
+        : Promise.resolve([]),
+      User.find({
+        role: { $in: ["alumni", "alumni_mentor"] },
+        isVerified: true,
+        verificationStatus: "verified",
+        isDeleted: { $ne: true },
+        ...(studentId ? { _id: { $ne: studentId } } : {}),
+      })
+        .select("_id name mentorProfile")
+        .lean(),
+    ]);
 
-    if (studentId) {
-      const pendingReqs = await MentorshipRequest.find({
-        studentId,
-        status: "pending",
-      }).select("mentorId").lean();
-
-      pendingRequestsCount = pendingReqs.length;
-      pendingMentorIds = new Set(pendingReqs.map((r) => String(r.mentorId)));
-
-      const activeMentorships = await Mentorship.find({
-        studentId,
-        status: "active",
-      }).select("mentorId").lean();
-
-      activeMentorIds = new Set(activeMentorships.map((m) => String(m.mentorId)));
-    }
-
+    const pendingRequestsCount = pendingReqs.length;
+    const pendingMentorIds = new Set(pendingReqs.map((r) => String(r.mentorId)));
+    const activeMentorIds = new Set(activeMentorships.map((m) => String(m.mentorId)));
     const hasReachedPendingLimit = pendingRequestsCount >= MAX_PENDING_REQUESTS_PER_STUDENT;
 
-    // 3. Fetch all eligible mentors (Sanitizing to NEVER leak email, phone, passwords)
-    const mentorUsers = await User.find({
-      role: "alumni",
-      ...(studentId ? { _id: { $ne: studentId } } : {}),
-    })
-      .select("_id name mentorProfile")
-      .lean();
-
     const mentorUserIds = mentorUsers.map((u) => u._id);
-    const standaloneProfiles = await MentorProfile.find({
-      userId: { $in: mentorUserIds },
-    }).lean();
-    const capacityRecords = await MentorCapacity.find({
-      mentorId: { $in: mentorUserIds },
-    }).lean();
+
+    // Fetch standalone profiles and capacity records in PARALLEL
+    const [standaloneProfiles, capacityRecords] = await Promise.all([
+      MentorProfile.find({
+        userId: { $in: mentorUserIds },
+        isVerified: { $ne: false },
+      }).lean(),
+      MentorCapacity.find({
+        mentorId: { $in: mentorUserIds },
+        acceptingRequests: { $ne: false },
+        status: { $ne: "paused" },
+      }).lean(),
+    ]);
 
     const profileMap = new Map(standaloneProfiles.map((p) => [String(p.userId), p]));
     const capacityMap = new Map(capacityRecords.map((c) => [String(c.mentorId), c]));
 
     // Construct raw mentor list for scoring utility
     type RawMentorItem = Parameters<typeof matchMentors>[1][number];
-    const rawMentorList: RawMentorItem[] = mentorUsers.map((u) => {
+    const rawMentorList: RawMentorItem[] = mentorUsers.flatMap((u) => {
       const userIdStr = String(u._id);
       const standalone = profileMap.get(userIdStr) as Record<string, unknown> | undefined;
       const embedded = (u.mentorProfile || {}) as Record<string, unknown>;
       const capacity = capacityMap.get(userIdStr);
 
-      const activeMentees = (capacity?.activeMentees as number) ?? ((standalone?.totalMentees as number) ? Math.min(Number(standalone?.totalMentees), 2) : 1);
+      // Exclude mentor if capacity record explicitly has acceptingRequests false or status paused
+      if (capacity?.acceptingRequests === false || capacity?.status === "paused") {
+        return [];
+      }
+
+      // Exclude if availability is stopped or waitlist
+      const isStopped =
+        embedded?.availability === "stopped" ||
+        embedded?.availability === "waitlist" ||
+        standalone?.availability === "stopped" ||
+        standalone?.availability === "waitlist";
+
+      if (isStopped) {
+        return [];
+      }
+
+      const activeMentees = (capacity?.activeMentees as number) ?? ((standalone?.totalMentees as number) ? Math.min(Number(standalone?.totalMentees), 2) : 0);
       const maxMentees = (capacity?.maxMentees as number) ?? MAX_MENTEES_PER_MENTOR;
 
-      return {
+      return [{
         mentorId: userIdStr,
         name: u.name || "Alumni Mentor",
         avatarUrl: (standalone?.avatarUrl as string) || (embedded.avatarUrl as string | undefined),
@@ -338,8 +400,14 @@ export async function fetchScoredMentorsAction({
         skills: ((standalone?.skills as RawMentorItem["skills"])?.length ? (standalone?.skills as RawMentorItem["skills"]) : (embedded.skills as RawMentorItem["skills"])) || [],
         activeMentees,
         maxMentees,
-        availability: ((standalone?.availability as "open" | "waitlist") || (embedded.availability as "open" | "waitlist") || "open") as "open" | "waitlist",
-      };
+        availability: "open" as const,
+        yearsOfExperience: (standalone?.yearsOfExperience as number) || (embedded.yearsOfExperience as number) || 4,
+        skillsCanTeach: (standalone?.skillsCanTeach as string[]) || (embedded.skillsCanTeach as string[]) || undefined,
+        topicsCanMentor: (standalone?.topicsCanMentor as string[]) || (embedded.topicsCanMentor as string[]) || undefined,
+        preferredMentoringStyle: (standalone?.preferredMentoringStyle as string) || (embedded.preferredMentoringStyle as string) || undefined,
+        availabilitySchedule: (standalone?.availabilitySchedule as RawMentorItem["availabilitySchedule"]) || (embedded.availabilitySchedule as RawMentorItem["availabilitySchedule"]) || undefined,
+        reliabilityStats: (standalone?.reliabilityStats as RawMentorItem["reliabilityStats"]) || (embedded.reliabilityStats as RawMentorItem["reliabilityStats"]) || undefined,
+      }];
     });
 
     // Fallback seed mentors if database has none
@@ -400,6 +468,81 @@ export async function fetchScoredMentorsAction({
           activeMentees: 2,
           maxMentees: 5,
           availability: "open",
+        },
+        {
+          mentorId: "seed-mentor-5",
+          name: "Dr. Aris Thorne",
+          avatarUrl: undefined,
+          headline: "AI Research Scientist @ DeepMind | LLMs & PyTorch",
+          company: "Google DeepMind",
+          jobTitle: "Staff AI Scientist",
+          industry: "Artificial Intelligence",
+          expertiseTags: ["Artificial Intelligence", "Machine Learning", "PyTorch", "Generative AI", "NLP"],
+          skills: [{ name: "Machine Learning", endorsements: 22 }, { name: "PyTorch", endorsements: 19 }],
+          activeMentees: 1,
+          maxMentees: 3,
+          availability: "open",
+          yearsOfExperience: 7,
+        },
+        {
+          mentorId: "seed-mentor-6",
+          name: "Sarah Chen",
+          avatarUrl: undefined,
+          headline: "Group Product Manager @ Figma | Product Strategy & Growth",
+          company: "Figma",
+          jobTitle: "Group Product Manager",
+          industry: "Product Management",
+          expertiseTags: ["Product Management", "Product Strategy", "User Research", "Agile Roadmap"],
+          skills: [{ name: "Product Management", endorsements: 25 }, { name: "Product Strategy", endorsements: 20 }],
+          activeMentees: 2,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 8,
+        },
+        {
+          mentorId: "seed-mentor-7",
+          name: "Marcus Rivera",
+          avatarUrl: undefined,
+          headline: "Staff Product Designer @ Airbnb | Design Systems & UX",
+          company: "Airbnb",
+          jobTitle: "Staff Product Designer",
+          industry: "Design",
+          expertiseTags: ["UI/UX Design", "Design Systems", "Figma", "User Experience", "Interaction Design"],
+          skills: [{ name: "UI/UX Design", endorsements: 21 }, { name: "Design Systems", endorsements: 17 }],
+          activeMentees: 1,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 6,
+        },
+        {
+          mentorId: "seed-mentor-8",
+          name: "Maya Patel",
+          avatarUrl: undefined,
+          headline: "Lead Security Architect @ CrowdStrike | Cloud & InfoSec",
+          company: "CrowdStrike",
+          jobTitle: "Lead Security Architect",
+          industry: "Cybersecurity",
+          expertiseTags: ["Cybersecurity", "Cloud Security", "Threat Modeling", "Zero Trust", "Penetration Testing"],
+          skills: [{ name: "Cybersecurity", endorsements: 18 }, { name: "Cloud Security", endorsements: 15 }],
+          activeMentees: 2,
+          maxMentees: 5,
+          availability: "open",
+          yearsOfExperience: 9,
+        },
+        {
+          mentorId: "seed-mentor-9",
+          name: "Kabir Mehta",
+          avatarUrl: undefined,
+          headline: "Principal Data Scientist @ Netflix | Recommendation Systems",
+          company: "Netflix",
+          jobTitle: "Principal Data Scientist",
+          industry: "Data Science",
+          expertiseTags: ["Data Science", "Recommendation Systems", "Python", "SQL", "Big Data"],
+          skills: [{ name: "Data Science", endorsements: 24 }, { name: "SQL", endorsements: 20 }],
+          activeMentees: 2,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 8,
         }
       );
     }
@@ -424,9 +567,23 @@ export async function fetchScoredMentorsAction({
 
     if (industry.trim() && industry !== "all") {
       const ind = industry.trim().toLowerCase();
-      filtered = filtered.filter(
-        (m) => m.industry && m.industry.toLowerCase().includes(ind)
-      );
+      filtered = filtered.filter((m) => {
+        if (!m.industry) return false;
+        const mentorInd = m.industry.toLowerCase();
+        if (mentorInd === ind || mentorInd.includes(ind) || ind.includes(mentorInd)) {
+          return true;
+        }
+        const matchedCategory = STANDARD_INDUSTRIES.find(
+          (c) => c.value.toLowerCase() === ind || c.label.toLowerCase() === ind
+        );
+        if (matchedCategory) {
+          return (
+            matchedCategory.aliases.some((a) => mentorInd.includes(a)) ||
+            mentorInd.includes(matchedCategory.value.toLowerCase())
+          );
+        }
+        return false;
+      });
     }
 
     // 6. Pagination (Batch size e.g. 12 per page)
@@ -456,6 +613,11 @@ export async function fetchScoredMentorsAction({
       isAtCapacity: m.isAtCapacity,
       hasPendingRequest: pendingMentorIds.has(m.mentorId),
       hasActiveMentorship: activeMentorIds.has(m.mentorId),
+      scoreBreakdown: m.scoreBreakdown,
+      reasons: m.reasons,
+      canTeachSkills: m.canTeachSkills,
+      compatibleTimes: m.compatibleTimes,
+      yearsOfExperience: m.yearsOfExperience,
     }));
 
     return {

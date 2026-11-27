@@ -66,10 +66,13 @@ export async function GET(request: Request) {
         {
           targetIndustries: studentProfile.targetIndustries,
           skillsToDevelop: studentProfile.skillsToDevelop,
+          skills: studentProfile.skills,
         },
         {
           industry: alumni.industry,
           expertiseTags: alumni.expertiseTags,
+          company: alumni.company,
+          jobTitle: alumni.jobTitle,
         }
       );
 
@@ -88,6 +91,8 @@ export async function GET(request: Request) {
         },
         matchScore: match.score,
         matchRationale: match.rationale,
+        reasons: (match as { reasons?: string[] }).reasons || [match.rationale],
+        sharedSkills: match.matchedSkills || [],
       };
     });
 

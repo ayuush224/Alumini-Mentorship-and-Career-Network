@@ -16,15 +16,27 @@ export default async function DashboardPage() {
       ) {
         redirect("/mentor/dashboard");
       }
-      if (payload?.role === "alumni_relations_officer") {
-        redirect("/officer");
-      }
-      if (payload?.role === "administrator" || payload?.role === "placement_officer") {
+      if (
+        payload?.role === "alumni_relations_officer" ||
+        payload?.role === "administrator" ||
+        payload?.role === "admin" ||
+        payload?.role === "placement_officer"
+      ) {
         redirect("/officer");
       }
       if (payload?.sub) {
         redirect("/student/dashboard");
       }
+
+      // If token failed verification or has no sub, delete corrupt cookies
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
+    } else {
+      // Clear any leftover auth tokens to ensure clean state
+      cookieStore.delete("access_token");
+      cookieStore.delete("refresh_token");
+      cookieStore.delete("better-auth.session_token");
     }
   } catch (err) {
     // If NEXT_REDIRECT, rethrow

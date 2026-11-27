@@ -31,6 +31,14 @@ export default async function MentorProfilePage() {
           const embedded = ((user.mentorProfile || {}) as Record<string, unknown>);
           const capacity = await MentorCapacity.findOne({ mentorId: user._id }).lean();
 
+          const isStopped =
+            capacity?.acceptingRequests === false ||
+            capacity?.status === "paused" ||
+            standalone?.availability === "stopped" ||
+            embedded.availability === "stopped" ||
+            standalone?.availability === "waitlist" ||
+            embedded.availability === "waitlist";
+
           profileData = {
             name: user.name || user.email.split("@")[0] || "Mentor",
             email: user.email,
@@ -41,7 +49,7 @@ export default async function MentorProfilePage() {
             industry: (standalone?.industry as string) || (embedded.industry as string) || "Technology",
             headline: (standalone?.headline as string) ?? (embedded.headline as string) ?? "",
             bio: (standalone?.bio as string) ?? (embedded.bio as string) ?? "",
-            availability: (standalone?.availability as "open" | "waitlist") || (embedded.availability as "open" | "waitlist") || "open",
+            availability: isStopped ? "stopped" : "open",
             activeMentees: capacity?.activeMentees ?? 0,
             maxMentees: capacity?.maxMentees ?? MAX_MENTEES_PER_MENTOR,
             sessionsCompleted: (standalone?.sessionsCompleted as number) ?? (embedded.sessionsCompleted as number) ?? 0,

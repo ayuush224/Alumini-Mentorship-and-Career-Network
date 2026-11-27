@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
-import { MentorshipRequest, MentorCapacity, User } from "@/lib/models";
+import { MentorshipRequest, MentorCapacity, User, MentorProfile } from "@/lib/models";
 import { verifyAccess } from "@/lib/app-tokens";
 import { MAX_PENDING_REQUESTS_PER_STUDENT } from "@/lib/config";
 import { acquireMentorLock, releaseMentorLock } from "@/lib/redis";
@@ -93,14 +93,42 @@ export async function POST(request: Request) {
     }
 
     try {
-      // Verify mentor exists
+      // Verify mentor exists, is an alumni, and is verified
       const mentorUser = await User.findById(mentorId);
       if (!mentorUser) {
         return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
       }
 
-      // Verify mentor is not at capacity
+      if (
+        (mentorUser.role !== "alumni" && mentorUser.role !== "alumni_mentor") ||
+        !mentorUser.isVerified ||
+        mentorUser.verificationStatus !== "verified"
+      ) {
+        return NextResponse.json(
+          { error: "This alumni mentor has not been verified by an alumni relations officer yet" },
+          { status: 400 }
+        );
+      }
+
+      // Verify mentor is not stopped and not at capacity
       const capacity = await MentorCapacity.findOne({ mentorId });
+      const standaloneProfile = await MentorProfile.findOne({ userId: mentorId }).lean();
+
+      const isStopped =
+        capacity?.acceptingRequests === false ||
+        capacity?.status === "paused" ||
+        mentorUser.mentorProfile?.availability === "stopped" ||
+        mentorUser.mentorProfile?.availability === "waitlist" ||
+        (standaloneProfile as { availability?: string })?.availability === "stopped" ||
+        (standaloneProfile as { availability?: string })?.availability === "waitlist";
+
+      if (isStopped) {
+        return NextResponse.json(
+          { error: "This mentor has stopped accepting new mentorship requests" },
+          { status: 400 }
+        );
+      }
+
       if (capacity && capacity.activeMentees >= capacity.maxMentees) {
         return NextResponse.json(
           { error: "Mentor is currently at full capacity and cannot accept new requests" },

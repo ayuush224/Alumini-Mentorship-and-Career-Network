@@ -62,18 +62,17 @@ export function StudentHeader({ user }: StudentHeaderProps) {
 				<div className="flex items-center gap-6 sm:gap-8 min-w-0">
 					<Link
 						href="/student/dashboard"
-						className="inline-flex items-center gap-2 font-heading font-black text-2xl tracking-tight text-deep group shrink-0"
+						className="inline-flex items-center group shrink-0 focus:outline-none"
+						title="Alma · Alumni Mentorship Network"
 					>
 						<Image
-							src="/lpu_logo.png"
-							alt="Lovely Professional University"
-							width={32}
-							height={32}
+							src="/modern-alumni-logo.png"
+							alt="Alma · Alumni Mentorship Network"
+							width={140}
+							height={46}
 							priority
-							className="h-10 w-10 object-contain"
+							className="h-9 sm:h-10 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.02]"
 						/>
-						<span>alma</span>
-						<span className="text-primary-600 font-black text-2xl leading-none">.</span>
 					</Link>
 
 					{/* Horizontal Navigation Tabs */}

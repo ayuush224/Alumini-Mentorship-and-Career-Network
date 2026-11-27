@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -22,17 +23,21 @@ export default async function AuthLayout({
           payload.role === "alumni_mentor"
         ) {
           redirect("/mentor/dashboard");
-        } else if (payload.role === "alumni_relations_officer") {
-          redirect("/officer");
         } else if (
+          payload.role === "alumni_relations_officer" ||
           payload.role === "administrator" ||
           payload.role === "admin" ||
           payload.role === "placement_officer"
         ) {
-          redirect("/analytics");
+          redirect("/officer");
         } else {
           redirect("/student/dashboard");
         }
+      } else {
+        // Token exists but failed verification: purge corrupt cookies immediately to avoid loops
+        cookieStore.delete("access_token");
+        cookieStore.delete("refresh_token");
+        cookieStore.delete("better-auth.session_token");
       }
     }
   } catch (err) {
@@ -47,10 +52,17 @@ export default async function AuthLayout({
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-12 py-5 bg-background/85 backdrop-blur-md border-b border-primary-600/10">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 font-bold text-2xl tracking-tight text-deep font-heading group"
+          className="inline-flex items-center group focus:outline-none"
+          title="Alma · Alumni Mentorship Network"
         >
-          <span>alma</span>
-          <span className="text-primary-600 font-black text-3xl leading-none">.</span>
+          <Image
+            src="/modern-alumni-logo.png"
+            alt="Alma · Alumni Mentorship Network"
+            width={140}
+            height={46}
+            priority
+            className="h-9 sm:h-10 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.02]"
+          />
         </Link>
 
         <Link
@@ -71,9 +83,13 @@ export default async function AuthLayout({
       <footer className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-12 py-3 bg-background/90 backdrop-blur-md border-t border-primary-600/10 text-[11px]">
         {/* Left Side */}
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-primary-600 text-white flex items-center justify-center text-[10px] font-bold">
-            A
-          </span>
+          <Image
+            src="/alma-emblem.png"
+            alt="Alma Emblem"
+            width={20}
+            height={20}
+            className="w-5 h-5 rounded-md object-contain"
+          />
           <span className="font-semibold tracking-wider text-deep">ALMA NETWORK</span>
         </div>
 

@@ -82,54 +82,106 @@ export async function getBaseMentorDirectory(): Promise<CachedMentorBase[]> {
 
   // 2. Fetch from MongoDB
   await connectDB();
-  const availableCapacities = await MentorCapacity.find({
+
+  // Strictly filter for alumni who are verified by an alumni officer
+  const verifiedUsers = (await User.find({
+    role: { $in: ["alumni", "alumni_mentor"] },
+    isVerified: true,
+    verificationStatus: "verified",
+    isDeleted: { $ne: true },
+  })
+    .select("_id name mentorProfile")
+    .lean()) as unknown as Array<{
+      _id: unknown;
+      name?: string;
+      mentorProfile?: Record<string, unknown>;
+    }>;
+
+  if (verifiedUsers.length === 0) {
+    return [];
+  }
+
+  const verifiedUserIds = verifiedUsers.map((u) => String(u._id));
+  const verifiedUserMap = new Map(verifiedUsers.map((u) => [String(u._id), u]));
+
+  interface CapacityRecord {
+    _id: unknown;
+    mentorId: string;
+    maxMentees: number;
+    activeMentees: number;
+    acceptingRequests?: boolean;
+  }
+
+  const availableCapacities = (await MentorCapacity.find({
+    mentorId: { $in: verifiedUserIds },
+    acceptingRequests: { $ne: false },
+    status: { $ne: "paused" },
     $expr: { $lt: ["$activeMentees", "$maxMentees"] },
-  }).lean();
+  }).lean()) as unknown as CapacityRecord[];
 
   if (availableCapacities.length === 0) {
     return [];
   }
 
-  const availableMentorIds = availableCapacities.map((c) => c.mentorId);
+  const availableMentorIds: string[] = availableCapacities.map((c) => String(c.mentorId));
   const capacityMap = new Map(
     availableCapacities.map((c) => [String(c.mentorId), c])
   );
 
   const combinedProfiles = (await AlumniProfile.find({
     userId: { $in: availableMentorIds },
-  })
-    .populate({ path: "userId", select: "name _id" })
-    .lean()) as unknown as Array<{
-      _id: unknown;
-      userId: unknown;
-      company?: string;
-      jobTitle?: string;
-      industry?: string;
-      expertiseTags?: string[];
-    }>;
+    isVerified: { $ne: false },
+  }).lean()) as unknown as Array<{
+    _id: unknown;
+    userId: unknown;
+    company?: string;
+    jobTitle?: string;
+    industry?: string;
+    expertiseTags?: string[];
+    availability?: string;
+  }>;
 
-  const sanitizedDirectory: CachedMentorBase[] = combinedProfiles.map((alumni) => {
-    const userDoc =
-      typeof alumni.userId === "object"
-        ? (alumni.userId as { _id?: unknown; name?: string })
-        : null;
-    const mentorUserId = String(userDoc?._id || alumni.userId);
-    const capacity = capacityMap.get(mentorUserId);
-    const maxMentees = capacity?.maxMentees ?? 1;
-    const activeMentees = capacity?.activeMentees ?? 0;
+  const profileMap = new Map(
+    combinedProfiles.map((p) => [String(p.userId), p])
+  );
 
-    return {
-      id: String(alumni._id),
-      mentorId: mentorUserId,
-      name: userDoc?.name || "Alumni Mentor",
-      company: alumni.company || "Independent",
-      jobTitle: alumni.jobTitle || "Mentor",
-      industry: alumni.industry || "Technology",
-      expertiseTags: alumni.expertiseTags || [],
-      maxMentees,
-      activeMentees,
-    };
-  });
+  const sanitizedDirectory: CachedMentorBase[] = availableCapacities
+    .map((capacity) => {
+      const mentorUserId = String(capacity.mentorId);
+      const userDoc = verifiedUserMap.get(mentorUserId);
+      if (!userDoc) return null;
+
+      const standalone = profileMap.get(mentorUserId);
+      const embedded = (userDoc.mentorProfile || {}) as Record<string, unknown>;
+
+      // Strictly exclude mentors whose availability is stopped or waitlist
+      const isStopped =
+        embedded?.availability === "stopped" ||
+        embedded?.availability === "waitlist" ||
+        standalone?.availability === "stopped" ||
+        standalone?.availability === "waitlist" ||
+        capacity.acceptingRequests === false;
+
+      if (isStopped) return null;
+
+      const maxMentees = capacity.maxMentees ?? 1;
+      const activeMentees = capacity.activeMentees ?? 0;
+
+      return {
+        id: String(standalone?._id || userDoc._id),
+        mentorId: mentorUserId,
+        name: userDoc.name || "Alumni Mentor",
+        company: (standalone?.company || embedded?.company || "Independent") as string,
+        jobTitle: (standalone?.jobTitle || embedded?.jobTitle || "Mentor") as string,
+        industry: (standalone?.industry || embedded?.industry || "Technology") as string,
+        expertiseTags: (
+          (standalone?.expertiseTags?.length ? standalone.expertiseTags : embedded?.expertiseTags) || []
+        ) as string[],
+        maxMentees,
+        activeMentees,
+      };
+    })
+    .filter((m): m is CachedMentorBase => m !== null);
 
   if (sanitizedDirectory.length > 0) {
     await setCached(

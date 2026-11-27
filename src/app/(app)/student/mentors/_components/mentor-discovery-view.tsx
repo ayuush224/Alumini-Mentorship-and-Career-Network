@@ -23,6 +23,7 @@ import {
   requestMentorship,
   ScoredMentorCardItem,
 } from "@/actions/mentorship";
+import { STANDARD_INDUSTRIES } from "@/lib/recommendation/taxonomy";
 
 interface MentorDiscoveryViewProps {
   initialMentors: ScoredMentorCardItem[];
@@ -33,12 +34,7 @@ interface MentorDiscoveryViewProps {
   initialReachedLimit: boolean;
 }
 
-const INDUSTRIES = [
-  { label: "All Industries", value: "all" },
-  { label: "Technology", value: "Technology" },
-  { label: "Financial Technology", value: "Financial Technology" },
-  { label: "Cloud Infrastructure", value: "Cloud Infrastructure" },
-];
+const INDUSTRIES = STANDARD_INDUSTRIES;
 
 export function MentorDiscoveryView({
   initialMentors,
@@ -353,9 +349,17 @@ export function MentorDiscoveryView({
                   )}
 
                   {/* Match Rationale Pill */}
-                  <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/80 mb-3 text-[11px] text-stone-700 leading-snug">
-                    <span className="font-semibold text-stone-900">Why this match: </span>
-                    <span className="text-stone-600">{mentor.rationale}</span>
+                  <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/80 mb-3 text-[11px] text-stone-700 leading-snug space-y-1">
+                    <div>
+                      <span className="font-semibold text-stone-900">Why this match: </span>
+                      <span className="text-stone-600">{mentor.rationale}</span>
+                    </div>
+                    {mentor.compatibleTimes && mentor.compatibleTimes.length > 0 && mentor.compatibleTimes[0] !== "Mutually agreed online time" && (
+                      <div className="flex items-center gap-1 text-[10px] text-emerald-800 font-medium">
+                        <Clock className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>Compatible slot: {mentor.compatibleTimes[0]}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Skills Tag Cloud */}

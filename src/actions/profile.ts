@@ -7,6 +7,7 @@ import { User, StudentProfile, MentorProfile } from "@/lib/models/User";
 import { MentorCapacity } from "@/lib/models/Mentorship";
 import { verifyAccess } from "@/lib/app-tokens";
 import { purgeCloudinaryAsset, extractCloudinaryPublicId, cloudinary } from "@/lib/cloudinary";
+import { invalidateMentorDirectoryCache } from "@/lib/dal";
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   try {
@@ -54,13 +55,14 @@ export async function updateAvatarUrl(url: string, newPublicId?: string) {
     setPayload["mentorProfile.avatarPublicId"] = derivedPublicId;
   }
 
-  await User.findByIdAndUpdate(userId, { $set: setPayload });
-
   const standalonePayload: Record<string, unknown> = { avatarUrl: url };
   if (derivedPublicId) standalonePayload.avatarPublicId = derivedPublicId;
 
-  await StudentProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true });
-  await MentorProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true });
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $set: setPayload }),
+    StudentProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true }),
+    MentorProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true }),
+  ]);
 
   revalidatePath("/student/profile");
   revalidatePath("/mentor/profile");
@@ -99,13 +101,14 @@ export async function updateBannerUrl(url: string, newPublicId?: string) {
     setPayload["mentorProfile.bannerPublicId"] = derivedPublicId;
   }
 
-  await User.findByIdAndUpdate(userId, { $set: setPayload });
-
   const standalonePayload: Record<string, unknown> = { bannerUrl: url };
   if (derivedPublicId) standalonePayload.bannerPublicId = derivedPublicId;
 
-  await StudentProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true });
-  await MentorProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true });
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $set: setPayload }),
+    StudentProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true }),
+    MentorProfile.findOneAndUpdate({ userId }, { $set: standalonePayload }, { upsert: true }),
+  ]);
 
   revalidatePath("/student/profile");
   revalidatePath("/mentor/profile");
@@ -121,8 +124,10 @@ export async function updateStudentBio(bio: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, { $set: { "studentProfile.bio": bio.trim() } });
-  await StudentProfile.findOneAndUpdate({ userId }, { $set: { bio: bio.trim() } }, { upsert: true });
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $set: { "studentProfile.bio": bio.trim() } }),
+    StudentProfile.findOneAndUpdate({ userId }, { $set: { bio: bio.trim() } }, { upsert: true }),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -142,18 +147,20 @@ export async function updateStudentEducation(data: {
   if (data.graduationYear !== undefined) updateFields["studentProfile.graduationYear"] = Number(data.graduationYear);
   if (data.cgpa !== undefined) updateFields["studentProfile.cgpa"] = Number(data.cgpa);
 
-  await User.findByIdAndUpdate(userId, { $set: updateFields });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    {
-      $set: {
-        ...(data.major !== undefined && { major: data.major.trim() }),
-        ...(data.graduationYear !== undefined && { graduationYear: Number(data.graduationYear) }),
-        ...(data.cgpa !== undefined && { cgpa: Number(data.cgpa) }),
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $set: updateFields }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          ...(data.major !== undefined && { major: data.major.trim() }),
+          ...(data.graduationYear !== undefined && { graduationYear: Number(data.graduationYear) }),
+          ...(data.cgpa !== undefined && { cgpa: Number(data.cgpa) }),
+        },
       },
-    },
-    { upsert: true }
-  );
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -167,12 +174,14 @@ export async function addStudentSkill(skill: string) {
   const cleanSkill = skill.trim();
   if (!cleanSkill) return { success: false, error: "Skill name is required" };
 
-  await User.findByIdAndUpdate(userId, { $addToSet: { "studentProfile.skills": cleanSkill } });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $addToSet: { skills: cleanSkill } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $addToSet: { "studentProfile.skills": cleanSkill } }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $addToSet: { skills: cleanSkill } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -183,8 +192,10 @@ export async function removeStudentSkill(skill: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, { $pull: { "studentProfile.skills": skill } });
-  await StudentProfile.findOneAndUpdate({ userId }, { $pull: { skills: skill } });
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $pull: { "studentProfile.skills": skill } }),
+    StudentProfile.findOneAndUpdate({ userId }, { $pull: { skills: skill } }),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -211,12 +222,14 @@ export async function addStudentProject(project: {
     techStack: project.techStack || [],
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { "studentProfile.projects": newProject } });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $push: { projects: newProject } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "studentProfile.projects": newProject } }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $push: { projects: newProject } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -227,13 +240,15 @@ export async function deleteStudentProject(title: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "studentProfile.projects": { title } },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { projects: { title } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "studentProfile.projects": { title } },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { projects: { title } } }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -264,12 +279,14 @@ export async function addStudentExperience(exp: {
     description: exp.description?.trim(),
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { "studentProfile.experience": newExp } });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $push: { experience: newExp } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "studentProfile.experience": newExp } }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $push: { experience: newExp } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -280,13 +297,15 @@ export async function deleteStudentExperience(company: string, role: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "studentProfile.experience": { company, role } },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { experience: { company, role } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "studentProfile.experience": { company, role } },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { experience: { company, role } } }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -299,7 +318,8 @@ export async function deleteStudentExperience(company: string, role: string) {
 export async function updateMentorProfile(data: {
   headline?: string;
   bio?: string;
-  availability?: "open" | "waitlist";
+  availability?: "open" | "waitlist" | "stopped";
+  maxMentees?: number;
 }) {
   await connectDB();
   const userId = await getAuthenticatedUserId();
@@ -316,21 +336,66 @@ export async function updateMentorProfile(data: {
     updateFields["mentorProfile.availability"] = data.availability;
   }
 
-  await User.findByIdAndUpdate(userId, { $set: updateFields });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    {
-      $set: {
-        ...(data.headline !== undefined && { headline: data.headline.trim() }),
-        ...(data.bio !== undefined && { bio: data.bio.trim() }),
-        ...(data.availability !== undefined && { availability: data.availability }),
+  if (Object.keys(updateFields).length > 0) {
+    await Promise.all([
+      User.findByIdAndUpdate(userId, { $set: updateFields }),
+      MentorProfile.findOneAndUpdate(
+        { userId },
+        {
+          $set: {
+            ...(data.headline !== undefined && { headline: data.headline.trim() }),
+            ...(data.bio !== undefined && { bio: data.bio.trim() }),
+            ...(data.availability !== undefined && { availability: data.availability }),
+          },
+        },
+        { upsert: true }
+      ),
+    ]);
+  }
+
+  // Handle Capacity & Stopped Status updates
+  if (data.maxMentees !== undefined || data.availability !== undefined) {
+    const existingCapacity = await MentorCapacity.findOne({ mentorId: userId });
+    const currentMax = existingCapacity?.maxMentees ?? 5;
+    const currentActive = existingCapacity?.activeMentees ?? 0;
+    const newMax = data.maxMentees !== undefined ? Math.max(1, Math.floor(Number(data.maxMentees))) : currentMax;
+
+    // Determine whether requests are stopped
+    let isStopped = false;
+    if (data.availability === "stopped" || data.availability === "waitlist") {
+      isStopped = true;
+    } else if (data.availability === "open") {
+      isStopped = false;
+    } else {
+      isStopped = existingCapacity?.acceptingRequests === false || existingCapacity?.status === "paused";
+    }
+
+    const calculatedStatus = isStopped ? "paused" : currentActive >= newMax ? "at_capacity" : "available";
+
+    await MentorCapacity.findOneAndUpdate(
+      { mentorId: userId },
+      {
+        $set: {
+          maxMentees: newMax,
+          acceptingRequests: !isStopped,
+          status: calculatedStatus,
+        },
       },
-    },
-    { upsert: true }
-  );
+      { upsert: true, new: true }
+    );
+
+    // Invalidate discovery directory cache so student searches update immediately
+    await invalidateMentorDirectoryCache();
+  }
 
   revalidatePath("/mentor/profile");
+  revalidatePath("/mentor/dashboard");
+  revalidatePath("/student/mentors");
   return { success: true };
+}
+
+export async function updateMentorCapacity(maxMentees: number) {
+  return updateMentorProfile({ maxMentees });
 }
 
 export async function addMentorSkill(name: string) {
@@ -343,12 +408,14 @@ export async function addMentorSkill(name: string) {
 
   const newSkill = { name: cleanName, endorsements: 0 };
 
-  await User.findByIdAndUpdate(userId, { $push: { "mentorProfile.skills": newSkill } });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $push: { skills: newSkill } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "mentorProfile.skills": newSkill } }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $push: { skills: newSkill } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -359,13 +426,15 @@ export async function removeMentorSkill(name: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "mentorProfile.skills": { name } },
-  });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { skills: { name } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "mentorProfile.skills": { name } },
+    }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { skills: { name } } }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -388,12 +457,14 @@ export async function addMentorshipArea(area: {
     icon: area.icon?.trim() || "compass",
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { "mentorProfile.mentorshipAreas": newArea } });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $push: { mentorshipAreas: newArea } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "mentorProfile.mentorshipAreas": newArea } }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $push: { mentorshipAreas: newArea } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -404,13 +475,15 @@ export async function deleteMentorshipArea(title: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "mentorProfile.mentorshipAreas": { title } },
-  });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { mentorshipAreas: { title } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "mentorProfile.mentorshipAreas": { title } },
+    }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { mentorshipAreas: { title } } }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -445,12 +518,14 @@ export async function addMentorExperience(exp: {
     skills: exp.skills || [],
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { "mentorProfile.experience": newExp } });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $push: { experience: newExp } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "mentorProfile.experience": newExp } }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $push: { experience: newExp } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -461,13 +536,15 @@ export async function deleteMentorExperience(company: string, role: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "mentorProfile.experience": { company, role } },
-  });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { experience: { company, role } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "mentorProfile.experience": { company, role } },
+    }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { experience: { company, role } } }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -494,12 +571,14 @@ export async function addMentorFeaturedWork(work: {
     link: work.link?.trim(),
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { "mentorProfile.featuredWork": newWork } });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $push: { featuredWork: newWork } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, { $push: { "mentorProfile.featuredWork": newWork } }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $push: { featuredWork: newWork } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -510,13 +589,15 @@ export async function deleteMentorFeaturedWork(title: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "mentorProfile.featuredWork": { title } },
-  });
-  await MentorProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { featuredWork: { title } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "mentorProfile.featuredWork": { title } },
+    }),
+    MentorProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { featuredWork: { title } } }
+    ),
+  ]);
 
   revalidatePath("/mentor/profile");
   return { success: true };
@@ -585,12 +666,14 @@ export async function getStudentCareerProfile(
       return { success: false, error: "Authentication required." };
     }
 
-    const studentUser = await User.findById(studentId).select("name studentProfile").lean();
+    const [studentUser, standalone] = await Promise.all([
+      User.findById(studentId).select("name studentProfile").lean(),
+      StudentProfile.findOne({ userId: studentId }).lean() as Promise<Record<string, unknown> | null>,
+    ]);
     if (!studentUser) {
       return { success: false, error: "Student profile not found." };
     }
 
-    const standalone = (await StudentProfile.findOne({ userId: studentId }).lean()) as Record<string, unknown> | null;
     const embedded = (studentUser.studentProfile || {}) as Record<string, unknown>;
 
     const careerProfile: StudentCareerProfileViewData = {
@@ -1116,7 +1199,7 @@ export async function getMentorPublicProfile(
 
     // 2. Query MongoDB user record (Strict projection to prevent contact detail leakage)
     const mentorUser = await User.findById(mentorId)
-      .select("name role mentorProfile")
+      .select("name role mentorProfile isVerified verificationStatus")
       .lean();
 
     if (!mentorUser) {
@@ -1130,16 +1213,44 @@ export async function getMentorPublicProfile(
       return { success: false, error: "Mentor profile not found." };
     }
 
-    const standalone = (await MentorProfile.findOne({ userId: mentorId }).lean()) as Record<string, unknown> | null;
-    const embedded = (mentorUser.mentorProfile || {}) as Record<string, unknown>;
+    // Check if requester is privileged viewer (self or staff)
+    let isPrivilegedViewer = false;
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("access_token")?.value;
+      if (token) {
+        const payload = await verifyAccess(token);
+        if (
+          payload?.sub === mentorId ||
+          payload?.role === "administrator" ||
+          payload?.role === "alumni_relations_officer"
+        ) {
+          isPrivilegedViewer = true;
+        }
+      }
+    } catch {
+      // Ignore
+    }
 
-    // Fetch capacity info
-    const capacityDoc = (await MentorCapacity.findOne({ mentorId }).lean()) as {
-      maxMentees?: number;
-      activeMentees?: number;
-      status?: string;
-      acceptingRequests?: boolean;
-    } | null;
+    const isVerified =
+      mentorUser.isVerified === true && mentorUser.verificationStatus === "verified";
+    if (!isVerified && !isPrivilegedViewer) {
+      return {
+        success: false,
+        error: "This alumni mentor is pending verification and is not publicly visible yet.",
+      };
+    }
+
+    const [standalone, capacityDoc] = await Promise.all([
+      MentorProfile.findOne({ userId: mentorId }).lean() as Promise<Record<string, unknown> | null>,
+      MentorCapacity.findOne({ mentorId }).lean() as Promise<{
+        maxMentees?: number;
+        activeMentees?: number;
+        status?: string;
+        acceptingRequests?: boolean;
+      } | null>,
+    ]);
+    const embedded = (mentorUser.mentorProfile || {}) as Record<string, unknown>;
 
     const maxMentees = capacityDoc?.maxMentees ?? (standalone?.totalMentees as number) ?? 3;
     const activeMentees = capacityDoc?.activeMentees ?? 0;
@@ -1276,14 +1387,16 @@ export async function updateStudentCodingProfiles(
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $set: { "studentProfile.codingProfiles": codingProfiles },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $set: { codingProfiles } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $set: { "studentProfile.codingProfiles": codingProfiles },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $set: { codingProfiles } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true, codingProfiles };
@@ -1295,14 +1408,16 @@ export async function addStudentSocialLink(platform: string, url: string) {
   if (!userId) return { success: false, error: "Authentication required" };
 
   const link = { platform: platform.trim(), url: url.trim() };
-  await User.findByIdAndUpdate(userId, {
-    $push: { "studentProfile.socialLinks": link },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $push: { socialLinks: link } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $push: { "studentProfile.socialLinks": link },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $push: { socialLinks: link } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true, link };
@@ -1313,13 +1428,15 @@ export async function removeStudentSocialLink(url: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "studentProfile.socialLinks": { url } },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { socialLinks: { url } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "studentProfile.socialLinks": { url } },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { socialLinks: { url } } }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };
@@ -1331,14 +1448,16 @@ export async function addStudentOtherLink(title: string, url: string) {
   if (!userId) return { success: false, error: "Authentication required" };
 
   const link = { title: title.trim(), url: url.trim() };
-  await User.findByIdAndUpdate(userId, {
-    $push: { "studentProfile.otherLinks": link },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $push: { otherLinks: link } },
-    { upsert: true }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $push: { "studentProfile.otherLinks": link },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $push: { otherLinks: link } },
+      { upsert: true }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true, link };
@@ -1349,13 +1468,15 @@ export async function removeStudentOtherLink(url: string) {
   const userId = await getAuthenticatedUserId();
   if (!userId) return { success: false, error: "Authentication required" };
 
-  await User.findByIdAndUpdate(userId, {
-    $pull: { "studentProfile.otherLinks": { url } },
-  });
-  await StudentProfile.findOneAndUpdate(
-    { userId },
-    { $pull: { otherLinks: { url } } }
-  );
+  await Promise.all([
+    User.findByIdAndUpdate(userId, {
+      $pull: { "studentProfile.otherLinks": { url } },
+    }),
+    StudentProfile.findOneAndUpdate(
+      { userId },
+      { $pull: { otherLinks: { url } } }
+    ),
+  ]);
 
   revalidatePath("/student/profile");
   return { success: true };

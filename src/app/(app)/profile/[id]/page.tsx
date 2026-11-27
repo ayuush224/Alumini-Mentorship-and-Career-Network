@@ -1,6 +1,6 @@
 import React from "react";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import mongoose from "mongoose";
 import { verifyAccess } from "@/lib/app-tokens";
 import { connectDB } from "@/lib/db";
@@ -29,6 +29,8 @@ export default async function PublicMentorProfilePage({ params }: PublicProfileP
   // 1. Check logged-in user context
   let studentGoals: Array<{ id: string; title: string }> = [];
   let isLoggedInStudent = false;
+  let viewerUserId: string | null = null;
+  let viewerRole: string | null = null;
 
   try {
     const cookieStore = await cookies();
@@ -36,16 +38,26 @@ export default async function PublicMentorProfilePage({ params }: PublicProfileP
     if (token) {
       const payload = await verifyAccess(token);
       if (payload?.sub) {
+        viewerUserId = payload.sub;
+        viewerRole = (payload.role as string) || null;
         if (payload.role === "student") isLoggedInStudent = true;
         const userGoals = await Goal.find({ studentId: payload.sub }).lean();
         studentGoals = userGoals.map((g) => ({
           id: String(g._id),
           title: g.title,
         }));
+      } else {
+        cookieStore.delete("access_token");
+        cookieStore.delete("refresh_token");
+        cookieStore.delete("better-auth.session_token");
       }
     }
   } catch {
     // Non-blocking
+  }
+
+  if (!viewerUserId) {
+    redirect("/login");
   }
 
   // 2. Fetch mentor from DB (ensuring sanitization - NEVER LEAK PERSONAL CONTACT INFO)
@@ -59,9 +71,25 @@ export default async function PublicMentorProfilePage({ params }: PublicProfileP
         MentorCapacity.findOne({ mentorId: id }).lean(),
       ]);
 
-      if (mentorUser) {
+      const isPrivilegedViewer =
+        viewerUserId === id ||
+        viewerRole === "administrator" ||
+        viewerRole === "alumni_relations_officer";
+
+      const isVerifiedMentor =
+        mentorUser?.isVerified === true && mentorUser?.verificationStatus === "verified";
+
+      if (mentorUser && (isVerifiedMentor || isPrivilegedViewer)) {
         const standalone = standaloneProfile as Record<string, unknown> | null;
         const embedded = ((mentorUser.mentorProfile || {}) as Record<string, unknown>);
+
+        const isStopped =
+          capacity?.acceptingRequests === false ||
+          capacity?.status === "paused" ||
+          standalone?.availability === "stopped" ||
+          embedded.availability === "stopped" ||
+          standalone?.availability === "waitlist" ||
+          embedded.availability === "waitlist";
 
         mentorData = {
           id: String(mentorUser._id),
@@ -73,7 +101,7 @@ export default async function PublicMentorProfilePage({ params }: PublicProfileP
           industry: (standalone?.industry as string) || (embedded.industry as string) || "Technology",
           headline: (standalone?.headline as string) ?? (embedded.headline as string) ?? "Alma Verified Mentor",
           bio: (standalone?.bio as string) ?? (embedded.bio as string) ?? "",
-          availability: (standalone?.availability as "open" | "waitlist") || (embedded.availability as "open" | "waitlist") || "open",
+          availability: isStopped ? "stopped" : "open",
           activeMentees: capacity?.activeMentees ?? 0,
           maxMentees: capacity?.maxMentees ?? MAX_MENTEES_PER_MENTOR,
           sessionsCompleted: (standalone?.sessionsCompleted as number) ?? (embedded.sessionsCompleted as number) ?? 0,

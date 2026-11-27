@@ -446,7 +446,7 @@ sequenceDiagram
 - **M1 — Alumni Verification & Profile:** Quarantined document review, graduation year validation, and professional credential display.
 - **M2 — Capacity & Availability (Invariant 1):** Mentors declare active mentee limits; Upstash distributed lock and atomic updates prevent over-subscription.
 - **M3 — Student Career Profile:** Academic dossiers with CGPA, target industries, target roles, skill gaps, and project portfolios.
-- **M4 — Discovery & Explainable Matching:** Affinity scoring algorithm returning transparent recommendation rationales.
+- **M4 — Discovery & Explainable Matching:** 4-stage recommendation funnel (Hard Filtering $\to$ 384-d Dense Semantic & Hybrid Retrieval $\to$ Multi-Factor Ranking with Gaussian Seniority & Bayesian Ratings $\to$ MMR Diversity & Factual Explanations). See [docs/RECOMMENDATION_ENGINE.md](docs/RECOMMENDATION_ENGINE.md).
 - **M5 — Requests & Throttled Acceptance:** Caps students at 5 active requests with a 14-day auto-expiry window.
 - **M6 — Scheduling & Structured Sessions:** 5-minute atomic interval slot overlap prevention, dynamic minute durations (15–240 mins), and gated video URLs.
 - **M7 — Goals, Action Items & Feedback:** Mutual milestone checklists awarding +20 reputation points upon verified completion.
@@ -471,6 +471,8 @@ sequenceDiagram
 | `POST` | `/api/v1/auth/logout` | Authenticated | Revoke refresh token family & clear auth cookies |
 | `GET` | `/api/v1/me` | Authenticated | Return user profile & issue double-submit CSRF cookie |
 | `GET` | `/api/v1/mentors/discovery` | Student | Fetch scored alumni mentors matching student dossier |
+| `POST` | `/api/v1/mentorships/recommendations` | Student | Create goal request & fetch explainable 4-stage recommendations |
+| `GET` | `/api/v1/mentorships/recommendations` | Student | Retrieve recommendations for active mentorship goal request |
 | `POST` | `/api/v1/mentorships/request` | Student | Submit introduction request (throttled to 5 active) |
 | `POST` | `/api/v1/mentorships/accept` | Mentor | Atomically accept mentee request under capacity lock |
 | `GET` | `/api/v1/chat/download` | Active Pair | Stream sanitized attachment from Cloudinary |

@@ -1,9 +1,12 @@
 import { createHash, randomBytes } from "node:crypto";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT } from "jose";
 import { ObjectId } from "mongodb";
 import { connectDB } from "@/lib/db";
 import { User, AuthRefreshToken } from "@/lib/models";
 import { db } from "@/lib/auth";
+import { verifyAccessToken, clearResponseAuthCookies } from "./token-verify";
+
+export { verifyAccessToken, clearResponseAuthCookies };
 
 const key = () => new TextEncoder().encode(process.env.BETTER_AUTH_SECRET || "default_development_secret_change_me");
 const accessSeconds = 7 * 24 * 60 * 60; // 7 days (604,800 seconds)
@@ -122,16 +125,7 @@ export async function revokeRefresh(token: string) {
 }
 
 export async function verifyAccess(token: string) {
-  try {
-    return (
-      await jwtVerify(token, key(), {
-        issuer: process.env.BETTER_AUTH_URL || "alma-network",
-        audience: "alumni-api",
-      })
-    ).payload;
-  } catch {
-    return null;
-  }
+  return verifyAccessToken(token);
 }
 
 export function authCookies(access: string, refresh: string) {

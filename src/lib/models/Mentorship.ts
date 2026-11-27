@@ -228,6 +228,7 @@ export interface IMentorCapacity extends Document {
   mentorId: mongoose.Types.ObjectId;
   maxMentees: number;
   activeMentees: number;
+  pendingReservations?: number;
   acceptingRequests?: boolean;
   status?: "available" | "near_capacity" | "at_capacity" | "paused";
   createdAt: Date;
@@ -252,6 +253,11 @@ export const MentorCapacitySchema = new Schema<IMentorCapacity>(
       default: 0,
       min: 0,
     },
+    pendingReservations: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     acceptingRequests: {
       type: Boolean,
       default: true,
@@ -266,6 +272,9 @@ export const MentorCapacitySchema = new Schema<IMentorCapacity>(
     timestamps: true,
   }
 );
+
+// High-speed capacity index for batch discovery checks
+MentorCapacitySchema.index({ mentorId: 1, acceptingRequests: 1, status: 1 });
 
 // ============================================================================
 // MODEL EXPORTS
