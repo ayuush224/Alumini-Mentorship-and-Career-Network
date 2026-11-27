@@ -17,6 +17,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Alma · Verified Alumni Mentorship Platform",
   description: "A considered mentoring network for students, alumni, and the teams who make meaningful connections possible.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico?v=4", sizes: "any" },
+      { url: "/lpu-tab-logo.png?v=4", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico?v=4",
+    apple: [
+      { url: "/lpu-tab-logo.png?v=4" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

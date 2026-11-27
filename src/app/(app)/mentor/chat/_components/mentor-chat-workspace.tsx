@@ -17,7 +17,8 @@ import {
   Download,
   ExternalLink,
   X,
-  Loader2,
+  Crop,
+  ArrowUp,
 } from "lucide-react";
 import {
   sendMessageAction,
@@ -33,6 +34,7 @@ import {
   formatAttachmentBytes,
   isImageFile,
 } from "@/lib/chat-attachments";
+import { ChatImageCropModal } from "@/components/shared/chat-image-crop-modal";
 
 export interface MenteeConversationItem {
   mentorshipId: string;
@@ -96,15 +98,9 @@ export function MentorChatWorkspace({
   const [pendingAttachment, setPendingAttachment] = useState<{
     file: File;
     previewUrl?: string;
-    isUploading: boolean;
-    uploadedData?: {
-      fileUrl: string;
-      fileName: string;
-      fileType: string;
-      fileSize: number;
-    };
-    error?: string;
+    isImage: boolean;
   } | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -250,9 +246,9 @@ export function MentorChatWorkspace({
   }, [selectedMentee?.mentorshipId, isConnected]);
 
   // =========================================================================
-  // FILE ATTACHMENT SELECTION & CLOUDINARY UPLOAD
+  // FILE ATTACHMENT SELECTION (Local first, upload on send)
   // =========================================================================
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedMentee) return;
 
@@ -263,125 +259,106 @@ export function MentorChatWorkspace({
       return;
     }
 
-    const previewUrl = file.type.startsWith("image/")
-      ? URL.createObjectURL(file)
-      : undefined;
+    const isImage = file.type.startsWith("image/");
+    const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
 
     setPendingAttachment({
       file,
       previewUrl,
-      isUploading: true,
+      isImage,
     });
+  };
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await uploadChatAttachmentAction(
-        selectedMentee.mentorshipId,
-        formData
-      );
-
-      if (res.success && res.fileUrl && res.fileName && res.fileType) {
-        setPendingAttachment({
-          file,
-          previewUrl,
-          isUploading: false,
-          uploadedData: {
-            fileUrl: res.fileUrl,
-            fileName: res.fileName,
-            fileType: res.fileType,
-            fileSize: res.fileSize || file.size,
-          },
-        });
-      } else {
-        setPendingAttachment((prev) =>
-          prev
-            ? {
-                ...prev,
-                isUploading: false,
-                error: res.error || "Failed to upload file to Cloudinary.",
-              }
-            : null
-        );
-      }
-    } catch {
-      setPendingAttachment((prev) =>
-        prev
-          ? {
-              ...prev,
-              isUploading: false,
-              error: "Network error during file upload.",
-            }
-          : null
-      );
-    }
+  const handleApplyCrop = (croppedFile: File, previewUrl: string) => {
+    setPendingAttachment({
+      file: croppedFile,
+      previewUrl,
+      isImage: true,
+    });
   };
 
   // =========================================================================
-  // OPTIMISTIC MESSAGE TRANSMISSION
+  // OPTIMISTIC MESSAGE TRANSMISSION + WHATSAPP-STYLE UPLOAD
   // =========================================================================
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!selectedMentee || isSending) return;
 
     const content = inputValue.trim();
-    const attachment = pendingAttachment?.uploadedData;
+    const attachment = pendingAttachment;
 
     if (!content && !attachment) return;
-    if (pendingAttachment?.isUploading) {
-      alert("Please wait for your attachment to finish uploading.");
-      return;
-    }
 
     const tempId = `temp-${Date.now()}`;
     const mentorshipId = selectedMentee.mentorshipId;
 
-    // 1. Instant Optimistic UI Update (0ms perceived latency)
+    // 1. Instant Optimistic UI Update (Shows local preview immediately)
     const optimisticMessage: ChatMessageItem = {
       id: tempId,
       mentorshipId,
       senderId: currentUserId,
       senderRole: "mentor",
       content,
-      fileUrl: attachment?.fileUrl,
-      fileName: attachment?.fileName,
-      fileType: attachment?.fileType,
-      fileSize: attachment?.fileSize,
+      fileUrl: attachment?.previewUrl,
+      fileName: attachment?.file.name,
+      fileType: attachment?.file.type,
+      fileSize: attachment?.file.size,
       createdAt: new Date().toISOString(),
+      isUploading: Boolean(attachment),
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
     setInputValue("");
     if (typeof window !== "undefined" && selectedMentee?.mentorshipId) {
       try {
-        localStorage.removeItem(`alma_chat_draft_${selectedMentee.mentorshipId}`);
+        localStorage.removeItem(`alma_chat_draft_mentor_${selectedMentee.mentorshipId}`);
       } catch {}
     }
     setPendingAttachment(null);
     setIsSending(true);
 
     try {
-      // 2. Transmit to server database + Pusher broadcast
+      let uploadedAttachmentData = undefined;
+
+      // 2. Upload to Cloudinary when Mentor clicks Send
+      if (attachment) {
+        const formData = new FormData();
+        formData.append("file", attachment.file);
+        const uploadRes = await uploadChatAttachmentAction(mentorshipId, formData);
+
+        if (!uploadRes.success || !uploadRes.fileUrl) {
+          throw new Error(uploadRes.error || "Failed to upload file to Cloudinary.");
+        }
+
+        uploadedAttachmentData = {
+          fileUrl: uploadRes.fileUrl,
+          fileName: uploadRes.fileName || attachment.file.name,
+          fileType: uploadRes.fileType || attachment.file.type,
+          fileSize: uploadRes.fileSize || attachment.file.size,
+        };
+      }
+
+      // 3. Transmit authoritative message to server database + Pusher broadcast
       const res = await sendMessageAction(mentorshipId, content, {
-        fileAttachment: attachment,
+        fileAttachment: uploadedAttachmentData,
       });
 
       if (res.success && res.message) {
         // Replace temporary optimistic message with authoritative MongoDB document
         const authoritative = res.message;
         setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? authoritative : m))
+          prev.map((m) => (m.id === tempId ? { ...authoritative, isUploading: false } : m))
         );
       } else {
         // Rollback on server failure
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         alert(res.error || "Failed to send message. Please try again.");
       }
-    } catch {
+    } catch (err: unknown) {
       // Rollback on network failure
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      alert("Network exception. Please check your connection.");
+      const msg = err instanceof Error ? err.message : "Network exception. Please check your connection.";
+      alert(msg);
     } finally {
       setIsSending(false);
     }
@@ -598,22 +575,52 @@ export function MentorChatWorkspace({
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                       src={msg.fileUrl}
-                                      alt={msg.fileName || "Cloudinary image attachment"}
+                                      alt={msg.fileName || "Image attachment"}
                                       className="max-h-60 max-w-full rounded-xl object-contain mx-auto"
                                       loading="lazy"
                                     />
                                   </a>
+
+                                  {/* WhatsApp-Style Round Uploading Overlay */}
+                                  {msg.isUploading && (
+                                    <div className="absolute inset-0 bg-black/55 backdrop-blur-2xs flex flex-col items-center justify-center transition-all z-10">
+                                      <div className="relative w-12 h-12 rounded-full bg-black/80 border border-white/40 flex items-center justify-center text-white shadow-2xl">
+                                        <svg className="w-12 h-12 -rotate-90 animate-spin text-primary-400" viewBox="0 0 48 48">
+                                          <circle
+                                            cx="24"
+                                            cy="24"
+                                            r="18"
+                                            stroke="currentColor"
+                                            strokeWidth="3.5"
+                                            fill="none"
+                                            strokeDasharray="113.1"
+                                            strokeDashoffset="38"
+                                            strokeLinecap="round"
+                                          />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                          <ArrowUp className="w-4.5 h-4.5 text-white animate-bounce" />
+                                        </div>
+                                      </div>
+                                      <span className="text-[10px] font-semibold text-white/95 mt-2 bg-black/70 px-2.5 py-0.5 rounded-full border border-white/20 shadow-sm">
+                                        Uploading...
+                                      </span>
+                                    </div>
+                                  )}
+
                                   {/* Quick download button for images */}
-                                  <a
-                                    href={getAttachmentDownloadUrl(msg.fileUrl, msg.fileName)}
-                                    download={msg.fileName || "image"}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-stone-900/70 hover:bg-stone-900 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                                    title="Download full image"
-                                  >
-                                    <Download className="w-3.5 h-3.5" />
-                                  </a>
+                                  {!msg.isUploading && (
+                                    <a
+                                      href={getAttachmentDownloadUrl(msg.fileUrl, msg.fileName)}
+                                      download={msg.fileName || "image"}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-stone-900/70 hover:bg-stone-900 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                      title="Download full image"
+                                    >
+                                      <Download className="w-3.5 h-3.5" />
+                                    </a>
+                                  )}
                                 </div>
                               ) : (
                                 (() => {
@@ -699,10 +706,10 @@ export function MentorChatWorkspace({
               <div className="p-4 bg-white border-t border-stone-200">
                 {/* Pending Attachment Preview Bar */}
                 {pendingAttachment && (
-                  <div className="max-w-4xl mx-auto mb-2.5 p-2 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-3 text-xs">
+                  <div className="max-w-4xl mx-auto mb-2.5 p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-3 text-xs shadow-xs animate-in fade-in slide-in-from-bottom-1 duration-150">
                     <div className="flex items-center gap-2.5 min-w-0">
                       {pendingAttachment.previewUrl ? (
-                        <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0">
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-950/10">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={pendingAttachment.previewUrl}
@@ -711,7 +718,7 @@ export function MentorChatWorkspace({
                           />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-stone-200 text-stone-600 flex items-center justify-center shrink-0">
+                        <div className="w-11 h-11 rounded-lg bg-stone-200 text-stone-600 flex items-center justify-center shrink-0">
                           <FileText className="w-5 h-5" />
                         </div>
                       )}
@@ -719,31 +726,33 @@ export function MentorChatWorkspace({
                         <p className="font-semibold text-stone-800 truncate text-xs">
                           {pendingAttachment.file.name}
                         </p>
-                        <p className="text-[11px] text-stone-500 font-mono">
-                          {formatAttachmentBytes(pendingAttachment.file.size)}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-stone-500 font-mono">
+                            {formatAttachmentBytes(pendingAttachment.file.size)}
+                          </span>
+                          <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded font-medium">
+                            Ready to send
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      {pendingAttachment.isUploading ? (
-                        <span className="flex items-center gap-1.5 text-amber-600 font-medium text-[11px]">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Uploading to Cloudinary...</span>
-                        </span>
-                      ) : pendingAttachment.error ? (
-                        <span className="text-red-500 text-[11px] font-medium">
-                          {pendingAttachment.error}
-                        </span>
-                      ) : (
-                        <span className="text-emerald-600 text-[11px] font-medium">
-                          ✓ Cloudinary uploaded
-                        </span>
+                      {pendingAttachment.isImage && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCropModal(true)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 font-semibold text-[11px] shadow-2xs transition-colors cursor-pointer"
+                          title="Crop image before sending"
+                        >
+                          <Crop className="w-3.5 h-3.5 text-primary-600" />
+                          <span>Crop Image</span>
+                        </button>
                       )}
                       <button
                         type="button"
                         onClick={() => setPendingAttachment(null)}
-                        className="p-1 rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-200 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200 transition-colors cursor-pointer"
                         title="Remove attachment"
                       >
                         <X className="w-4 h-4" />
@@ -756,7 +765,7 @@ export function MentorChatWorkspace({
                   onSubmit={handleSendMessage}
                   className="max-w-4xl mx-auto flex items-center gap-2"
                 >
-                  {/* Hidden File Input for Cloudinary Upload */}
+                  {/* Hidden File Input for Attachment */}
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -769,9 +778,9 @@ export function MentorChatWorkspace({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isSending || pendingAttachment?.isUploading}
+                    disabled={isSending}
                     className="p-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-500 hover:text-stone-800 transition-colors disabled:opacity-50"
-                    title="Attach image or document (Cloudinary)"
+                    title="Attach image or document"
                   >
                     <Paperclip className="w-4 h-4" />
                   </button>
@@ -782,7 +791,7 @@ export function MentorChatWorkspace({
                     onChange={(e) => handleInputChange(e.target.value)}
                     placeholder={
                       pendingAttachment
-                        ? "Add an optional message..."
+                        ? "Add an optional caption..."
                         : `Type message to ${selectedMentee.name}...`
                     }
                     disabled={isSending}
@@ -792,8 +801,7 @@ export function MentorChatWorkspace({
                     type="submit"
                     disabled={
                       isSending ||
-                      pendingAttachment?.isUploading ||
-                      (!inputValue.trim() && !pendingAttachment?.uploadedData)
+                      (!inputValue.trim() && !pendingAttachment)
                     }
                     className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs sm:text-sm transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -802,6 +810,14 @@ export function MentorChatWorkspace({
                   </button>
                 </form>
               </div>
+
+              {/* Interactive Crop Modal for Chat Images */}
+              <ChatImageCropModal
+                isOpen={showCropModal}
+                file={pendingAttachment?.isImage ? pendingAttachment.file : null}
+                onClose={() => setShowCropModal(false)}
+                onApplyCrop={handleApplyCrop}
+              />
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">

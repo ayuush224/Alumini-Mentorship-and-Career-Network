@@ -12,6 +12,7 @@ import { checkSessionOverlap, calculateSessionInterval } from "@/lib/utils/sched
 import { verifyAccess } from "@/lib/app-tokens";
 import { MAX_PENDING_REQUESTS_PER_STUDENT } from "@/lib/config";
 import { invalidateMentorDirectoryCache } from "@/lib/dal";
+import { STANDARD_INDUSTRIES } from "@/lib/recommendation/taxonomy";
 
 export interface RequestMentorshipResult {
   success: boolean;
@@ -234,6 +235,20 @@ export interface ScoredMentorCardItem {
   isAtCapacity: boolean;
   hasPendingRequest: boolean;
   hasActiveMentorship: boolean;
+  scoreBreakdown?: {
+    semantic: number;
+    skillCoverage: number;
+    careerRelevance: number;
+    mentoringCapability: number;
+    seniority: number;
+    availability: number;
+    reliability: number;
+    rating: number;
+  };
+  reasons?: string[];
+  canTeachSkills?: string[];
+  compatibleTimes?: string[];
+  yearsOfExperience?: number;
 }
 
 export interface FetchMentorsBatchResult {
@@ -393,6 +408,12 @@ export async function fetchScoredMentorsAction({
         activeMentees,
         maxMentees,
         availability: "open" as const,
+        yearsOfExperience: (standalone?.yearsOfExperience as number) || (embedded.yearsOfExperience as number) || 4,
+        skillsCanTeach: (standalone?.skillsCanTeach as string[]) || (embedded.skillsCanTeach as string[]) || undefined,
+        topicsCanMentor: (standalone?.topicsCanMentor as string[]) || (embedded.topicsCanMentor as string[]) || undefined,
+        preferredMentoringStyle: (standalone?.preferredMentoringStyle as string) || (embedded.preferredMentoringStyle as string) || undefined,
+        availabilitySchedule: (standalone?.availabilitySchedule as any) || (embedded.availabilitySchedule as any) || undefined,
+        reliabilityStats: (standalone?.reliabilityStats as any) || (embedded.reliabilityStats as any) || undefined,
       }];
     });
 
@@ -454,6 +475,81 @@ export async function fetchScoredMentorsAction({
           activeMentees: 2,
           maxMentees: 5,
           availability: "open",
+        },
+        {
+          mentorId: "seed-mentor-5",
+          name: "Dr. Aris Thorne",
+          avatarUrl: undefined,
+          headline: "AI Research Scientist @ DeepMind | LLMs & PyTorch",
+          company: "Google DeepMind",
+          jobTitle: "Staff AI Scientist",
+          industry: "Artificial Intelligence",
+          expertiseTags: ["Artificial Intelligence", "Machine Learning", "PyTorch", "Generative AI", "NLP"],
+          skills: [{ name: "Machine Learning", endorsements: 22 }, { name: "PyTorch", endorsements: 19 }],
+          activeMentees: 1,
+          maxMentees: 3,
+          availability: "open",
+          yearsOfExperience: 7,
+        },
+        {
+          mentorId: "seed-mentor-6",
+          name: "Sarah Chen",
+          avatarUrl: undefined,
+          headline: "Group Product Manager @ Figma | Product Strategy & Growth",
+          company: "Figma",
+          jobTitle: "Group Product Manager",
+          industry: "Product Management",
+          expertiseTags: ["Product Management", "Product Strategy", "User Research", "Agile Roadmap"],
+          skills: [{ name: "Product Management", endorsements: 25 }, { name: "Product Strategy", endorsements: 20 }],
+          activeMentees: 2,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 8,
+        },
+        {
+          mentorId: "seed-mentor-7",
+          name: "Marcus Rivera",
+          avatarUrl: undefined,
+          headline: "Staff Product Designer @ Airbnb | Design Systems & UX",
+          company: "Airbnb",
+          jobTitle: "Staff Product Designer",
+          industry: "Design",
+          expertiseTags: ["UI/UX Design", "Design Systems", "Figma", "User Experience", "Interaction Design"],
+          skills: [{ name: "UI/UX Design", endorsements: 21 }, { name: "Design Systems", endorsements: 17 }],
+          activeMentees: 1,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 6,
+        },
+        {
+          mentorId: "seed-mentor-8",
+          name: "Maya Patel",
+          avatarUrl: undefined,
+          headline: "Lead Security Architect @ CrowdStrike | Cloud & InfoSec",
+          company: "CrowdStrike",
+          jobTitle: "Lead Security Architect",
+          industry: "Cybersecurity",
+          expertiseTags: ["Cybersecurity", "Cloud Security", "Threat Modeling", "Zero Trust", "Penetration Testing"],
+          skills: [{ name: "Cybersecurity", endorsements: 18 }, { name: "Cloud Security", endorsements: 15 }],
+          activeMentees: 2,
+          maxMentees: 5,
+          availability: "open",
+          yearsOfExperience: 9,
+        },
+        {
+          mentorId: "seed-mentor-9",
+          name: "Kabir Mehta",
+          avatarUrl: undefined,
+          headline: "Principal Data Scientist @ Netflix | Recommendation Systems",
+          company: "Netflix",
+          jobTitle: "Principal Data Scientist",
+          industry: "Data Science",
+          expertiseTags: ["Data Science", "Recommendation Systems", "Python", "SQL", "Big Data"],
+          skills: [{ name: "Data Science", endorsements: 24 }, { name: "SQL", endorsements: 20 }],
+          activeMentees: 2,
+          maxMentees: 4,
+          availability: "open",
+          yearsOfExperience: 8,
         }
       );
     }
@@ -478,9 +574,23 @@ export async function fetchScoredMentorsAction({
 
     if (industry.trim() && industry !== "all") {
       const ind = industry.trim().toLowerCase();
-      filtered = filtered.filter(
-        (m) => m.industry && m.industry.toLowerCase().includes(ind)
-      );
+      filtered = filtered.filter((m) => {
+        if (!m.industry) return false;
+        const mentorInd = m.industry.toLowerCase();
+        if (mentorInd === ind || mentorInd.includes(ind) || ind.includes(mentorInd)) {
+          return true;
+        }
+        const matchedCategory = STANDARD_INDUSTRIES.find(
+          (c) => c.value.toLowerCase() === ind || c.label.toLowerCase() === ind
+        );
+        if (matchedCategory) {
+          return (
+            matchedCategory.aliases.some((a) => mentorInd.includes(a)) ||
+            mentorInd.includes(matchedCategory.value.toLowerCase())
+          );
+        }
+        return false;
+      });
     }
 
     // 6. Pagination (Batch size e.g. 12 per page)
@@ -510,6 +620,11 @@ export async function fetchScoredMentorsAction({
       isAtCapacity: m.isAtCapacity,
       hasPendingRequest: pendingMentorIds.has(m.mentorId),
       hasActiveMentorship: activeMentorIds.has(m.mentorId),
+      scoreBreakdown: m.scoreBreakdown,
+      reasons: m.reasons,
+      canTeachSkills: m.canTeachSkills,
+      compatibleTimes: m.compatibleTimes,
+      yearsOfExperience: m.yearsOfExperience,
     }));
 
     return {

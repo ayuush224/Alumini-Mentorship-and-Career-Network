@@ -27,17 +27,17 @@ export function MarketingNavbar({ userDashboardUrl }: NavbarProps) {
 				{/* Brand Logo matching Image */}
 				<Link
 					href="/"
-					className="inline-flex items-center gap-2 text-2xl font-black tracking-tight text-deep font-heading group shrink-0"
+					className="inline-flex items-center group shrink-0 focus:outline-none"
+					title="Alma · Alumni Mentorship Network"
 				>
 					<Image
-						src="/lpu_logo.png"
-						alt="Lovely Professional University"
-						width={30}
-						height={30}
-						className="h-12 w-12 object-contain"
+						src="/modern-alumni-logo.png"
+						alt="Alma · Alumni Mentorship Network"
+						width={150}
+						height={50}
+						priority
+						className="h-10 sm:h-11 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.02]"
 					/>
-					<span>alma</span>
-					<span className="text-primary-600 font-black text-3xl leading-none">.</span>
 				</Link>
 
 				{/* Desktop Navigation Links matching Image */}

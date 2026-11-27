@@ -15,14 +15,49 @@ function getSecretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+interface TokenCacheItem {
+  payload: VerifiedTokenPayload | null;
+  expiresAt: number;
+}
+
+const verifiedTokenCache = new Map<string, TokenCacheItem>();
+
+function getCachedTokenPayload(token: string): VerifiedTokenPayload | null | undefined {
+  const item = verifiedTokenCache.get(token);
+  if (!item) return undefined;
+  if (Date.now() > item.expiresAt) {
+    verifiedTokenCache.delete(token);
+    return undefined;
+  }
+  return item.payload;
+}
+
+function setCachedTokenPayload(token: string, payload: VerifiedTokenPayload | null, ttlMs = 60_000): void {
+  if (verifiedTokenCache.size > 2000) {
+    const now = Date.now();
+    for (const [k, v] of verifiedTokenCache.entries()) {
+      if (v.expiresAt <= now) verifiedTokenCache.delete(k);
+    }
+  }
+  verifiedTokenCache.set(token, {
+    payload,
+    expiresAt: Date.now() + ttlMs,
+  });
+}
+
 /**
- * Verifies a JWT access token using Web Crypto (jose).
+ * Verifies a JWT access token using Web Crypto (jose) with sub-millisecond in-memory caching.
  * Safe to run in Edge Middleware, Server Components, and Node.js runtimes.
  * Returns the decoded payload if valid and unexpired; returns null otherwise.
  */
 export async function verifyAccessToken(token: string | undefined | null): Promise<VerifiedTokenPayload | null> {
   if (!token || typeof token !== "string" || token.trim() === "") {
     return null;
+  }
+
+  const cached = getCachedTokenPayload(token);
+  if (cached !== undefined) {
+    return cached;
   }
 
   const key = getSecretKey();
@@ -36,35 +71,46 @@ export async function verifyAccessToken(token: string | undefined | null): Promi
     });
 
     if (!payload || !payload.sub || typeof payload.sub !== "string") {
+      setCachedTokenPayload(token, null, 10_000);
       return null;
     }
 
-    return payload as VerifiedTokenPayload;
-  } catch {
-    // Fallback: Verify signature and audience directly without strict issuer equality
-    // (guards against environment hostname differences between sign and verify, e.g. localhost vs 127.0.0.1)
+    const verified = payload as VerifiedTokenPayload;
+    const expMs = typeof verified.exp === "number" ? Math.max(0, verified.exp * 1000 - Date.now()) : 60_000;
+    setCachedTokenPayload(token, verified, Math.min(expMs, 60_000));
+    return verified;
+  } catch (err: unknown) {
+    // If expired or signature failed, don't retry fallback - it's permanently invalid!
+    const code = (err as { code?: string })?.code;
+    if (code === "ERR_JWT_EXPIRED" || code === "ERR_JWS_SIGNATURE_VERIFICATION_FAILED" || code === "ERR_JWS_INVALID") {
+      setCachedTokenPayload(token, null, 10_000);
+      return null;
+    }
+
+    // Only retry if issuer or audience mismatch
     try {
       const { payload } = await jwtVerify(token, key, {
         audience: "alumni-api",
       });
 
-      if (!payload || !payload.sub || typeof payload.sub !== "string") {
-        return null;
+      if (payload && payload.sub && typeof payload.sub === "string") {
+        const verified = payload as VerifiedTokenPayload;
+        setCachedTokenPayload(token, verified, 60_000);
+        return verified;
       }
-
-      return payload as VerifiedTokenPayload;
     } catch {
-      // Third fallback: Verify signature only
       try {
         const { payload } = await jwtVerify(token, key);
         if (payload && payload.sub && typeof payload.sub === "string") {
-          return payload as VerifiedTokenPayload;
+          const verified = payload as VerifiedTokenPayload;
+          setCachedTokenPayload(token, verified, 60_000);
+          return verified;
         }
-      } catch {
-        return null;
-      }
-      return null;
+      } catch {}
     }
+
+    setCachedTokenPayload(token, null, 10_000);
+    return null;
   }
 }
 

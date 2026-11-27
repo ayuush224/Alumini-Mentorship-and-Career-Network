@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { MentorCard, type Mentor } from "./mentor-card";
 import { MentorPublicProfileModal } from "./mentor-public-profile-modal";
+import { STANDARD_INDUSTRIES } from "@/lib/recommendation/taxonomy";
+import { AlmaDropdown, type DropdownOption } from "./alma-dropdown";
 
 interface StudentMentorsDirectoryProps {
   initialMentors: Mentor[];
@@ -98,15 +100,44 @@ export function StudentMentorsDirectory({
     }
   };
 
-  // Extract unique industries from mentors list
-  const availableIndustries = useMemo(() => {
-    const set = new Set<string>();
+  // Extract unique industries from standard taxonomy plus mentors list with counts
+  const industryOptions = useMemo(() => {
+    const counts = new Map<string, number>();
     for (const m of initialMentors) {
-      if (m.industry?.trim()) {
-        set.add(m.industry.trim());
+      const ind = m.industry?.trim();
+      if (ind) {
+        counts.set(ind.toLowerCase(), (counts.get(ind.toLowerCase()) || 0) + 1);
       }
     }
-    return Array.from(set).sort();
+
+    const seen = new Set<string>();
+    const options: Array<{ label: string; value: string; count: number }> = [];
+
+    for (const std of STANDARD_INDUSTRIES) {
+      if (std.value === "all") continue;
+      seen.add(std.value.toLowerCase());
+      let count = counts.get(std.value.toLowerCase()) || 0;
+      for (const [rawInd, c] of counts.entries()) {
+        if (
+          rawInd !== std.value.toLowerCase() &&
+          (std.aliases.some((a) => rawInd.includes(a)) || rawInd.includes(std.value.toLowerCase()))
+        ) {
+          count += c;
+        }
+      }
+      options.push({ label: std.label, value: std.value, count });
+    }
+
+    for (const m of initialMentors) {
+      const raw = m.industry?.trim();
+      if (raw && !seen.has(raw.toLowerCase())) {
+        seen.add(raw.toLowerCase());
+        const count = counts.get(raw.toLowerCase()) || 1;
+        options.push({ label: raw, value: raw, count });
+      }
+    }
+
+    return options;
   }, [initialMentors]);
 
   // Extract unique skills / expertise tags from mentors list
@@ -121,6 +152,37 @@ export function StudentMentorsDirectory({
     }
     return Array.from(set).sort();
   }, [initialMentors]);
+
+  // Memoized options for custom Alma dropdowns with website typography & warm hover states
+  const industryDropdownOptions: DropdownOption[] = useMemo(() => {
+    return [
+      { label: `All Industries (${initialMentors.length})`, value: "all" },
+      ...industryOptions.map((ind) => ({
+        label: ind.label,
+        value: ind.value,
+        count: ind.count,
+      })),
+    ];
+  }, [industryOptions, initialMentors.length]);
+
+  const skillsDropdownOptions: DropdownOption[] = useMemo(() => {
+    return [
+      { label: `All Skills & Topics (${availableSkills.length})`, value: "all" },
+      ...availableSkills.map((sk) => ({
+        label: sk,
+        value: sk,
+      })),
+    ];
+  }, [availableSkills]);
+
+  const sortDropdownOptions: DropdownOption<"matchScore" | "remainingSpots" | "name">[] = useMemo(
+    () => [
+      { label: "Best Match Score", value: "matchScore" },
+      { label: "Remaining Spots", value: "remainingSpots" },
+      { label: "Mentor Name (A-Z)", value: "name" },
+    ],
+    []
+  );
 
   // Filter & sort logic
   const filteredMentors = useMemo(() => {
@@ -148,8 +210,22 @@ export function StudentMentorsDirectory({
 
       // 2. Industry Filter
       if (selectedIndustry !== "all") {
-        if (!m.industry || m.industry.toLowerCase() !== selectedIndustry.toLowerCase()) {
-          return false;
+        if (!m.industry) return false;
+        const mentorInd = m.industry.toLowerCase();
+        const targetInd = selectedIndustry.toLowerCase();
+        const directMatch =
+          mentorInd === targetInd ||
+          mentorInd.includes(targetInd) ||
+          targetInd.includes(mentorInd);
+
+        if (!directMatch) {
+          const categoryObj = STANDARD_INDUSTRIES.find(
+            (c) => c.value.toLowerCase() === targetInd
+          );
+          const aliasMatch = categoryObj?.aliases.some((a) => mentorInd.includes(a));
+          if (!aliasMatch) {
+            return false;
+          }
         }
       }
 
@@ -315,37 +391,25 @@ export function StudentMentorsDirectory({
           </div>
 
           {/* Industry Filter Dropdown */}
-          <div className="md:col-span-3 relative">
-            <select
+          <div className="md:col-span-3">
+            <AlmaDropdown
               value={selectedIndustry}
-              onChange={(e) => setSelectedIndustry(e.target.value)}
-              className="w-full cursor-pointer appearance-none rounded-xl border border-stone-200/80 bg-stone-50 px-3.5 py-2.5 pr-8 text-xs font-medium text-stone-800 transition-all hover:bg-stone-100/70 focus:border-primary-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-600/20"
-            >
-              <option value="all">All Industries ({availableIndustries.length})</option>
-              {availableIndustries.map((ind) => (
-                <option key={ind} value={ind}>
-                  {ind}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              onChange={setSelectedIndustry}
+              options={industryDropdownOptions}
+              placeholder="All Industries"
+              ariaLabel="Filter by industry"
+            />
           </div>
 
           {/* Skills Filter Dropdown */}
-          <div className="md:col-span-3 relative">
-            <select
+          <div className="md:col-span-3">
+            <AlmaDropdown
               value={selectedSkill}
-              onChange={(e) => setSelectedSkill(e.target.value)}
-              className="w-full cursor-pointer appearance-none rounded-xl border border-stone-200/80 bg-stone-50 px-3.5 py-2.5 pr-8 text-xs font-medium text-stone-800 transition-all hover:bg-stone-100/70 focus:border-primary-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-600/20"
-            >
-              <option value="all">All Skills & Topics ({availableSkills.length})</option>
-              {availableSkills.map((sk) => (
-                <option key={sk} value={sk}>
-                  {sk}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              onChange={setSelectedSkill}
+              options={skillsDropdownOptions}
+              placeholder="All Skills & Topics"
+              ariaLabel="Filter by skill or topic"
+            />
           </div>
         </div>
 
@@ -405,21 +469,15 @@ export function StudentMentorsDirectory({
 
           {/* Right: Sort By Selection */}
           <div className="flex items-center gap-2 ml-auto">
-            <span className="text-stone-500 text-xs">Sort by:</span>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  setSortBy(e.target.value as "matchScore" | "remainingSpots" | "name")
-                }
-                className="appearance-none pl-3 pr-7 py-1.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-xs font-semibold text-stone-800 focus:outline-none cursor-pointer"
-              >
-                <option value="matchScore">Best Match Score</option>
-                <option value="remainingSpots">Remaining Spots</option>
-                <option value="name">Mentor Name (A-Z)</option>
-              </select>
-              <ChevronDown className="w-3 h-3 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <span className="text-stone-500 text-xs shrink-0">Sort by:</span>
+            <AlmaDropdown
+              value={sortBy}
+              onChange={(val) => setSortBy(val as "matchScore" | "remainingSpots" | "name")}
+              options={sortDropdownOptions}
+              align="right"
+              buttonClassName="py-1.5 px-3 min-w-[170px]"
+              ariaLabel="Sort mentors by"
+            />
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ShieldCheck, Heart, ArrowUpRight } from "lucide-react";
 
 export function MarketingFooter() {
@@ -13,9 +14,18 @@ export function MarketingFooter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16 border-b border-white/10">
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-1 text-2xl font-black tracking-tight text-white font-heading">
-              <span>alma</span>
-              <span className="text-primary-300 font-black text-3xl leading-none">.</span>
+            <Link
+              href="/"
+              className="inline-block bg-white px-3 py-1.5 rounded-xl transition-transform hover:scale-[1.02] focus:outline-none"
+              title="Alma · Alumni Mentorship Network"
+            >
+              <Image
+                src="/modern-alumni-logo.png"
+                alt="Alma · Alumni Mentorship Network"
+                width={130}
+                height={44}
+                className="h-8 w-auto object-contain"
+              />
             </Link>
 
             <p className="text-slate-300 text-sm max-w-sm leading-relaxed">

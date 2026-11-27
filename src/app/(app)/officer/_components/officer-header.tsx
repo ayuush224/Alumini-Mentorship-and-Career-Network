@@ -82,10 +82,17 @@ export function OfficerHeader({
         <div className="flex items-center gap-6 sm:gap-8 min-w-0">
           <Link
             href="/officer"
-            className="inline-flex items-center gap-1 font-heading font-black text-2xl tracking-tight text-deep group shrink-0"
+            className="inline-flex items-center group shrink-0 focus:outline-none"
+            title="Alma · Alumni Mentorship Network"
           >
-            <span>alma</span>
-            <span className="text-primary-600 font-black text-2xl leading-none">.</span>
+            <Image
+              src="/modern-alumni-logo.png"
+              alt="Alma · Alumni Mentorship Network"
+              width={140}
+              height={46}
+              priority
+              className="h-9 sm:h-10 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.02]"
+            />
           </Link>
 
           {/* Horizontal Navigation Tabs */}

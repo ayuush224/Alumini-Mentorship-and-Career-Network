@@ -76,9 +76,17 @@ export interface IStudentProfileData {
   experience: IStudentExperience[];
   // Platform discovery fields
   major?: string;
+  department?: string;
   graduationYear?: number;
   targetIndustries?: string[];
   skillsToDevelop?: string[];
+  targetJobRole?: string;
+  careerGoals?: string;
+  knowledgeGaps?: string[];
+  problemDescription?: string;
+  preferredLanguage?: string;
+  meetingPreference?: "remote" | "in_person" | "hybrid";
+  availabilitySchedule?: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
   codingProfiles?: ICodingProfile[];
   socialLinks?: ISocialLink[];
   otherLinks?: IOtherLink[];
@@ -99,9 +107,26 @@ export const StudentProfileSchema = new Schema<IStudentProfileData>(
     projects: { type: [ProjectSchema], default: [] },
     experience: { type: [StudentExperienceSchema], default: [] },
     major: { type: String, trim: true },
+    department: { type: String, trim: true },
     graduationYear: { type: Number },
     targetIndustries: { type: [String], default: [] },
     skillsToDevelop: { type: [String], default: [] },
+    targetJobRole: { type: String, trim: true },
+    careerGoals: { type: String, trim: true },
+    knowledgeGaps: { type: [String], default: [] },
+    problemDescription: { type: String, trim: true },
+    preferredLanguage: { type: String, default: "English", trim: true },
+    meetingPreference: { type: String, enum: ["remote", "in_person", "hybrid"], default: "remote" },
+    availabilitySchedule: {
+      type: [
+        {
+          dayOfWeek: { type: Number, min: 0, max: 6 },
+          startTime: { type: String, trim: true },
+          endTime: { type: String, trim: true },
+        },
+      ],
+      default: [],
+    },
     codingProfiles: {
       type: [
         {
@@ -163,9 +188,26 @@ const StandaloneStudentProfileSchema = new Schema<IStudentProfile>(
     projects: { type: [ProjectSchema], default: [] },
     experience: { type: [StudentExperienceSchema], default: [] },
     major: { type: String, default: "Undeclared", trim: true },
+    department: { type: String, trim: true },
     graduationYear: { type: Number, default: () => new Date().getFullYear() + 2 },
     targetIndustries: { type: [String], default: [] },
     skillsToDevelop: { type: [String], default: [] },
+    targetJobRole: { type: String, trim: true },
+    careerGoals: { type: String, trim: true },
+    knowledgeGaps: { type: [String], default: [] },
+    problemDescription: { type: String, trim: true },
+    preferredLanguage: { type: String, default: "English", trim: true },
+    meetingPreference: { type: String, enum: ["remote", "in_person", "hybrid"], default: "remote" },
+    availabilitySchedule: {
+      type: [
+        {
+          dayOfWeek: { type: Number, min: 0, max: 6 },
+          startTime: { type: String, trim: true },
+          endTime: { type: String, trim: true },
+        },
+      ],
+      default: [],
+    },
     codingProfiles: {
       type: [
         {
@@ -330,6 +372,27 @@ export interface IMentorProfileData {
   jobTitle?: string;
   industry?: string;
   expertiseTags?: string[];
+  department?: string;
+  graduationYear?: number;
+  yearsOfExperience?: number;
+  skillsCanTeach?: string[];
+  topicsCanMentor?: string[];
+  mentoringExperience?: string;
+  preferredMentoringStyle?: "hands_on" | "strategic" | "structured" | "casual" | "any";
+  languages?: string[];
+  meetingPreference?: "remote" | "in_person" | "hybrid";
+  timezone?: string;
+  availabilitySchedule?: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
+  reliabilityStats?: {
+    requestsReceived?: number;
+    requestsAnswered?: number;
+    requestsAccepted?: number;
+    avgResponseTimeHours?: number;
+    sessionsScheduled?: number;
+    sessionsCompleted?: number;
+    sessionsCancelled?: number;
+  };
+  capabilityEmbedding?: number[];
   isVerified?: boolean;
   verifiedAt?: Date;
 }
@@ -360,6 +423,39 @@ export const MentorProfileSchema = new Schema<IMentorProfileData>(
     jobTitle: { type: String, trim: true },
     industry: { type: String, trim: true },
     expertiseTags: { type: [String], default: [] },
+    department: { type: String, trim: true },
+    graduationYear: { type: Number },
+    yearsOfExperience: { type: Number, default: 0 },
+    skillsCanTeach: { type: [String], default: [] },
+    topicsCanMentor: { type: [String], default: [] },
+    mentoringExperience: { type: String, trim: true },
+    preferredMentoringStyle: { type: String, enum: ["hands_on", "strategic", "structured", "casual", "any"], default: "any" },
+    languages: { type: [String], default: ["English"] },
+    meetingPreference: { type: String, enum: ["remote", "in_person", "hybrid"], default: "remote" },
+    timezone: { type: String, default: "UTC" },
+    availabilitySchedule: {
+      type: [
+        {
+          dayOfWeek: { type: Number, min: 0, max: 6 },
+          startTime: { type: String, trim: true },
+          endTime: { type: String, trim: true },
+        },
+      ],
+      default: [],
+    },
+    reliabilityStats: {
+      type: {
+        requestsReceived: { type: Number, default: 0 },
+        requestsAnswered: { type: Number, default: 0 },
+        requestsAccepted: { type: Number, default: 0 },
+        avgResponseTimeHours: { type: Number, default: 24 },
+        sessionsScheduled: { type: Number, default: 0 },
+        sessionsCompleted: { type: Number, default: 0 },
+        sessionsCancelled: { type: Number, default: 0 },
+      },
+      default: {},
+    },
+    capabilityEmbedding: { type: [Number], default: undefined },
     isVerified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
   },
@@ -405,6 +501,39 @@ const StandaloneMentorProfileSchema = new Schema<IMentorProfile>(
     jobTitle: { type: String, default: "Mentor", trim: true },
     industry: { type: String, default: "Technology", trim: true },
     expertiseTags: { type: [String], default: [] },
+    department: { type: String, trim: true },
+    graduationYear: { type: Number },
+    yearsOfExperience: { type: Number, default: 0 },
+    skillsCanTeach: { type: [String], default: [] },
+    topicsCanMentor: { type: [String], default: [] },
+    mentoringExperience: { type: String, trim: true },
+    preferredMentoringStyle: { type: String, enum: ["hands_on", "strategic", "structured", "casual", "any"], default: "any" },
+    languages: { type: [String], default: ["English"] },
+    meetingPreference: { type: String, enum: ["remote", "in_person", "hybrid"], default: "remote" },
+    timezone: { type: String, default: "UTC" },
+    availabilitySchedule: {
+      type: [
+        {
+          dayOfWeek: { type: Number, min: 0, max: 6 },
+          startTime: { type: String, trim: true },
+          endTime: { type: String, trim: true },
+        },
+      ],
+      default: [],
+    },
+    reliabilityStats: {
+      type: {
+        requestsReceived: { type: Number, default: 0 },
+        requestsAnswered: { type: Number, default: 0 },
+        requestsAccepted: { type: Number, default: 0 },
+        avgResponseTimeHours: { type: Number, default: 24 },
+        sessionsScheduled: { type: Number, default: 0 },
+        sessionsCompleted: { type: Number, default: 0 },
+        sessionsCancelled: { type: Number, default: 0 },
+      },
+      default: {},
+    },
+    capabilityEmbedding: { type: [Number], default: undefined },
     isVerified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
   },

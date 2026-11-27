@@ -20,6 +20,7 @@ export interface ChatMessageItem {
   fileType?: string;
   fileSize?: number;
   createdAt: string; // ISO
+  isUploading?: boolean;
 }
 
 export interface SharedNoteItem {

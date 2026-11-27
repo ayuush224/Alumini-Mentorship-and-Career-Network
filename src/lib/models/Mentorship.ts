@@ -228,6 +228,7 @@ export interface IMentorCapacity extends Document {
   mentorId: mongoose.Types.ObjectId;
   maxMentees: number;
   activeMentees: number;
+  pendingReservations?: number;
   acceptingRequests?: boolean;
   status?: "available" | "near_capacity" | "at_capacity" | "paused";
   createdAt: Date;
@@ -248,6 +249,11 @@ export const MentorCapacitySchema = new Schema<IMentorCapacity>(
       min: 0,
     },
     activeMentees: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    pendingReservations: {
       type: Number,
       default: 0,
       min: 0,

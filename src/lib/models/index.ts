@@ -12,6 +12,8 @@ export * from "./Verification";
 
 // M2 & M5: Capacity, Availability, Requests & Mentorships
 export * from "./Mentorship";
+export * from "./MentorshipGoalRequest";
+export * from "./RecommendationSnapshot";
 
 // M6: High-Concurrency Dual-Layer Scheduling & Slot Overlap Guard
 export * from "./MentorSession";
